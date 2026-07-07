@@ -37,7 +37,16 @@ function PackageCard({ packageData }) {
 
                     </button>
 
+                
+                {/* Badge */}
+                <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold shadow">
+
+                    {packageData.badge}
+
                 </div>
+
+                </div>
+
 
                 {/* Rating */}
                 <div className="absolute top-4 left-4 bg-white px-3 py-1 rounded-full flex items-center gap-1 shadow">
@@ -50,13 +59,7 @@ function PackageCard({ packageData }) {
 
                 </div>
 
-                {/* Badge */}
-                <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold shadow">
-
-                    {packageData.badge}
-
-                </div>
-
+                
             </div>
 
             {/* Content */}
