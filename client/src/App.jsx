@@ -1,18 +1,19 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import Login from './pages/authetication/Login.jsx';
-
-import "./pages/authetication/Login.jsx"
+import React from 'react';
+// React Router se zaroori cheezein import karein
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/authetication/Login';   // Aapka Login component
+import Signup from './pages/authetication/Signup'; // Aapka Signup component
 
 function App() {
-
   return (
-    <>
-        <Login />
-    </>
-    
+    <Router>
+      <Routes>
+        {/* Jab koi sirf website open kare (path="/"), toh wo direct /login par chala jaye */}
+        <Route path="/" element={<Navigate to="/login" />} />
+        {/* Login aur Signup ke alag-alag raste (paths) */}
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+    </Router>
   );
 }
 

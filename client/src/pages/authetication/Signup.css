@@ -1,4 +1,4 @@
-/* Login.css */
+/* Signup.css */
 
 *{
     margin:0;
@@ -6,7 +6,7 @@
     box-sizing:border-box;
 }
 
-.logincontainer{
+.signupcontainer{
     display:flex;
     justify-content:center;
     align-items:center;
@@ -16,9 +16,9 @@
     padding:25px;
 }
 
-/* Login Card */
+/* Signup Card */
 
-#loginform{
+#signupform{
     width:100%;
     max-width:430px;
     background:#fff;
@@ -31,14 +31,14 @@
 
 /* Top Row */
 
-#LoginTitleContainer{
+#signupTitleContainer{
     display:flex;
     justify-content:space-between;
     align-items:center;
     margin-bottom:28px;
 }
 
-#LoginPageTitle{
+#SingUpPageTitle{
     font-size:2rem;
     font-weight:700;
     color:#222;
@@ -69,7 +69,7 @@
 
 /* Labels */
 
-.logintitle{
+.signuptitle{
     font-size:.9rem;
     font-weight:600;
     color:#444;
@@ -79,23 +79,23 @@
 
 /* Inputs */
 
-#loginform input[type="text"],
-#loginform input[type="password"]{
+#signupform input[type="text"],
+#signupform input[type="password"]{
 
     width:100%;
     padding:14px 16px;
     border-radius:10px;
     border:1px solid #d9d9d9;
-    background:#fafafa;
     font-size:15px;
     transition:.3s;
+    background:#fafafa;
 }
 
-#loginform input::placeholder{
+#signupform input::placeholder{
     color:#9a9a9a;
 }
 
-#loginform input:focus{
+#signupform input:focus{
     outline:none;
     border-color:#16c784;
     background:#fff;
@@ -104,39 +104,39 @@
 
 /* View Password */
 
-.viewpasswordcontainer{
+.viewpasswordcontainer_signup{
     display:flex;
     align-items:center;
     margin-top:18px;
     margin-bottom:8px;
 }
 
-.viewpasswordcontainer .logintitle{
+.viewpasswordcontainer_signup .signuptitle{
     margin:0;
 }
 
-#passwordText{
+#signupPasswordText{
     margin-left:auto;
     margin-right:10px;
-    font-size:.85rem;
     color:#666;
+    font-size:.85rem;
 }
 
-#viewPassword{
+#viewSignupPassword{
     width:17px;
     height:17px;
     cursor:pointer;
     accent-color:#16c784;
 }
 
-/* Login Button */
+/* Signup Button */
 
-#loginButton{
-    margin-top:28px;
-    background:#14c38e;
-    color:#fff;
+#signupButton{
+    margin-top:30px;
     border:none;
     border-radius:10px;
+    background:#14c38e;
+    color:#fff;
     padding:15px;
     font-size:16px;
     font-weight:600;
@@ -144,33 +144,15 @@
     transition:.3s;
 }
 
-#loginButton:hover{
+#signupButton:hover{
     background:#0ea875;
     transform:translateY(-2px);
     box-shadow:0 10px 20px rgba(20,195,142,.28);
 }
 
-/* Forgot Password */
+/* Login Link */
 
-#forgotPasswordLink{
-    margin-top:18px;
-    text-align:right;
-    text-decoration:none;
-    color:#14c38e;
-    font-size:.9rem;
-    font-weight:500;
-    transition:.3s;
-    cursor:pointer;
-}
-
-#forgotPasswordLink:hover{
-    color:#0ea875;
-    text-decoration:underline;
-}
-
-/* Signup Link */
-
-#signupLink{
+#loginLink{
     margin-top:28px;
     padding-top:18px;
     border-top:1px solid #ececec;
@@ -181,7 +163,7 @@
     transition:.3s;
 }
 
-#signupLink:hover{
+#loginLink:hover{
     color:#14c38e;
 }
 
@@ -189,12 +171,12 @@
 
 @media(max-width:480px){
 
-    #loginform{
+    #signupform{
         padding:28px;
         border-radius:14px;
     }
 
-    #LoginPageTitle{
+    #SingUpPageTitle{
         font-size:1.7rem;
     }
 
