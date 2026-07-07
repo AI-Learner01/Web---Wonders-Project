@@ -1,4 +1,7 @@
 import PackageFilter from "../components/PackageFilter";
+import packages from "../data/packages";
+import PackageCard from "../components/PackageCard";
+import { motion } from "framer-motion";
 
 function Packages() {
 
@@ -17,32 +20,55 @@ function Packages() {
 
             {/* Hero */}
 
-            <section className="bg-gradient-to-r from-blue-700 to-sky-500 text-white">
+            <section
+                className="relative h-[500px] bg-cover bg-center"
+                style={{
+                    backgroundImage:
+                        "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600')",
+                }}
+            >
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black/55"></div>
 
-                <div className="max-w-7xl mx-auto px-6 py-24">
+                <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="relative max-w-7xl mx-auto px-6 h-full flex flex-col justify-center"
+                >
+                    <span className="bg-orange-500 text-white px-5 py-2 rounded-full w-fit font-semibold mb-5">
+                        🌍 Explore the World
+                    </span>
 
-                    <h1 className="text-5xl font-bold mb-5">
-
-                        Explore Amazing Holiday Packages
-
+                    <h1 className="text-5xl md:text-6xl font-bold text-white leading-tight max-w-3xl">
+                        Discover Your Next Dream Vacation
                     </h1>
 
-                    <p className="text-lg md:text-xl max-w-2xl">
-
-                        Discover breathtaking destinations, unforgettable experiences,
-                        and perfectly crafted tour packages for your next vacation.
-
+                    <p className="text-gray-200 text-lg mt-6 max-w-2xl">
+                        Choose from carefully curated holiday packages designed to create unforgettable travel experiences.
                     </p>
 
-                    <button
-                        className="mt-8 bg-orange-500 hover:bg-orange-600 transition px-8 py-4 rounded-full font-semibold">
-
+                    <button className="mt-8 bg-blue-600 hover:bg-blue-700 transition px-8 py-4 rounded-full font-semibold text-white w-fit">
                         Explore Packages
+                    </button>
 
+                </motion.div>
+
+                <div className="mt-8 bg-white rounded-2xl shadow-xl p-3 flex flex-col md:flex-row gap-3 max-w-3xl">
+
+                    <input
+                        type="text"
+                        placeholder="Search destinations (e.g. Goa, Bali, Kashmir)"
+                        className="flex-1 px-4 py-3 rounded-xl outline-none text-gray-700"
+                    />
+
+                    <button
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition"
+                    >
+                        Search
                     </button>
 
                 </div>
-
             </section>
 
             {/* Categories */}
@@ -59,13 +85,15 @@ function Packages() {
 
                     {categories.map((item) => (
 
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.08 }}
+                            whileTap={{ scale: 0.96 }}
                             key={item}
-                            className="bg-white shadow-md rounded-full px-6 py-3 hover:bg-blue-600 hover:text-white transition">
+                            className="bg-white shadow-md rounded-full px-6 py-3 hover:bg-gradient-to-r hover:from-blue-600 hover:to-sky-500 hover:text-white transition">
 
                             {item}
 
-                        </button>
+                        </motion.button>
 
                     ))}
 
@@ -91,22 +119,17 @@ function Packages() {
 
                 </h2>
 
-                <div
-                    className="bg-white rounded-2xl shadow-lg p-16 text-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-                    <h3 className="text-2xl font-semibold text-gray-700">
-
-                        Tour Package Cards Coming Soon
-
-                    </h3>
-
-                    <p className="text-gray-500 mt-3">
-
-                        Phase 2 will display beautiful travel package cards here.
-
-                    </p>
+                    {packages.map((item) => (
+                        <PackageCard
+                            key={item.id}
+                            packageData={item}
+                        />
+                    ))}
 
                 </div>
+
 
             </section>
 

@@ -1,6 +1,6 @@
 function PackageFilter() {
   return (
-    <section className="bg-white rounded-2xl shadow-md p-6 mt-10">
+    <section className="bg-white rounded-3xl shadow-x1 p-6 mt-10">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
         Find Your Perfect Package
       </h2>
