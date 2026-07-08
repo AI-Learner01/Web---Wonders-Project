@@ -10,7 +10,7 @@ import {
 
 import { motion } from "framer-motion";
 
-function PackageCard({ packageData }) {
+function PackageCard({ packageData,onBookNow }) {
     return (
 
         <motion.div
@@ -143,7 +143,9 @@ function PackageCard({ packageData }) {
 
                 {/* Button */}
 
-                <button className="mt-6 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 transition-all duration-300">
+                <button
+                onClick={() => onBookNow(packageData)}
+                className="mt-6 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 transition-all duration-300">
                     Book Now
 
                     <FaArrowRight />

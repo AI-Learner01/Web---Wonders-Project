@@ -1,3 +1,5 @@
+import { images } from "./imageUrls";
+
 const packages = [
     {
     id: 1,
@@ -7,7 +9,7 @@ const packages = [
     price: 34999,
     originalPrice: 42999,
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800",
+    image: images.packages.bali,
     features: ["Hotel", "Breakfast", "Flight"],
     badge: "Bestseller"
   },
@@ -20,7 +22,7 @@ const packages = [
     price: 79999,
     originalPrice: 89999,
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800",
+    image: images.packages.switzerland,
     features: ["Hotel", "Guide", "Meals"],
     badge: "Luxury"
   },
@@ -33,7 +35,7 @@ const packages = [
     price: 18999,
     originalPrice: 22999,
     rating: 4.7,
-    image: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800",
+    image: images.packages.goa,
     features: ["Resort", "Breakfast", "Pickup"],
     badge: "Popular"
   }

@@ -10,7 +10,43 @@ import {
     FaMapMarkedAlt,
 } from "react-icons/fa";
 
-function BookingForm() {
+import { useState } from "react";
+
+function BookingForm({
+
+    travellers,
+    setTravellers,
+
+    roomType,
+    setRoomType,
+
+    services,
+    setServices
+
+}) {
+    const toggleService = (service) => {
+
+        if (services.includes(service)) {
+
+            setServices(
+                services.filter(item => item !== service)
+            );
+
+        }
+
+        else {
+
+            setServices([
+                ...services,
+                service
+            ]);
+
+        }
+
+    };
+
+
+
     return (
         <form className="bg-white rounded-3xl shadow-xl p-8">
 
@@ -88,7 +124,13 @@ function BookingForm() {
                         <input
                             type="number"
                             min="1"
-                            placeholder="2"
+                            value={travellers}
+                            onChange={(e) => {
+                                const value = Number(e.target.value);
+                                setTravellers(Math.max(1, value));
+                            }
+
+                            }
                             className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
 
@@ -122,7 +164,7 @@ function BookingForm() {
                     </div>
 
                     <div>
-                    
+
                         <div>
 
                             <h3 className="font-semibold mb-4">
@@ -133,7 +175,17 @@ function BookingForm() {
 
                             <div className="grid grid-cols-3 gap-4">
 
-                                <div className="border rounded-2xl p-4 hover:border-blue-600 hover:bg-blue-50 cursor-pointer transition">
+                                <div
+                                    onClick={() => setRoomType("Standard")}
+                                    className={`border rounded-2xl p-4 cursor-pointer transition
+
+    ${roomType === "Standard"
+
+                                            ? "border-blue-600 bg-blue-50"
+
+                                            : "hover:border-blue-600"
+                                        }`}
+                                >
 
                                     <FaBed className="text-2xl text-blue-600 mb-3" />
 
@@ -145,7 +197,17 @@ function BookingForm() {
 
                                 </div>
 
-                                <div className="border rounded-2xl p-4 hover:border-blue-600 hover:bg-blue-50 cursor-pointer transition">
+                                <div
+                                    onClick={() => setRoomType("Deluxe")}
+                                    className={`border rounded-2xl p-4 cursor-pointer transition
+
+    ${roomType === "Deluxe"
+
+                                            ? "border-blue-600 bg-blue-50"
+
+                                            : "hover:border-blue-600"
+                                        }`}
+                                >
 
                                     <FaBed className="text-2xl text-blue-600 mb-3" />
 
@@ -157,7 +219,17 @@ function BookingForm() {
 
                                 </div>
 
-                                <div className="border rounded-2xl p-4 hover:border-blue-600 hover:bg-blue-50 cursor-pointer transition">
+                                <div
+                                    onClick={() => setRoomType("Suite")}
+                                    className={`border rounded-2xl p-4 cursor-pointer transition
+
+    ${roomType === "Suite"
+
+                                            ? "border-blue-600 bg-blue-50"
+
+                                            : "hover:border-blue-600"
+                                        }`}
+                                >
 
                                     <FaBed className="text-2xl text-blue-600 mb-3" />
 
@@ -188,8 +260,20 @@ function BookingForm() {
 
                 <div className="space-y-4">
 
-                    <div className="border rounded-2xl p-4 flex items-center justify-between hover:border-blue-600 cursor-pointer transition">
+                    <div
 
+                        onClick={() => toggleService("Airport Pickup")}
+
+                        className={`border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition
+
+${services.includes("Airport Pickup")
+
+                                ? "border-blue-600 bg-blue-50"
+
+                                : "hover:border-blue-600"
+                            }`}
+
+                    >
                         <div className="flex items-center gap-3">
 
                             <FaPlaneArrival className="text-blue-600" />
@@ -202,8 +286,20 @@ function BookingForm() {
 
                     </div>
 
-                    <div className="border rounded-2xl p-4 flex items-center justify-between hover:border-blue-600 cursor-pointer transition">
+                    <div
 
+                        onClick={() => toggleService("Travel Insurance")}
+
+                        className={`border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition
+
+${services.includes("Travel Insurance")
+
+                                ? "border-blue-600 bg-blue-50"
+
+                                : "hover:border-blue-600"
+                            }`}
+
+                    >
                         <div className="flex items-center gap-3">
 
                             <FaShieldAlt className="text-green-600" />
@@ -216,8 +312,20 @@ function BookingForm() {
 
                     </div>
 
-                    <div className="border rounded-2xl p-4 flex items-center justify-between hover:border-blue-600 cursor-pointer transition">
+                    <div
 
+                        onClick={() => toggleService("Guided City Tour")}
+
+                        className={`border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition
+
+${services.includes("Guided City Tour")
+
+                                ? "border-blue-600 bg-blue-50"
+
+                                : "hover:border-blue-600"
+                            }`}
+
+                    >
                         <div className="flex items-center gap-3">
 
                             <FaMapMarkedAlt className="text-orange-500" />

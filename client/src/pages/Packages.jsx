@@ -2,8 +2,9 @@ import PackageFilter from "../components/PackageFilter";
 import packages from "../data/packages";
 import PackageCard from "../components/PackageCard";
 import { motion } from "framer-motion";
+import { images } from "../data/imageUrls";
 
-function Packages() {
+function Packages({ onBookNow }) {
 
     const categories = [
         "🏖 Beach",
@@ -21,10 +22,9 @@ function Packages() {
             {/* Hero */}
 
             <section
-                className="relative h-[500px] bg-cover bg-center"
+                className="relative min h-[500px] md:h-[650px] bg-cover bg-center"
                 style={{
-                    backgroundImage:
-                        "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600')",
+                    backgroundImage: `url(${images.hero.destinations})`,
                 }}
             >
                 {/* Overlay */}
@@ -40,7 +40,7 @@ function Packages() {
                         🌍 Explore the World
                     </span>
 
-                    <h1 className="text-5xl md:text-6xl font-bold text-white leading-tight max-w-3xl">
+                    <h1 className="text-4xl sm:text-5x1 lg:text-6x1 font-bold text-white leading-tight max-w-3xl">
                         Discover Your Next Dream Vacation
                     </h1>
 
@@ -54,26 +54,36 @@ function Packages() {
 
                 </motion.div>
 
-                <div className="mt-8 bg-white rounded-2xl shadow-xl p-3 flex flex-col md:flex-row gap-3 max-w-3xl">
 
-                    <input
-                        type="text"
-                        placeholder="Search destinations (e.g. Goa, Bali, Kashmir)"
-                        className="flex-1 px-4 py-3 rounded-xl outline-none text-gray-700"
-                    />
+            </section>
 
-                    <button
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition"
-                    >
-                        Search
-                    </button>
+            <section className="relative z-20 -mt-12">
+
+                <div className="max-w-5xl mx-auto px-6">
+
+                    <div className="bg-white rounded-2xl shadow-2xl p-4 flex flex-col md:flex-row gap-4">
+
+                        <input
+                            type="text"
+                            placeholder="Search destinations (e.g. Goa, Bali, Kashmir)"
+                            className="flex-1 px-5 py-4 rounded-xl border border-gray-200 outline-none focus:border-blue-500"
+                        />
+
+                        <button
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-semibold transition"
+                        >
+                            Search
+                        </button>
+
+                    </div>
 
                 </div>
+
             </section>
 
             {/* Categories */}
 
-            <section className="max-w-7xl mx-auto px-6 mt-14">
+            <section className="max-w-7xl mx-auto px-6 mt-8">
 
                 <h2 className="text-3xl font-bold text-gray-800">
 
@@ -125,6 +135,7 @@ function Packages() {
                         <PackageCard
                             key={item.id}
                             packageData={item}
+                            onBookNow={onBookNow}
                         />
                     ))}
 
