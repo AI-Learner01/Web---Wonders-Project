@@ -14,6 +14,11 @@
     background:#f4f7f6;
     font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
     padding:25px;
+
+    background-image:url("../../assets/login-bg.jpg");
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
 }
 
 /* Signup Card */
@@ -47,7 +52,7 @@
 
 /* Help Button */
 
-#contect{
+#contact{
     text-decoration:none;
     color:#2f6b1f;
     background:#eef8eb;

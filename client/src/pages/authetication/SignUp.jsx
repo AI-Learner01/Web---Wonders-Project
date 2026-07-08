@@ -18,11 +18,12 @@ function Signup() {
     }
 
     return (
+        
         <div className='signupcontainer'>
             <form id="signupform">
                 <div id="signupTitleContainer">
                     <p id="SingUpPageTitle">Sign Up</p>
-                    <a id="contect" href="/help">Contact Us</a>
+                    <a id="contact" href="/contact">Contact Us</a>
                 </div>
                 <p className='signuptitle'>Full Name</p>
                 <input id="fullName" type="text" placeholder='Enter your full name' />

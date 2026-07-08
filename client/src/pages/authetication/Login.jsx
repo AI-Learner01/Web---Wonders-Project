@@ -23,12 +23,15 @@ function Login() {
     }
 
     return (
+        
+
+        
         <div className='logincontainer'>
             
             <form id="loginform">
                 <div id="LoginTitleContainer">
                     <p id="LoginPageTitle">Login Up</p>
-                    <a id="contect" href="/contect">Contact Us</a>
+                    <a id="contact" href="/contact">Contact Us</a>
                 </div>
                 <p className='logintitle'>Email or Phone</p>
                 <input id="email" type="text" placeholder='Enter your email or phone' />
