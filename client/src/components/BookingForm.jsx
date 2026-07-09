@@ -10,41 +10,26 @@ import {
     FaMapMarkedAlt,
 } from "react-icons/fa";
 
-import { useState } from "react";
 
 function BookingForm({
 
-    travellers,
-    setTravellers,
-
-    roomType,
-    setRoomType,
-
-    services,
-    setServices
+    bookingData,
+    setBookingData
 
 }) {
     const toggleService = (service) => {
 
-        if (services.includes(service)) {
+        const updatedServices =
+            bookingData.services.includes(service)
+                ? bookingData.services.filter(item => item !== service)
+                : [...bookingData.services, service];
 
-            setServices(
-                services.filter(item => item !== service)
-            );
-
-        }
-
-        else {
-
-            setServices([
-                ...services,
-                service
-            ]);
-
-        }
+        setBookingData({
+            ...bookingData,
+            services: updatedServices
+        });
 
     };
-
 
 
     return (
@@ -68,6 +53,13 @@ function BookingForm({
                         <input
                             type="text"
                             placeholder="Enter your name"
+                            value={bookingData.name}
+                            onChange={(e) =>
+                                setBookingData({
+                                    ...bookingData,
+                                    name: e.target.value
+                                })
+                            }
                             className="w-full border rounded-xl pl-14 pr-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
 
@@ -87,6 +79,13 @@ function BookingForm({
                         <input
                             type="email"
                             placeholder="Enter email"
+                            value={bookingData.email}
+                            onChange={(e) =>
+                                setBookingData({
+                                    ...bookingData,
+                                    email: e.target.value
+                                })
+                            }
                             className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
 
@@ -106,6 +105,13 @@ function BookingForm({
                         <input
                             type="tel"
                             placeholder="Enter phone number"
+                            value={bookingData.phone}
+                            onChange={(e) =>
+                                setBookingData({
+                                    ...bookingData,
+                                    phone: e.target.value
+                                })
+                            }
                             className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>
@@ -124,10 +130,13 @@ function BookingForm({
                         <input
                             type="number"
                             min="1"
-                            value={travellers}
+                            value={bookingData.travellers}
                             onChange={(e) => {
                                 const value = Number(e.target.value);
-                                setTravellers(Math.max(1, value));
+                                setBookingData({
+                                    ...bookingData,
+                                    travellers: Math.max(1, Number(e.target.value))
+                                })
                             }
 
                             }
@@ -157,6 +166,13 @@ function BookingForm({
 
                             <input
                                 type="date"
+                                value={bookingData.departureDate}
+                                onChange={(e) =>
+                                    setBookingData({
+                                        ...bookingData,
+                                        departureDate: e.target.value
+                                    })
+                                }
                                 className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
                             />
 
@@ -176,10 +192,13 @@ function BookingForm({
                             <div className="grid grid-cols-3 gap-4">
 
                                 <div
-                                    onClick={() => setRoomType("Standard")}
+                                    onClick={() => setBookingData({
+                                        ...bookingData,
+                                        roomType: "Standard"
+                                    })}
                                     className={`border rounded-2xl p-4 cursor-pointer transition
 
-    ${roomType === "Standard"
+    ${bookingData.roomType === "Standard"
 
                                             ? "border-blue-600 bg-blue-50"
 
@@ -198,10 +217,13 @@ function BookingForm({
                                 </div>
 
                                 <div
-                                    onClick={() => setRoomType("Deluxe")}
+                                    onClick={() => setBookingData({
+                                        ...bookingData,
+                                        roomType: "Deluxe"
+                                    })}
                                     className={`border rounded-2xl p-4 cursor-pointer transition
 
-    ${roomType === "Deluxe"
+    ${bookingData.roomType === "Deluxe"
 
                                             ? "border-blue-600 bg-blue-50"
 
@@ -220,10 +242,13 @@ function BookingForm({
                                 </div>
 
                                 <div
-                                    onClick={() => setRoomType("Suite")}
+                                    onClick={() => setBookingData({
+                                        ...bookingData,
+                                        roomType: "Suite"
+                                    })}
                                     className={`border rounded-2xl p-4 cursor-pointer transition
 
-    ${roomType === "Suite"
+    ${bookingData.roomType === "Suite"
 
                                             ? "border-blue-600 bg-blue-50"
 
@@ -266,7 +291,7 @@ function BookingForm({
 
                         className={`border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition
 
-${services.includes("Airport Pickup")
+${bookingData.services.includes("Airport Pickup")
 
                                 ? "border-blue-600 bg-blue-50"
 
@@ -292,7 +317,7 @@ ${services.includes("Airport Pickup")
 
                         className={`border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition
 
-${services.includes("Travel Insurance")
+${bookingData.services.includes("Travel Insurance")
 
                                 ? "border-blue-600 bg-blue-50"
 
@@ -318,7 +343,7 @@ ${services.includes("Travel Insurance")
 
                         className={`border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition
 
-${services.includes("Guided City Tour")
+${bookingData.services.includes("Guided City Tour")
 
                                 ? "border-blue-600 bg-blue-50"
 

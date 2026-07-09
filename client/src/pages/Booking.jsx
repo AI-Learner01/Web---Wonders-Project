@@ -3,40 +3,45 @@ import { FaArrowLeft } from "react-icons/fa";
 
 import BookingForm from "../components/BookingForm";
 
-function Booking({ selectedPackage, onBack }) {
+function Booking({ selectedPackage, onBack, onContinue }) {
 
-    const [travellers, setTravellers] = useState(2);
+    const [bookingData, setBookingData] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        departureDate: "",
+        travellers: 2,
+        roomType: "Standard",
+        services: [],
+    });
+    
 
-    const [roomType, setRoomType] = useState("Standard");
+    let total = selectedPackage.price * bookingData.travellers;
 
-    const [services, setServices] = useState([]);
-
-
-    let total = selectedPackage.price * travellers;
-
-    if (roomType === "Deluxe") {
+    if (bookingData.roomType === "Deluxe") {
 
         total += 3000;
 
     }
 
-    if (roomType === "Suite") {
+    if (bookingData.roomType === "Suite") {
 
         total += 7000;
 
     }
 
-    if (services.includes("Travel Insurance")) {
+    if (bookingData.services.includes("Travel Insurance")) {
 
         total += 999;
 
     }
 
-    if (services.includes("Guided City Tour")) {
+    if (bookingData.services.includes("Guided City Tour")) {
 
         total += 1499;
 
     }
+
     return (
         <div className="min-h-screen bg-slate-50">
 
@@ -81,14 +86,8 @@ function Booking({ selectedPackage, onBack }) {
 
                         <BookingForm
 
-                            travellers={travellers}
-                            setTravellers={setTravellers}
-
-                            roomType={roomType}
-                            setRoomType={setRoomType}
-
-                            services={services}
-                            setServices={setServices}
+                            bookingData={bookingData}
+                            setBookingData={setBookingData}
 
                         />
 
@@ -128,7 +127,7 @@ function Booking({ selectedPackage, onBack }) {
 
                                     <span>Travellers</span>
 
-                                    <span>{travellers}</span>
+                                    <span>{bookingData.travellers}</span>
 
                                 </div>
 
@@ -146,7 +145,7 @@ function Booking({ selectedPackage, onBack }) {
 
                                     <span>RoomType</span>
 
-                                    <span>{roomType}</span>
+                                    <span>{bookingData.roomType}</span>
 
                                 </div>
 
@@ -159,7 +158,7 @@ function Booking({ selectedPackage, onBack }) {
                                     </h3>
 
                                     {
-                                        services.length === 0
+                                        bookingData.services.length === 0
                                             ? (
                                                 <p className="text-gray-400">
                                                     None
@@ -169,7 +168,7 @@ function Booking({ selectedPackage, onBack }) {
                                                 <ul className="space-y-1">
 
                                                     {
-                                                        services.map((service) => (
+                                                        bookingData.services.map((service) => (
 
                                                             <li key={service}>
                                                                 ✔ {service}
@@ -195,12 +194,12 @@ function Booking({ selectedPackage, onBack }) {
 
                             </div>
 
-                            <button className="mt-10 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:to-sky-600 transition-all duration-300 text-white py-4 rounded-2xl font-bold text-lg">
-
-                                Continue Booking
-
+                            <button
+                                onClick={() => onContinue(bookingData)}
+                                className="mt-10 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-4 rounded-2xl font-bold text-lg transition"
+                            >
+                                Continue to Review →
                             </button>
-
                         </div>
 
                     </div>
