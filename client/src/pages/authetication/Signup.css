@@ -64,7 +64,7 @@
     transition:.3s;
 }
 
-#help:hover{
+#contact:hover{
     background:#14c38e;
     color:#fff;
     border-color:#14c38e;
@@ -85,6 +85,8 @@
 /* Inputs */
 
 #signupform input[type="text"],
+#signupform input[type="email"],
+#signupform input[type="tel"],
 #signupform input[type="password"]{
 
     width:100%;
@@ -185,7 +187,7 @@
         font-size:1.7rem;
     }
 
-    #help{
+    #contact{
         padding:7px 15px;
         font-size:.82rem;
     }
