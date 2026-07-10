@@ -39,7 +39,19 @@ function SummaryCard({
         roomPrice +
         servicesPrice;
 
+    
+    const handlePayment = () => {
+
+        alert(
+
+        "🎉 Payment Gateway will be integrated in the backend phase.\n\nYour booking details have been successfully reviewed."
+
+    );
+
+    };
+
     return (
+
 
         <div className="bg-white rounded-3xl shadow-xl p-6 sticky top-6">
 
@@ -50,6 +62,22 @@ function SummaryCard({
             </h2>
 
             <hr className="my-5" />
+
+            <div className="flex justify-between items-center mb-4">
+
+                <span className="text-gray-500">
+
+                    Booking ID
+
+                </span>
+
+                <span className="font-bold text-blue-600">
+
+                    WW-{Math.floor(100000 + Math.random() * 900000)}
+
+                </span>
+
+            </div>
 
             <img
 
@@ -152,19 +180,89 @@ function SummaryCard({
 
             <hr className="my-6" />
 
-            <button
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white py-4 rounded-2xl text-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02]"
-                onClick={() => alert("Payment Gateway will be integrated in Phase 5")}
-            >
-                💳 Proceed to Payment
-            </button>
+            <div className="space-y-3 mb-6">
 
-            <p className="text-center text-sm text-gray-500 mt-4">
-                Secure payments powered by Razorpay / Stripe (Coming Soon)
-            </p>
+                <div className="flex items-center gap-2 text-green-600">
+
+                    <span>✔</span>
+
+                    <span>Secure SSL Payment</span>
+
+                </div>
+
+                <div className="flex items-center gap-2 text-green-600">
+
+                    <span>✔</span>
+
+                    <span>Instant Booking Confirmation</span>
+
+                </div>
+
+                <div className="flex items-center gap-2 text-green-600">
+
+                    <span>✔</span>
+
+                    <span>24×7 Customer Support</span>
+
+                </div>
+
+                <button
+
+                    onClick={handlePayment}
+
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-[1.02] shadow-lg"
+
+                >
+
+                    💳 Proceed to Payment
+
+                </button>
+
+                <div className="mt-6 text-center">
+
+                    <p className="text-sm text-gray-500 mb-3">
+
+                        We Accept
+
+                    </p>
+
+                    <div className="flex justify-center gap-3">
+
+                        <div className="border rounded-lg px-3 py-2">
+
+                            VISA
+
+                        </div>
+
+                        <div className="border rounded-lg px-3 py-2">
+
+                            Mastercard
+
+                        </div>
+
+                        <div className="border rounded-lg px-3 py-2">
+
+                            UPI
+
+                        </div>
+
+                        <div className="border rounded-lg px-3 py-2">
+
+                            Paytm
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
 
+        
     );
+
 
 }
 

@@ -54,7 +54,7 @@ function BookingSummary({
 
             </section>
 
-            <section className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-3 gap-8">
+            <section className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
 
                 <div className="lg:col-span-2">
 

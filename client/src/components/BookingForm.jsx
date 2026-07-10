@@ -14,7 +14,9 @@ import {
 function BookingForm({
 
     bookingData,
-    setBookingData
+    setBookingData,
+    errors
+    
 
 }) {
     const toggleService = (service) => {
@@ -43,7 +45,7 @@ function BookingForm({
 
                 <div>
                     <label className="block mb-2 font-medium">
-                        Full Name
+                        Full Name <span className="text-red-500">*</span>
                     </label>
 
                     <div className="relative">
@@ -62,13 +64,18 @@ function BookingForm({
                             }
                             className="w-full border rounded-xl pl-14 pr-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
+                        {errors.name && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.name}
+                            </p>
+                        )}
 
                     </div>
                 </div>
 
                 <div>
                     <label className="block mb-2 font-medium">
-                        Email
+                        Email <span className="text-red-500">*</span>
                     </label>
 
                     <div className="relative">
@@ -88,13 +95,18 @@ function BookingForm({
                             }
                             className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
+                        {errors.email && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.email}
+                            </p>
+                        )}
 
                     </div>
                 </div>
 
                 <div>
                     <label className="block mb-2 font-medium">
-                        Phone Number
+                        Phone Number <span className="text-red-500">*</span>
                     </label>
 
                     <div className="relative">
@@ -114,6 +126,13 @@ function BookingForm({
                             }
                             className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
                         />
+
+                        {errors.phone && (
+                            <p className="text-red-500 text-sm mt-1">
+                                {errors.phone}
+                            </p>
+                        )}
+
                     </div>
                 </div>
 
@@ -158,7 +177,7 @@ function BookingForm({
 
                     <div>
                         <label className="block mb-2 font-medium">
-                            Departure Date
+                            Departure Date <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
 
@@ -175,6 +194,11 @@ function BookingForm({
                                 }
                                 className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
                             />
+                            {errors.departureDate && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.departureDate}
+                                </p>
+                            )}
 
                         </div>
                     </div>
@@ -189,7 +213,7 @@ function BookingForm({
 
                             </h3>
 
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 
                                 <div
                                     onClick={() => setBookingData({

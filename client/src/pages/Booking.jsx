@@ -14,7 +14,46 @@ function Booking({ selectedPackage, onBack, onContinue }) {
         roomType: "Standard",
         services: [],
     });
-    
+
+    const [errors, setErrors] = useState({});
+
+    const validateBooking = () => {
+
+        const newErrors = {};
+
+        if (!bookingData.name.trim()) {
+            newErrors.name = "Name is required";
+        }
+
+        if (!bookingData.email.trim()) {
+            newErrors.email = "Email is required";
+        }
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)) {
+            newErrors.email = "Enter a valid email";
+        }
+
+        if (!bookingData.phone.trim()) {
+            newErrors.phone = "Phone number is required";
+        }
+        else if (!/^[0-9]{10}$/.test(bookingData.phone)) {
+            newErrors.phone = "Phone must contain exactly 10 digits";
+        }
+
+        if (!bookingData.departureDate) {
+            newErrors.departureDate = "Please select a departure date";
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleContinue = () => {
+    if (!validateBooking()) return;
+
+    // navigate to summary
+};
+
 
     let total = selectedPackage.price * bookingData.travellers;
 
@@ -80,7 +119,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
 
             <section className="max-w-7xl mx-auto px-6 py-14">
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
 
                     <div className="lg:col-span-2">
 
@@ -88,6 +127,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
 
                             bookingData={bookingData}
                             setBookingData={setBookingData}
+                            errors={errors}
 
                         />
 
@@ -195,7 +235,16 @@ function Booking({ selectedPackage, onBack, onContinue }) {
                             </div>
 
                             <button
-                                onClick={() => onContinue(bookingData)}
+                                onClick={() => { if(validateBooking())
+                                    {
+                                        onContinue(bookingData);}
+
+                                        else
+                                        {
+                                            handleContinue();
+                                        }
+                                    }
+                                }
                                 className="mt-10 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-4 rounded-2xl font-bold text-lg transition"
                             >
                                 Continue to Review →
