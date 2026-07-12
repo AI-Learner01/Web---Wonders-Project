@@ -29,11 +29,17 @@ export default function Navbar() {
               <Link
                 key={link.label}
                 to={link.to}
-                className={`text-sm font-medium transition-colors hover:text-[#1EA35B] ${
-                  isActive ? "text-[#1EA35B]" : "text-[#3B443E]"
+                className={`group relative inline-block py-1 text-sm font-medium transition-colors hover:text-[#167A44] ${
+                  isActive ? "text-[#167A44]" : "text-[#3B443E]"
                 }`}
               >
                 {link.label}
+                <span
+                  aria-hidden="true"
+                  className={`absolute -bottom-0.5 left-0 h-[2px] bg-[#167A44] transition-all duration-300 ease-out motion-reduce:transition-none ${
+                    isActive ? "w-full" : "w-0 group-hover:w-full"
+                  }`}
+                />
               </Link>
             );
           })}
@@ -43,13 +49,13 @@ export default function Navbar() {
         <div className="hidden items-center gap-3 md:flex">
           <Link
             to="/login"
-            className="text-sm font-semibold text-[#3B443E] transition-colors hover:text-[#1EA35B]"
+            className="text-sm font-semibold text-[#3B443E] transition-colors hover:text-[#167A44]"
           >
             Log in
           </Link>
           <Link
             to="/signup"
-            className="rounded-full bg-[#1EA35B] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#167A44]"
+            className="rounded-full bg-[#167A44] px-5 py-2 text-sm font-semibold text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#125E36] hover:shadow-[0_10px_24px_-6px_rgba(22,122,68,0.55)] active:translate-y-0 active:shadow-[0_4px_10px_-4px_rgba(22,122,68,0.45)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
           >
             Sign up
           </Link>
@@ -58,7 +64,7 @@ export default function Navbar() {
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
-          className="inline-flex items-center gap-2 rounded-full bg-[#1EA35B] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#167A44] md:hidden"
+          className="inline-flex items-center gap-2 rounded-full bg-[#167A44] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#125E36] md:hidden"
           aria-expanded={menuOpen}
           aria-label="Toggle navigation menu"
         >
@@ -77,7 +83,7 @@ export default function Navbar() {
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
                 className={`rounded-lg px-3 py-2.5 text-sm font-medium ${
-                  isActive ? "bg-white text-[#1EA35B]" : "text-[#3B443E] hover:bg-white"
+                  isActive ? "bg-white text-[#167A44]" : "text-[#3B443E] hover:bg-white"
                 }`}
               >
                 {link.label}
@@ -97,7 +103,7 @@ export default function Navbar() {
             <Link
               to="/signup"
               onClick={() => setMenuOpen(false)}
-              className="rounded-lg bg-[#1EA35B] px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-[#167A44]"
+              className="rounded-lg bg-[#167A44] px-3 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#125E36] hover:shadow-[0_10px_24px_-6px_rgba(22,122,68,0.55)] active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             >
               Sign up
             </Link>
