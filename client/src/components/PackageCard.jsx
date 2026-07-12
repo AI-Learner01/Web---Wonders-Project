@@ -10,7 +10,7 @@ import {
 
 import { motion } from "framer-motion";
 
-function PackageCard({ packageData,onBookNow }) {
+function PackageCard({ packageData, onBookNow }) {
     return (
 
         <motion.div
@@ -37,13 +37,13 @@ function PackageCard({ packageData,onBookNow }) {
 
                     </button>
 
-                
-                {/* Badge */}
-                <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold shadow">
 
-                    {packageData.badge}
+                    {/* Badge */}
+                    <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold shadow">
 
-                </div>
+                        {packageData.badge}
+
+                    </div>
 
                 </div>
 
@@ -59,7 +59,7 @@ function PackageCard({ packageData,onBookNow }) {
 
                 </div>
 
-                
+
             </div>
 
             {/* Content */}
@@ -113,24 +113,70 @@ function PackageCard({ packageData,onBookNow }) {
                     ))}
                 </div>
 
+                {/* Itinerary Highlights */}
+
+                <div className="mt-5">
+
+                    <h4 className="text-sm font-semibold text-gray-800 mb-2">
+
+                        ✨ Trip Highlights
+
+                    </h4>
+
+                    <div className="space-y-1">
+
+                        {packageData.itinerary.map((place, index) => (
+
+                            <div
+                                key={index}
+                                className="flex items-center gap-2 text-sm text-gray-600"
+                            >
+
+                                <span className="text-green-500">✔</span>
+
+                                <span>{place}</span>
+
+                            </div>
+
+                        ))}
+
+                    </div>
+
+                </div>
+
                 {/* Price */}
 
                 <div className="mt-6">
 
-                    <span className="text-3xl font-bold text-blue-700">
+                    <p className="text-sm text-gray-500 font-medium">
 
-                        ₹{packageData.price.toLocaleString()}
+                        Starting From
 
-                    </span>
+                    </p>
 
-                    <span className="ml-3 text-gray-400 line-through">
+                    <div className="flex items-end gap-3">
 
-                        ₹{packageData.originalPrice.toLocaleString()}
+                        <span className="text-3xl font-bold text-blue-700">
 
-                    </span>
+                            ₹{packageData.price.toLocaleString()}
+
+                        </span>
+
+                        <span className="text-gray-500 mb-1">
+
+                            / person
+
+                        </span>
+
+                        <span className="text-gray-400 line-through text-lg">
+
+                            ₹{packageData.originalPrice.toLocaleString()}
+
+                        </span>
+
+                    </div>
 
                 </div>
-
                 <p className="text-green-600 font-semibold mt-2">
 
                     Save ₹
@@ -144,8 +190,8 @@ function PackageCard({ packageData,onBookNow }) {
                 {/* Button */}
 
                 <button
-                onClick={() => onBookNow(packageData)}
-                className="mt-6 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 transition-all duration-300">
+                    onClick={() => onBookNow(packageData)}
+                    className="mt-6 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 transition-all duration-300">
                     Book Now
 
                     <FaArrowRight />

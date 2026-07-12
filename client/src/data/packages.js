@@ -1,7 +1,7 @@
 import { images } from "./imageUrls";
 
 const packages = [
-    {
+  {
     id: 1,
     title: "Bali Escape",
     location: "Indonesia",
@@ -11,7 +11,12 @@ const packages = [
     rating: 4.8,
     image: images.packages.bali,
     features: ["Hotel", "Breakfast", "Flight"],
-    badge: "Bestseller"
+    badge: "Bestseller",
+    itinerary: [
+      "Ubud Temple Tour",
+      "Nusa Penida Island",
+      "Tanah Lot Sunset"
+    ]
   },
 
   {
@@ -24,7 +29,12 @@ const packages = [
     rating: 4.9,
     image: images.packages.switzerland,
     features: ["Hotel", "Guide", "Meals"],
-    badge: "Luxury"
+    badge: "Luxury",
+    itinerary: [
+      "Jungfraujoch Excursion",
+      "Lucerne City Tour",
+      "Mt. Titlis Cable Ride"
+    ]
   },
 
   {
@@ -37,7 +47,67 @@ const packages = [
     rating: 4.7,
     image: images.packages.goa,
     features: ["Resort", "Breakfast", "Pickup"],
-    badge: "Popular"
+    badge: "Popular",
+    itinerary: [
+      "Baga Beach",
+      "Fort Aguada",
+      "Mandovi River Cruise"
+    ]
+  },
+
+  {
+    id: 4,
+    title: "Kashmir Paradise",
+    location: "Jammu & Kashmir, India",
+    duration: "6 Days / 5 Nights",
+    price: 32999,
+    originalPrice: 38999,
+    rating: 4.9,
+    image: images.packages.kashmir,
+    features: ["Hotel", "Meals", "Guide"],
+    badge: "Trending",
+    itinerary: [
+      "Dal Lake Shikara Ride",
+      "Gulmarg Gondola",
+      "Pahalgam Valley"
+    ]
+
+  },
+
+  {
+    id: 5,
+    title: "Dubai Luxury Tour",
+    location: "Dubai, UAE",
+    duration: "5 Days / 4 Nights",
+    price: 56999,
+    originalPrice: 64999,
+    rating: 4.8,
+    image: images.packages.dubai,
+    features: ["Hotel", "Flight", "Breakfast"],
+    badge: "Luxury",
+    itinerary: [
+      "Burj Khalifa",
+      "Desert Safari",
+      "Dubai Marina Cruise"
+    ]
+  },
+
+  {
+    id: 6,
+    title: "Maldives Honeymoon",
+    location: "Maldives",
+    duration: "5 Days / 4 Nights",
+    price: 72999,
+    originalPrice: 82999,
+    rating: 5.0,
+    image: images.packages.maldives,
+    features: ["Resort", "Flight", "Meals"],
+    badge: "Premium",
+    itinerary: [
+      "Water Villa Stay",
+      "Snorkeling Adventure",
+      "Sunset Dolphin Cruise"
+    ]
   }
 ];
 
