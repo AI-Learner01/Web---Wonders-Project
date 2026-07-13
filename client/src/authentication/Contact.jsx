@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import helperIcon from "../../assets/helper-icon.jpg";
-import loginBg from "../../assets/login-bg.jpg";
+import helperIcon from "../assets/helper-icon.jpg";
+import loginBg from "../assets/login-bg.jpg";
 
 /**
  * Developer Guide:
