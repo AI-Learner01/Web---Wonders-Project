@@ -2,6 +2,16 @@ import React, { useState } from 'react'
 import helperIcon from "../../assets/helper-icon.jpg";
 import loginBg from "../../assets/login-bg.jpg";
 
+/**
+ * Developer Guide:
+ * 
+ *     has Two type of contact options, one is direct email and other is form to send message
+ * 
+ * flow => fill details ->check data -> than send msg to the server and show a popup that we will contact you soon
+ * 
+ * @returns Contect Us Page
+ */
+
 
 
 function Contact() {
@@ -9,7 +19,7 @@ function Contact() {
     //used for OTP popUp
     const [popupOpen, setPopupOpen] = useState(false);//used to open the popup when the message is sent successfully
 
-
+    //clear the form after sending the message
     function clearForm() {
         document.getElementById('contactDropdown').value = '';
         document.getElementById('contactEmail').value = '';
