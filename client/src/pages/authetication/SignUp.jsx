@@ -41,7 +41,9 @@ function Signup() {
     const fillPercent = (filledFields / totalFields) * 100;
     //--------------------------------------------------------------------------------------------------------------
 
-    const handleSignup = async () => {
+
+    //this function is used to send the data to the server and create a new account(only call after otp verification)
+    const handleSignup = async () => { 
         const userData = { fullName, email, phone, password };
         try {
             const response = await fetch("http://localhost:5000/signup", {
@@ -65,7 +67,9 @@ function Signup() {
             alert("Something went wrong!");
         }
     };
+    //---------------------------------------------------------------------------------------------
 
+    //this function is used to open the otp window and check if all fields are filled and passwords match
     const openOtpWindow = (e) => {
         e.preventDefault();
 
@@ -84,6 +88,7 @@ function Signup() {
         setIsOtpPopupOpen(true);
     };
 
+    //this function is used to verify the otp and if correct then call the handleSignup function
     const handleOtpVerification = () => {
         if (otp1 === "12" && otp2 === "34") {
             alert("OTP Match Successful! Proceeding with signup.");
