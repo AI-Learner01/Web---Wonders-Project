@@ -1,10 +1,10 @@
 import React from 'react';
 // React Router se zaroori cheezein import karein
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/authetication/Login';  
-import Signup from './pages/authetication/Signup'; 
-import Contact from './pages/authetication/Contact';
-import About from './pages/authetication/About';
+import Login from './authetication/Login';  
+import Signup from './authetication/Signup'; 
+import Contact from './authetication/Contact';
+import About from './authetication/About';
 
 function App() {
   return (
