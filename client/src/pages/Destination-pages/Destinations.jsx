@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
-import Navbar from '../components/Navbar'
-import herodest from '../assets/Images/herobgdest.jpg'
-import SearchBar from '../components/SearchBar';
-import { images } from '../data/imageUrls';
-import DestinationCard from '../components/DestinationCard';
-import { destinations } from "../data/destinations"
+import Navbar from '../../components/DestinationDetailPageComponents/Navbar'
+import herodest from '../../assets/Images/herobgdest.jpg'
+// import SearchBar from '../components/SearchBar';
+import { images } from '../../data-destination/imageUrls';
+import DestinationCard from '../../components/DestinationDetailPageComponents/DestinationCard';
+import { destinations } from "../../data-destination/destinations"
 
 const Destinations = () => {
 
