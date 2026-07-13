@@ -13,6 +13,13 @@ import loginBg from "../../assets/login-bg.jpg";
  */
 
 
+/* do not delete this
+
+    later improvement :convert and make functions
+
+*/
+
+
 
 function Contact() {
     
