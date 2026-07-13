@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import loginBg from "../../assets/login-bg.jpg";//backgrond IMG
+import loginBg from "../assets/login-bg.jpg";//backgrond IMG
 
 /**
  * Developer guid =>
