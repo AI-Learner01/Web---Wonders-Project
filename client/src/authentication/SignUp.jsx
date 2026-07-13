@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import loginBg from "../assets/login-bg.jpg";//backgrond IMG
 
+
 /**
  * Developer guid =>
  * this is sing up page to create a non exiting account
