@@ -1,7 +1,7 @@
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../home page/Navbar";
-import Footer from "../home page/Footer";
+import Navbar from "../homepage/Navbar";
+import Footer from "../homepage/Footer";
 import {
   PinIcon,
   StarIcon,
@@ -9,17 +9,9 @@ import {
   CheckIcon,
   CalendarIcon,
   HeartIcon,
-} from "../home page/icons";
+} from "../homepage/Icons";
 
-/* ---------------------------------------------------------- */
-/*  Local helpers (kept in this file on purpose — no new files) */
-/* ---------------------------------------------------------- */
 
-/**
- * Catches rendering errors anywhere below it and shows a friendly message
- * instead of a blank/broken screen. React error boundaries have to be
- * class components — there's no hook equivalent.
- */
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -62,11 +54,7 @@ class ErrorBoundary extends Component {
   }
 }
 
-/**
- * Drop-in replacement for <img> that fails gracefully. If the external
- * image URL breaks (dead link, offline, rate-limited), this shows a soft
- * branded placeholder instead of a broken-image icon.
- */
+
 function SmartImage({ src, alt, className = "", fallbackLabel, priority = false }) {
   const [errored, setErrored] = useState(false);
 
@@ -97,6 +85,7 @@ function SmartImage({ src, alt, className = "", fallbackLabel, priority = false 
 
 // WMO weather codes → a simple emoji, so the badge doesn't need an icon set.
 // Reference: https://open-meteo.com/en/docs (see "WMO Weather interpretation codes")
+
 function weatherEmoji(code) {
   if (code === 0) return "☀️";
   if (code === 1 || code === 2) return "🌤️";
@@ -111,9 +100,7 @@ function weatherEmoji(code) {
   return "🌡️";
 }
 
-/**
- * Live weather pill for a destination card. Pulls real current-weather
- * data (no key required) from Open-Meteo's forecast API — see the
+/*
  * useEffect in Home() below for the actual fetch.
  */
 function WeatherBadge({ entry }) {
@@ -199,10 +186,7 @@ function NewsItemSkeleton() {
   );
 }
 
-// Persists which destinations a visitor has "liked" so the Recommended
-// section has real signal to work with — no backend/accounts yet, so this
-// is the honest local stand-in. Swap for a real per-user API call once
-// login/signup actually exist.
+
 const SAVED_KEY = "auraavenue:savedDestinations";
 
 function getInitialSaved() {
@@ -215,12 +199,7 @@ function getInitialSaved() {
   }
 }
 
-/**
- * Shared destination card used in both the Popular Destinations grid and
- * the Recommended For You carousel. The save/heart button is a *sibling*
- * of the <Link>, not nested inside it — a <button> inside an <a> is
- * invalid HTML and breaks keyboard/screen-reader navigation.
- */
+
 function DestinationCard({ dest, weatherEntry, isSaved, onToggleSave, compact = false }) {
   return (
     <div
@@ -290,9 +269,7 @@ const TRUST_POINTS = [
   { title: "50,000+ Happy Travelers", desc: "And counting, every year" },
 ];
 
-// Placeholder content — swap for a real CMS/news API feed later. Kept
-// generic and non-time-sensitive on purpose since there's no live source
-// wired up yet.
+
 const NEWS_UPDATES = [
   {
     id: "japan-visa",
@@ -477,10 +454,7 @@ const PACKAGES = [
 // https://open-meteo.com/en/docs
 const WEATHER_ENDPOINT = "https://api.open-meteo.com/v1/forecast";
 
-// Prices are stored in USD above and converted for display here — keeps
-// one source of truth instead of hand-converting every number. Rate is
-// approximate (~₹95.5/USD as of mid-2026); swap for a live rate API if
-// you want this to stay accurate over time.
+
 const USD_TO_INR = 95.5;
 
 function formatINR(usd) {
@@ -500,8 +474,7 @@ export default function Home() {
   const heroScrollerRef = useRef(null);
   const [activeShowcase, setActiveShowcase] = useState(0);
 
-  // Tracks which hero photo is centered so the swipe dots reflect the
-  // visitor's actual scroll position on touch devices, not just clicks.
+ 
   const handleHeroScroll = () => {
     const el = heroScrollerRef.current;
     if (!el || !el.firstChild) return;
@@ -524,14 +497,12 @@ export default function Home() {
     el.scrollTo({ left: index * cardWidth, behavior: "smooth" });
   };
 
-  // Persist saves across visits. Wrapped in try/catch since localStorage
-  // can throw in private browsing / storage-disabled contexts — a failed
-  // save just means it won't persist, not a broken page.
+
   useEffect(() => {
     try {
       window.localStorage.setItem(SAVED_KEY, JSON.stringify(savedSlugs));
     } catch {
-      // Storage unavailable — saves simply won't persist this session.
+      
     }
   }, [savedSlugs]);
 
@@ -539,14 +510,6 @@ export default function Home() {
     setSavedSlugs((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
   };
 
-  // Handbook: "Recommendations — suggest destinations based on what the
-  // user has liked or saved previously." With no accounts/backend yet,
-  // "liked" means saved-via-heart-button in this session/browser. Score
-  // every destination by shared tags with what's saved — saved ones stay
-  // in the list too (a destination always matches its own tags, so it'll
-  // naturally rank near the top); the heart button just shows them as
-  // already-saved rather than removing the card. Revisit this once a real
-  // backend can tell "recommended" apart from "already saved" properly.
   const recommendations = useMemo(() => {
     const liked = DESTINATIONS.filter((d) => savedSlugs.includes(d.slug));
 
@@ -575,17 +538,14 @@ export default function Home() {
     el.scrollBy({ left: direction * Math.min(el.clientWidth * 0.9, 600), behavior: "smooth" });
   };
 
-  // Simulates the initial fetch you'd get from a real listings/backend API
-  // — this is what the skeleton cards below are standing in for. Swap this
-  // timer for a real loading state once that API exists.
+ 
+
   useEffect(() => {
     const timer = window.setTimeout(() => setContentReady(true), 700);
     return () => window.clearTimeout(timer);
   }, []);
 
-  // Real per-destination weather, fetched independently so each card's
-  // badge pops in as soon as its own request resolves rather than waiting
-  // on the slowest one.
+
   useEffect(() => {
     const controllers = DESTINATIONS.map(() => new AbortController());
 
