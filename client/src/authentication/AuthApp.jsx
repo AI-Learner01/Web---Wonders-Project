@@ -8,17 +8,17 @@ import About from './About';
 
 function AuthApp() {
   return (
-    <Router>
+    <>
       <Routes>
         {/* Jab koi sirf website open kare (path="/"), toh wo direct /login par chala jaye */}
-        <Route path="/" element={<Navigate to="/home" />} />
+        {/* <Route path="/" element={<Navigate to="/home" />} /> */}
         {/* Login aur Signup ke alag-alag raste (paths) */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
       </Routes>
-    </Router>
+    </>
   );
 }
 

@@ -7,18 +7,18 @@ import React from 'react';
 
 const DestApp = () => {
     return (
-        <BrowserRouter>
+        <>
           <ScrollToTop/>
             <Routes>
-                <Route path="/destinations" element={<Destinations />} />
+                <Route path="/" element={<Destinations />} />
 
                 <Route
-                    path="/destinations/:slug"
+                    path=":slug"
                     element={<DestinationDetailes />}
                 />
 
             </Routes>
-        </BrowserRouter>
+        </>
     )
 }
 

@@ -52,7 +52,7 @@ const DestinationCard = ({
                         <span>Explore</span>
 
                         <svg
-                            className="w-6 h-6 transition-transform duration-300 group-hover:rotate-30"
+                            className="w-6 h-6 transition-transform duration-300 group-hover:rotate-44"
                             viewBox="0 0 25 25"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"

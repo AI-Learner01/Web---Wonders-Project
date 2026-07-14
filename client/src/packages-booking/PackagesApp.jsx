@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import Packages from "./pages/Packages";
-import Booking from "./pages/Booking";
-import BookingSummary from "./pages/BookingSummary";
+import Packages from "../packages-booking/pages/Packages"
+import Booking from "../packages-booking/pages/Packages";
+import BookingSummary from "../packages-booking/pages/Packages";
 
 function PackagesApp() {
 
