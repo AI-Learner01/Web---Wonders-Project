@@ -1,8 +1,7 @@
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import SearchBar from "../components/SearchBar";
+import Navbar from "../home page/Navbar";
+import Footer from "../home page/Footer";
 import {
   PinIcon,
   StarIcon,
@@ -10,7 +9,7 @@ import {
   CheckIcon,
   CalendarIcon,
   HeartIcon,
-} from "../components/icons";
+} from "../home page/icons";
 
 /* ---------------------------------------------------------- */
 /*  Local helpers (kept in this file on purpose — no new files) */
@@ -474,9 +473,6 @@ const PACKAGES = [
   },
 ];
 
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1660236822651-4263beb35fa8?auto=format&fit=crop&w=1600&q=80";
-
 // Live weather per destination — free, no API key, CORS-enabled:
 // https://open-meteo.com/en/docs
 const WEATHER_ENDPOINT = "https://api.open-meteo.com/v1/forecast";
@@ -501,6 +497,32 @@ export default function Home() {
   const [contentReady, setContentReady] = useState(false);
   const [savedSlugs, setSavedSlugs] = useState(getInitialSaved);
   const recommendedScrollerRef = useRef(null);
+  const heroScrollerRef = useRef(null);
+  const [activeShowcase, setActiveShowcase] = useState(0);
+
+  // Tracks which hero photo is centered so the swipe dots reflect the
+  // visitor's actual scroll position on touch devices, not just clicks.
+  const handleHeroScroll = () => {
+    const el = heroScrollerRef.current;
+    if (!el || !el.firstChild) return;
+    const cardWidth = el.firstChild.getBoundingClientRect().width + 16; // gap-4
+    const index = Math.round(el.scrollLeft / cardWidth);
+    setActiveShowcase(Math.max(0, Math.min(index, DESTINATIONS.length - 1)));
+  };
+
+  const scrollHero = (direction) => {
+    const el = heroScrollerRef.current;
+    if (!el || !el.firstChild) return;
+    const cardWidth = el.firstChild.getBoundingClientRect().width + 16;
+    el.scrollBy({ left: direction * cardWidth, behavior: "smooth" });
+  };
+
+  const scrollHeroToIndex = (index) => {
+    const el = heroScrollerRef.current;
+    if (!el || !el.firstChild) return;
+    const cardWidth = el.firstChild.getBoundingClientRect().width + 16;
+    el.scrollTo({ left: index * cardWidth, behavior: "smooth" });
+  };
 
   // Persist saves across visits. Wrapped in try/catch since localStorage
   // can throw in private browsing / storage-disabled contexts — a failed
@@ -520,8 +542,11 @@ export default function Home() {
   // Handbook: "Recommendations — suggest destinations based on what the
   // user has liked or saved previously." With no accounts/backend yet,
   // "liked" means saved-via-heart-button in this session/browser. Score
-  // every not-yet-saved destination by shared tags with what's saved, and
-  // fall back to top-rated picks when nothing's saved yet.
+  // every destination by shared tags with what's saved — saved ones stay
+  // in the list too (a destination always matches its own tags, so it'll
+  // naturally rank near the top); the heart button just shows them as
+  // already-saved rather than removing the card. Revisit this once a real
+  // backend can tell "recommended" apart from "already saved" properly.
   const recommendations = useMemo(() => {
     const liked = DESTINATIONS.filter((d) => savedSlugs.includes(d.slug));
 
@@ -533,10 +558,10 @@ export default function Home() {
     }
 
     const likedTags = new Set(liked.flatMap((d) => d.tags));
-    const unliked = DESTINATIONS.filter((d) => !savedSlugs.includes(d.slug));
-    const scored = unliked
-      .map((d) => ({ dest: d, score: d.tags.filter((t) => likedTags.has(t)).length }))
-      .sort((a, b) => b.score - a.score || b.dest.rating - a.dest.rating);
+    const scored = DESTINATIONS.map((d) => ({
+      dest: d,
+      score: d.tags.filter((t) => likedTags.has(t)).length,
+    })).sort((a, b) => b.score - a.score || b.dest.rating - a.dest.rating);
 
     const withOverlap = scored.filter((s) => s.score > 0).map((s) => s.dest);
     const items = (withOverlap.length > 0 ? withOverlap : scored.map((s) => s.dest)).slice(0, 4);
@@ -596,38 +621,15 @@ export default function Home() {
       <div className="min-h-screen bg-white text-[#14201A]">
         <Navbar />
 
-        {/* ---------- Search strip ---------- */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-[#0B3D26] via-[#167A44] to-[#0E6E68] px-6 py-10 lg:px-10">
-          <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[#3DD68C]/25 blur-3xl" aria-hidden="true" />
-          <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-[#6FE3D6]/20 blur-3xl" aria-hidden="true" />
-
-          <div className="relative mx-auto max-w-3xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Start planning</p>
-            <h2 className="mt-1.5 text-xl font-bold text-white sm:text-2xl">
-              Tell us where, we&rsquo;ll handle the rest
-            </h2>
-            <div className="mx-auto mt-5 max-w-2xl">
-              <SearchBar />
-            </div>
-          </div>
-        </section>
-
         {/* ---------- Hero ---------- */}
         <section className="relative overflow-hidden bg-[#0F1D16]">
-          {/* Scoped keyframes for this page only — no new files, no config changes */}
-          <style>{`
-            @keyframes auraKenBurns {
-              0%   { transform: scale(1); }
-              100% { transform: scale(1.09); }
-            }
-            .aura-kenburns { animation: auraKenBurns 20s ease-in-out infinite alternate; }
-            @media (prefers-reduced-motion: reduce) {
-              .aura-kenburns { animation: none; }
-            }
-          `}</style>
-
           {/* Ambient glow on the text side — no photo behind this panel at all */}
           <div className="pointer-events-none absolute -left-40 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-[#167A44]/25 blur-3xl" aria-hidden="true" />
+
+          <style>{`
+            .aura-scroll-hide::-webkit-scrollbar { display: none; }
+            .aura-scroll-hide { scrollbar-width: none; -ms-overflow-style: none; }
+          `}</style>
 
           <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:gap-16 lg:px-10 lg:py-24">
             {/* Text column — solid color, no image behind the copy */}
@@ -650,39 +652,100 @@ export default function Home() {
                 logistics so you can just show up and explore.
               </p>
 
-              <div className="mt-9 flex flex-wrap items-center gap-6">
+              <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Link
                   to="/destinations"
                   className="rounded-full bg-[#3DD68C] px-7 py-3.5 text-sm font-bold text-[#0F1D16] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-6px_rgba(61,214,140,0.5)] active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                 >
                   Browse Destinations
                 </Link>
-                <div className="flex items-center gap-2">
-                  <StarIcon className="h-4 w-4 text-[#F2A93B]" />
-                  <span className="text-sm text-white/80">
-                    <strong className="font-bold text-white">4.9/5</strong> from 12,400+ travelers
-                  </span>
-                </div>
+                <Link
+                  to="/packages"
+                  className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-bold text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/5 active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                >
+                  View Packages
+                </Link>
+              </div>
+
+              <div className="mt-7 flex items-center gap-2">
+                <StarIcon className="h-4 w-4 text-[#F2A93B]" />
+                <span className="text-sm text-white/80">
+                  <strong className="font-bold text-white">4.9/5</strong> from 12,400+ travelers
+                </span>
               </div>
             </div>
 
-            {/* Image column — a framed card, not a full-bleed background */}
+            {/* Image column — swipe on mobile, arrow buttons on desktop; not a
+                static full-bleed photo */}
             <div className="relative">
               <div
                 className="absolute -right-5 -top-5 hidden h-full w-full rounded-[2rem] border-2 border-[#3DD68C]/30 sm:block lg:-right-7 lg:-top-7"
                 aria-hidden="true"
               />
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] shadow-2xl sm:aspect-[16/11] lg:aspect-[4/5]">
-                <SmartImage
-                  src={HERO_IMAGE}
-                  alt="Hot air balloons rising over Cappadocia at sunrise"
-                  priority
-                  fallbackLabel="AuraAvenue"
-                  className="aura-kenburns h-full w-full object-cover"
-                />
+
+              <div
+                ref={heroScrollerRef}
+                onScroll={handleHeroScroll}
+                className="aura-scroll-hide relative flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth rounded-[2rem]"
+              >
+                {DESTINATIONS.map((dest) => (
+                  <div
+                    key={dest.slug}
+                    className="relative aspect-[4/3] w-full flex-shrink-0 snap-center overflow-hidden rounded-[2rem] shadow-2xl sm:aspect-[16/11] lg:aspect-[4/5]"
+                  >
+                    <SmartImage
+                      src={dest.image}
+                      alt={`${dest.name}, ${dest.country}`}
+                      priority={dest.slug === DESTINATIONS[0].slug}
+                      fallbackLabel={dest.name}
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0F1D16]/80 to-transparent px-5 py-4">
+                      <p className="text-sm font-bold text-white">{dest.name}</p>
+                      <p className="text-xs text-white/70">{dest.country}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              <div className="absolute -bottom-6 left-4 rounded-2xl border border-[#E5E7E0] bg-white px-5 py-4 shadow-xl sm:-left-8">
+              {/* Desktop-only nudge arrows */}
+              <div className="pointer-events-none absolute inset-y-0 left-0 right-0 hidden items-center justify-between px-2 lg:flex">
+                <button
+                  type="button"
+                  onClick={() => scrollHero(-1)}
+                  aria-label="Previous destination photo"
+                  className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#14201A] shadow-md transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD68C] focus-visible:ring-offset-1"
+                >
+                  <ArrowIcon className="h-4 w-4 rotate-180" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollHero(1)}
+                  aria-label="Next destination photo"
+                  className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#14201A] shadow-md transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD68C] focus-visible:ring-offset-1"
+                >
+                  <ArrowIcon className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Swipe dots — the real interactive cue for touch/Android users */}
+              <div className="mt-4 flex justify-center gap-1.5 lg:hidden" role="tablist" aria-label="Destination photo selector">
+                {DESTINATIONS.map((dest, i) => (
+                  <button
+                    key={dest.slug}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === activeShowcase}
+                    aria-label={`Show ${dest.name} photo`}
+                    onClick={() => scrollHeroToIndex(i)}
+                    className={`h-2 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3DD68C] ${
+                      i === activeShowcase ? "w-6 bg-[#3DD68C]" : "w-2 bg-white/25"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <div className="absolute -bottom-6 left-4 hidden rounded-2xl border border-[#E5E7E0] bg-white px-5 py-4 shadow-xl sm:-left-8 sm:block">
                 <div className="flex items-center gap-2">
                   <PinIcon className="h-4 w-4 text-[#167A44]" />
                   <span className="text-sm font-bold text-[#14201A]">40+ destinations</span>
