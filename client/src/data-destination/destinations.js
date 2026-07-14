@@ -25,7 +25,7 @@ export const destinations = [
   },
   {
     id: 3,
-    slug: "swiss alps",
+    slug: "swiss-alps",
     name: "Swiss Alps",
     country: "Switzerland",
     continent: "Europe",
