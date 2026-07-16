@@ -2,8 +2,14 @@ import { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 
 import BookingForm from "../components/BookingForm";
+import { useParams, useNavigate } from 'react-router-dom';
+import packages from '../data/packages';
 
 function Booking({ selectedPackage, onBack, onContinue }) {
+
+    const { packageId } = useParams();
+    const navigate = useNavigate();
+    // const selectedPackage = packages.find(p => p.id === Number(packageId));
 
     const [bookingData, setBookingData] = useState({
         name: "",
@@ -49,10 +55,10 @@ function Booking({ selectedPackage, onBack, onContinue }) {
     };
 
     const handleContinue = () => {
-    if (!validateBooking()) return;
+        if (!validateBooking()) return;
 
-    // navigate to summary
-};
+        // navigate to summary
+    };
 
 
     let total = selectedPackage.price * bookingData.travellers;
@@ -86,7 +92,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
 
             {/* Hero */}
 
-            <section className="bg-gradient-to-r from-blue-700 to-sky-500 text-white">
+            <section className="w-full py-20 bg-gradient-to-r from-blue-700 to-sky-500 text-white">
 
                 <div className="max-w-7xl mx-auto px-6 py-20">
 
@@ -235,15 +241,15 @@ function Booking({ selectedPackage, onBack, onContinue }) {
                             </div>
 
                             <button
-                                onClick={() => { if(validateBooking())
-                                    {
-                                        onContinue(bookingData);}
-
-                                        else
-                                        {
-                                            handleContinue();
-                                        }
+                                onClick={() => {
+                                    if (validateBooking()) {
+                                        onContinue(bookingData);
                                     }
+
+                                    else {
+                                        handleContinue();
+                                    }
+                                }
                                 }
                                 className="mt-10 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-4 rounded-2xl font-bold text-lg transition"
                             >

@@ -3,6 +3,7 @@ import packages from "../data/packages";
 import PackageCard from "../components/PackageCard";
 import { motion } from "framer-motion";
 import { images } from "../data/imageUrls";
+import Navbar from "../../homepage/Navbar";
 
 function Packages({ onBookNow }) {
 
@@ -16,13 +17,14 @@ function Packages({ onBookNow }) {
     ];
 
     return (
-
+        <>
+        {/* <Navbar/> */}
         <div className="min-h-screen bg-slate-50">
 
             {/* Hero */}
 
             <section
-                className="relative min h-[500px] md:h-[650px] bg-cover bg-center"
+                className="relative min-h-[500px] md:h-[650px] bg-cover bg-center"
                 style={{
                     backgroundImage: `url(${images.hero.destinations})`,
                 }}
@@ -40,7 +42,7 @@ function Packages({ onBookNow }) {
                         🌍 Explore the World
                     </span>
 
-                    <h1 className="text-4xl sm:text-5x1 lg:text-6x1 font-bold text-white leading-tight max-w-3xl">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight max-w-3xl">
                         Discover Your Next Dream Vacation
                     </h1>
 
@@ -99,7 +101,7 @@ function Packages({ onBookNow }) {
                             whileHover={{ scale: 1.08 }}
                             whileTap={{ scale: 0.96 }}
                             key={item}
-                            className="bg-white shadow-md rounded-full px-6 py-3 hover:bg-gradient-to-r hover:from-blue-600 hover:to-sky-500 hover:text-white transition">
+                            className="bg-white rounded-full px-6 py-3 shadow-md hover:bg-blue-500 hover:text-white transition-all duration-300">
 
                             {item}
 
@@ -145,6 +147,7 @@ function Packages({ onBookNow }) {
             </section>
 
         </div>
+        </>
 
     );
 

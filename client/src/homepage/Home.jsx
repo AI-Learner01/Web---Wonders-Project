@@ -579,7 +579,6 @@ export default function Home() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-white text-[#14201A]">
-        <Navbar />
 
         {/* ---------- Hero ---------- */}
         <section className="relative overflow-hidden bg-[#0F1D16]">
