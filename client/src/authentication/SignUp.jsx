@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import loginBg from "../assets/login-bg.jpg";//backgrond IMG
+// import loginBg from "../assets/login-bg.jpg";//backgrond IMG
+const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/v1784310046/login-bg_svf4ai.jpg";
 
 
 /**
