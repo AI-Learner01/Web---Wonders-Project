@@ -190,9 +190,12 @@ function PackageCard({ packageData, onBookNow }) {
                 {/* Button */}
 
                 <button
-                    onClick={() => onBookNow(packageData)}
-                    className="mt-6 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 transition-all duration-300">
-                    Book Now
+                    onClick={() => {
+                        console.log("Button clicked");
+                        onBookNow(packageData);
+                    }}
+                    className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    > Book Now
 
                     <FaArrowRight />
 
