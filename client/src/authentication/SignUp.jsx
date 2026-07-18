@@ -45,7 +45,7 @@ function Signup() {
 
 
     //this function is used to send the data to the server and create a new account(only call after otp verification)
-    const handleSignup = async () => { 
+    const handleSignup = async () => {
         const userData = { fullName, email, phone, password };
         try {
             const response = await fetch("http://localhost:5000/signup", {
@@ -72,7 +72,7 @@ function Signup() {
     //---------------------------------------------------------------------------------------------
 
     //this function is used to open the otp window and check if all fields are filled and passwords match
-    const openOtpWindow = (e) => {
+    const openOtpWindow = async (e) => {
         e.preventDefault();
 
         if (!fullName || !email || !phone || !password || !confirmPassword) {
@@ -87,18 +87,66 @@ function Signup() {
 
         setOtp1('');
         setOtp2('');
-        setIsOtpPopupOpen(true);
+        try {
+            const response = await fetch("http://localhost:5000/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+
+            console.log("OTP sent to email:", email);
+            const data = await response.json();
+
+            if (data.success) {
+                alert(data.message);
+                setIsOtpPopupOpen(true);
+                return;
+            }
+            else {
+                alert("Failed to send OTP. Please try again.");
+                return;
+            }
+        }
+        catch (error) {
+            console.error("Error sending OTP:", error);
+            alert("Failed to send OTP. Please try again.");
+            return;
+        }
+
     };
 
     //this function is used to verify the otp and if correct then call the handleSignup function
-    const handleOtpVerification = () => {
-        if (otp1 === "12" && otp2 === "34") {
-            alert("OTP Match Successful! Proceeding with signup.");
-            setIsOtpPopupOpen(false);
-            handleSignup();
-        } else {
-            alert("Incorrect OTP! Try again.");
+    const handleOtpVerification = async () => {
+        if (!otp1 || !otp2) {
+            alert("Please enter both OTP fields");
+            return;
         }
+
+        try {
+            const response = await fetch("http://localhost:5000/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp1, otp2 })
+            });
+
+            const data = await response.json();
+
+
+            if (data.success) {
+                alert("OTP Match Successful! Proceeding with signup.");
+                setIsOtpPopupOpen(false);
+                handleSignup();
+            } else {
+                alert("Incorrect OTP! Try again.");
+            }
+        }
+
+        catch (error) {
+            console.error("Error sending OTP:", error);
+            alert("Failed to send OTP. Please try again.");
+            return;
+        }
+
     };
 
     return (
