@@ -200,10 +200,10 @@ function Login() {
                 <button
                     type="submit"
                     disabled={cooldown > 0}
-                    className={`mt-6 w-full rounded-lg p-3 font-semibold transition
+                    className={`mt-6 w-full rounded-lg p-3 font-semibold text-white transition-all duration-300 shadow-[0_4px_12px_rgba(22,199,132,0.2)] hover:shadow-[0_6px_20px_rgba(22,199,132,0.3)]
                         ${cooldown > 0
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-[#0b6e46] text-white hover:bg-[#0d7c51]"
+                            ? "bg-[#a3e9d0] cursor-not-allowed text-white/80 shadow-none"
+                            : "bg-[#16c784] hover:bg-[#12b375] hover:-translate-y-0.5"
                         }`}
                 >
                     {cooldown > 0 ? `Wait ${cooldown}s` : "Login"}
@@ -212,7 +212,7 @@ function Login() {
                 {/* Forgot Password */}
 
                 <a
-                    href="#"
+                    href="/forgotpassword"
                     className="mt-[18px] text-right text-[#14c38e] text-[0.9rem] font-medium hover:text-[#0ea875] hover:underline"
                 >
                     Forgot Password?

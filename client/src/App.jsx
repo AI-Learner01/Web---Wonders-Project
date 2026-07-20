@@ -8,6 +8,7 @@ import About from './authentication/About';
 import Navbar from './homepage/Navbar';
 import PackagesApp from './packages-booking/PackagesApp';
 import Footer from './homepage/Footer'; 
+import ForgotPassword from './authentication/ForgetPassword';
 
 // 2. Create a helper component that reads the current URL
 function ConditionalFooter() {
@@ -15,7 +16,8 @@ function ConditionalFooter() {
   const path = location.pathname.toLowerCase();
 
   // Exact routes where the footer should NOT appear
-  const hiddenPaths = ['/login', '/signup', '/contact'];
+  // Added '/forgotpassword' to the list so footer hides there too
+  const hiddenPaths = ['/login', '/signup', '/contact', '/reset-password'];
 
   // Hide on exact routes OR if the URL contains "/booking" 
   const hideFooter = hiddenPaths.includes(path) || path.includes('/booking');
@@ -42,6 +44,7 @@ function App() {
           
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgotpassword" element={<ForgotPassword />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           
