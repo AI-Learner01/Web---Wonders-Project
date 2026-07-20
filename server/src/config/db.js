@@ -1,22 +1,36 @@
+require("dotenv").config();
+
 const { MongoClient } = require("mongodb");
 
 const client = new MongoClient(process.env.MONGODB_URI);
 
-const db = client.db("WebWonderLocal");
+// 1. Establish connections to both separate databases inside your cluster
+const dbAuth = client.db("WebWonder"); 
+const dbDest = client.db("DestinationsNameForSearch");
 
-const collectionUserData = db.collection("UserData");
-const collectionOtps = db.collection("Otps");
+// 2. Map the collections to their respective databases
+const collectionUserData = dbAuth.collection("UserData");
+const collectionOtps = dbAuth.collection("Otps");
+const collectionDestinations = dbDest.collection("Destinations");
+
 
 async function connectDB() {
-
-    await client.connect();
-
-    console.log("MongoDB Connected");
-
+    try {
+        await client.connect();
+        console.log("MongoDB Connected to Atlas Cluster successfully.");
+        
+        // Optimizes lookups on your newly imported 50k+ cities collection
+        await collectionDestinations.createIndex({ city: 1 });
+    } catch (err) {
+        console.error("MongoDB Connection Failed:", err.message);
+    }
 }
 
 module.exports = {
     connectDB,
+    db: dbDest, // Keeps a default 'db' export targeting your cities for the autocomplete controller
+    dbAuth,     // Exported in case you need direct db manipulation later
     collectionUserData,
-    collectionOtps
+    collectionOtps,
+    collectionDestinations // Exported so controllers can explicitly query the dataset
 };

@@ -11,11 +11,67 @@ const Destinations = () => {
     const [selectedRating, setSelectedRating] = useState("All");
     const [visibleCards, setVisibleCards] = useState(8);
 
+    //Autocomplete Suggestion
+    const [suggestions, setSuggestions] = useState([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Stores values entered in hero search form
+    const [searchQuery, setSearchQuery] = useState({
+        destination: '',
+        date: '',
+        guests: '1 Guest'
+    });
+
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            const term = searchQuery.destination.trim();
+
+            if (term.length < 2) {
+                setSuggestions([])
+                return;
+            }
+            try {
+                const res = await fetch(`http://localhost:5000/api/destinations/autocomplete?q=${term}`);
+                if (!res.ok) throw new Error("API network error");
+                const data = await res.json();
+                setSuggestions(data);
+            }
+
+            catch (err) {
+                console.warn("Backend API unavailable, falling back to local dataset matching...", err);
+                const localFallback = destinations.filter(d =>
+                    d.name.toLowerCase().startsWith(term.toLowerCase()) ||
+                    d.country.toLowerCase().startsWith(term.toLowerCase())
+                ).map(d => ({ name: d.name, country: d.country }));
+                setSuggestions(localFallback.slice(0, 6));
+            }
+
+        }
+        // Debounce typing inputs to optimize resource processing rates
+        const delayDebounce = setTimeout(() => {
+            fetchSuggestions();
+        }, 250);
+
+        return () => clearTimeout(delayDebounce);
+    }, [searchQuery.destination])
+
+    // Closes popup list instantly if clicking outside the elements structure bounds
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     useEffect(() => {
         //mobile set only 4 cards
         if (window.innerWidth < 640) {
             setVisibleCards(4)
-        } 
+        }
         // others set 8 cards
         else {
             setVisibleCards(8)
@@ -52,22 +108,17 @@ const Destinations = () => {
         });
     };
 
-    // Stores values entered in hero search form
-    const [searchQuery, setSearchQuery] = useState({
-        destination: '',
-        date: '',
-        guests: '1 Guest'
-    });
+
 
     const handleSearch = (e) => {
         e.preventDefault();
         console.log('Searching for:', searchQuery);
-        
+
         //Navigate the user dynamically!
         if (searchQuery.destination.trim()) {
             // Convert to a slug format (e.g., "New York" becomes "new-york")
             const searchSlug = searchQuery.destination.trim().toLowerCase().replace(/\s+/g, '-');
-            
+
             // Navigate to the dynamic route you set up in App.jsx / DestApp.jsx
             navigate(`/destinations/${searchSlug}`);
         }
@@ -92,81 +143,80 @@ const Destinations = () => {
     return (
         <>
 
-            {/* hero section */}
+            {/* Hero Section */}
             <section className='relative h-screen min-h-[600px] w-full bg-cover bg-center bg-no-repeat' style={{ backgroundImage: `url(${images.hero.destinations})` }}>
-
-                {/* Light dark overlay for writing text */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/10 to-transparent" />
-
-                {/* hero content contianer */}
                 <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8">
-
-                    {/* Main Heading */}
                     <div className="max-w-3xl text-left text-white mb-10">
-
                         <span className="inline-block rounded-full bg-black/50 px-4 py-1.5 text-sm font-semibold tracking-wide uppercase backdrop-blur-sm mb-4">
                             Plan Your Next Escape
                         </span>
-
                         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
                             Explore the World's <span className="text-[#3C6300]">Hidden Gems</span>
                         </h1>
-
-                        <br />
-                        <br />
-
+                        <br /><br />
                         <div className="inline-block max-w-2xl rounded-full border border-white/10 bg-black/50 px-6 py-3 text-[18px] text-gray backdrop-blur-[4px]">
                             <p className='brightness-150'>
-                                Discover breathtaking destinations, curated local experiences,
-                                and exclusive travel deals tailored just for you.
+                                Discover breathtaking destinations, curated local experiences, and exclusive travel deals tailored just for you.
                             </p>
                         </div>
-
                     </div>
 
-                    {/* Hero search Widget */}
+                    {/* Search Widget Container */}
                     <div className="w-full max-w-5xl rounded-2xl bg-white p-4 shadow-2xl md:p-6 backdrop-blur-md bg-white/95">
+                        <form onSubmit={handleSearch} className="grid grid-cols-1 gap-4 lg:grid-cols-4">
 
-                        <form
-                            onSubmit={handleSearch}
-                            className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-
-                            {/* Destination Input */}
-                            <div className="lg:col-span-3 flex flex-col justify-center border-b pb-2 lg:border-b-0 lg:border-r lg:pr-6">
-
+                            {/* Autocomplete Input Block */}
+                            <div ref={dropdownRef} className="lg:col-span-3 flex flex-col justify-center border-b pb-2 lg:border-b-0 lg:border-r lg:pr-6 relative">
                                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-                                    📍 Where to?
+                                    Where to?
                                 </label>
-
                                 <input
                                     type="text"
                                     placeholder="Country, city, or resort"
                                     value={searchQuery.destination}
-                                    onChange={(e) => setSearchQuery({ ...searchQuery, destination: e.target.value })}
+                                    onChange={(e) => {
+                                        setSearchQuery({ ...searchQuery, destination: e.target.value });
+                                        setShowDropdown(true);
+                                    }}
+                                    onFocus={() => setShowDropdown(true)}
                                     className="w-full bg-transparent py-1 text-lg text-gray-800 placeholder-gray-400 focus:outline-none"
                                     required
+                                    autoComplete="off"
                                 />
 
+                                {/* Interactive Suggestions Dropdown List overlay menu */}
+                                {showDropdown && suggestions.length > 0 && (
+                                    <ul className="absolute left-0 top-[105%] z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl bg-white p-2 shadow-2xl border border-gray-100 transition-all duration-200">
+                                        {suggestions.map((place, idx) => (
+                                            <li
+                                                key={idx}
+                                                onClick={() => {
+                                                    setSearchQuery({ ...searchQuery, destination: place.name });
+                                                    setShowDropdown(false);
+                                                }}
+                                                className="cursor-pointer rounded-lg px-4 py-2.5 text-left text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition font-medium flex justify-between items-center"
+                                            >
+                                                <span className="font-semibold text-gray-800">{place.name}</span>
+                                                <span className="text-xs font-semibold uppercase bg-gray-100 text-gray-400 px-2 py-0.5 rounded-md">{place.country}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
 
-                            {/* Search Button */}
+                            {/* Search Submission Buttons */}
                             <div className="lg:col-span-1 flex items-center">
-
                                 <button
                                     type="submit"
                                     className="w-full rounded-xl bg-emerald-500 py-4 px-6 font-semibold text-white transition duration-200 hover:bg-emerald-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 lg:h-full text-xl"
                                 >
                                     Search
                                 </button>
-
                             </div>
-
                         </form>
-
                     </div>
-
                 </div>
-
             </section>
             {/* Heroes Section ends */}
 
@@ -272,7 +322,7 @@ const Destinations = () => {
                         >
                             {
                                 continents.map((continent) => (
-                                    <option key = {continent} value={continent}>
+                                    <option key={continent} value={continent}>
                                         {continent}
                                     </option>
                                 ))
@@ -319,7 +369,7 @@ const Destinations = () => {
                         <div className="flex justify-center mt-12">
 
                             <button
-                                onClick={() => setVisibleCards((prev) => prev+4)}
+                                onClick={() => setVisibleCards((prev) => prev + 4)}
                                 className="rounded-full bg-emerald-500 px-8 py-4 text-white font-semibold hover:bg-emerald-600 transition cursor-pointer"
                             >
                                 Load More ↓
