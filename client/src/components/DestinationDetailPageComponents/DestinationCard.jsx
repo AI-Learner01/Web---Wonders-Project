@@ -1,17 +1,45 @@
 import React from 'react'
 import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useEffect } from 'react';
 
 const DestinationCard = ({
     slug,
     name,
     country,
     description,
-    image,
+    image: initialImage,
     rating,
     featured,
 }) => {
 
     const navigate = useNavigate();
+
+    // Use state to hold the image. It defaults to the one in destinations.js
+    const [cardImage, setCardImage] = useState(initialImage);
+
+    useEffect(() => {
+        // If the initial image is a random placeholder, fetch the real one from your backend
+        if (initialImage && initialImage.includes("picsum.photos")) {
+            const fetchWikiImage = async () => {
+                try {
+                    const res = await fetch(`http://localhost:5000/api/destinations/info?name=${name}`);
+                    const apiData = await res.json();
+                    
+                    // If Wikipedia returns a thumbnail, update the state to show it
+                    if (apiData.success && apiData.data.thumbnail) {
+                        setCardImage(apiData.data.thumbnail);
+                    }
+                } catch (error) {
+                    console.error(`Error fetching Wiki image for ${name}:`, error);
+                }
+            };
+            
+            fetchWikiImage();
+        }
+    }, [initialImage, name]);
+
+
     return (
         <>
             {/* destination card */}
@@ -20,9 +48,10 @@ const DestinationCard = ({
 
                 <div className="relative">
                     <img
-                        src={image}
+                        src={cardImage}
                         alt={name}
                         className="h-42 w-full object-cover"
+                        style={{ height: "180px" }}
                     />
 
                     <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-white/95 px-3 py-1 text-sm font-semibold shadow">

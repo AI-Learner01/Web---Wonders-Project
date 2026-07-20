@@ -3,7 +3,7 @@ import DestDetAbout from "./DestDetAbout"
 import DestDetGallery from "./DestDetGallery"
 import DestDetMap from "./DestDetMap"
 
-const DestDetTabs = () => {
+const DestDetTabs = ({aboutText}) => {
     const [activeTab, setActiveTab] = useState("about");
 
     const tabs = [
@@ -37,7 +37,7 @@ const DestDetTabs = () => {
 
         {/* Tab content */}
         <div className='mx-auto max-w-7xl px-6 py-10'>
-                {activeTab === "about" && <DestDetAbout/>}
+                {activeTab === "about" && <DestDetAbout aboutText = {aboutText}/>}
                 {activeTab === "map" && <DestDetMap/>}
                 {activeTab === "gallery" && <DestDetGallery/>}
         </div>

@@ -16,19 +16,12 @@ const DestDetHero = ({
             >
 
                 {/* Dark Overlay */}
-                <div className='absolute inset-0 bg-black/10' />
+                <div className='absolute inset-0 bg-black/50' />
 
                 {/* Hero Content */}
                 <div className='relative z-10 flex h-full items-center justify-center'>
                     <div className='text-center text-white px-4'>
 
-                        {/* Rating */}
-                        <div className='mb-5 inline-flex ietms-center gap-2 rounded-full bg-white/60 px-5 py-2 backdrop-blur-md'>
-                            <span className='text-red-400 text-lg'>⭐</span>
-                            <span className="font-semibold text-lg">
-                                {rating}
-                            </span>
-                        </div>
 
                         {/* Destination name */}
                         <h1 className='text-5xl font-extrabold md:text-7xl drop-shadow-lg'>

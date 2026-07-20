@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react'
-
+import { useNavigate } from 'react-router-dom';
 import { images } from '../../data-destination/imageUrls';
 import DestinationCard from '../../components/DestinationDetailPageComponents/DestinationCard';
 import { destinations } from "../../data-destination/destinations"
 
 const Destinations = () => {
-
+    const navigate = useNavigate();
     // Explore All Destinations filters
     const [selectedContinent, setSelectedContinent] = useState("All");
     const [selectedRating, setSelectedRating] = useState("All");
@@ -62,7 +62,15 @@ const Destinations = () => {
     const handleSearch = (e) => {
         e.preventDefault();
         console.log('Searching for:', searchQuery);
-        // Integrate your routing or search API here
+        
+        //Navigate the user dynamically!
+        if (searchQuery.destination.trim()) {
+            // Convert to a slug format (e.g., "New York" becomes "new-york")
+            const searchSlug = searchQuery.destination.trim().toLowerCase().replace(/\s+/g, '-');
+            
+            // Navigate to the dynamic route you set up in App.jsx / DestApp.jsx
+            navigate(`/destinations/${searchSlug}`);
+        }
     };
 
     const filteredDestinations = destinations.filter((destination) => {
@@ -101,7 +109,7 @@ const Destinations = () => {
                         </span>
 
                         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                            Explore the World’s <span className="text-[#3C6300]">Hidden Gems</span>
+                            Explore the World's <span className="text-[#3C6300]">Hidden Gems</span>
                         </h1>
 
                         <br />
