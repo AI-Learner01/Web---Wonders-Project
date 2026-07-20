@@ -41,14 +41,15 @@ function Signup() {
     const totalFields = 5;
     const filledFields = [fullName, email, phone, password, confirmPassword].filter((val) => val.trim() !== "").length;
     const fillPercent = (filledFields / totalFields) * 100;
+    const [cooldown, setCooldown] = useState(0);
     //--------------------------------------------------------------------------------------------------------------
 
 
     //this function is used to send the data to the server and create a new account(only call after otp verification)
-    const handleSignup = async () => { 
+    const handleSignup = async () => {
         const userData = { fullName, email, phone, password };
         try {
-            const response = await fetch("http://localhost:5000/signup", {
+            const response = await fetch("http://localhost:5000/auth/signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -72,33 +73,130 @@ function Signup() {
     //---------------------------------------------------------------------------------------------
 
     //this function is used to open the otp window and check if all fields are filled and passwords match
-    const openOtpWindow = (e) => {
+    const openOtpWindow = async (e) => {
+        if (cooldown > 0) return;
         e.preventDefault();
 
-        if (!fullName || !email || !phone || !password || !confirmPassword) {
+
+
+
+        // Empty fields
+        if (!fullName.trim() || !email.trim() || !phone.trim() || !password || !confirmPassword) {
             alert("Please fill in all fields");
             return;
         }
 
-        if (password !== confirmPassword) {
-            alert("Passwords do not match!");
+        // Full Name
+        if (fullName.trim().length < 3) {
+            alert("Enter a valid full name");
             return;
         }
 
+        // Email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            alert("Enter a valid email address");
+            return;
+        }
+
+        // Phone
+        if (!/^\d{10}$/.test(phone)) {
+            alert("Phone number must contain exactly 10 digits");
+            return;
+        }
+
+        // Password
+        if (password.length < 8) {
+            alert("Password must be at least 8 characters long");
+            return;
+        }
+
+        // Confirm Password
+        if (password !== confirmPassword) {
+            alert("Passwords do not match");
+            return;
+        }
+
+        // Sab kuch sahi hai
+        setCooldown(5);
+
+        
+
+
         setOtp1('');
         setOtp2('');
-        setIsOtpPopupOpen(true);
+        try {
+            setCooldown(5);
+
+            const timer = setInterval(() => {
+                setCooldown((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+            const response = await fetch("http://localhost:5000/auth/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+
+            console.log("OTP sent to email:", email);
+            const data = await response.json();
+
+            if (data.success) {
+                alert(data.message);
+                setIsOtpPopupOpen(true);
+                return;
+            }
+            else {
+                alert("Failed to send OTP. Please try again.");
+                return;
+            }
+        }
+        catch (error) {
+            console.error("Error sending OTP:", error);
+            alert("Failed to send OTP. Please try again.");
+            return;
+        }
+
     };
 
     //this function is used to verify the otp and if correct then call the handleSignup function
-    const handleOtpVerification = () => {
-        if (otp1 === "12" && otp2 === "34") {
-            alert("OTP Match Successful! Proceeding with signup.");
-            setIsOtpPopupOpen(false);
-            handleSignup();
-        } else {
-            alert("Incorrect OTP! Try again.");
+    const handleOtpVerification = async () => {
+        if (!otp1 || !otp2) {
+            alert("Please enter both OTP fields");
+            return;
         }
+
+        try {
+            const response = await fetch("http://localhost:5000/auth/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp1, otp2 })
+            });
+
+            const data = await response.json();
+
+
+            if (data.success) {
+                alert("OTP Match Successful! Proceeding with signup.");
+                setIsOtpPopupOpen(false);
+                handleSignup();
+            } else {
+                alert("Incorrect OTP! Try again.");
+            }
+        }
+
+        catch (error) {
+            console.error("Error sending OTP:", error);
+            alert("Failed to send OTP. Please try again.");
+            return;
+        }
+
     };
 
     return (
@@ -194,13 +292,21 @@ function Signup() {
                 {/* Signup Button with fill-percent progress effect */}
                 <button
                     type="submit"
-                    className="relative isolate overflow-hidden mt-[30px] border-none rounded-[10px] bg-[#0b6e46] text-white p-[15px] text-base font-semibold cursor-pointer transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(20,195,142,0.28)]"
+                    disabled={cooldown > 0}
+                    className={`relative isolate overflow-hidden mt-[30px] border-none rounded-[10px] p-[15px] text-base font-semibold transition duration-300
+                        ${cooldown > 0
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-[#0b6e46] text-white cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(20,195,142,0.28)]"
+                        }`}
                 >
                     <span
                         className="absolute top-0 left-0 h-full bg-[#1fd694] transition-[width] duration-[400ms] ease-in-out -z-10"
                         style={{ width: `${fillPercent}%` }}
                     />
-                    <span className="relative z-10">Sign Up</span>
+
+                    <span className="relative z-10">
+                        {cooldown > 0 ? `Wait ${cooldown}s` : "Sign Up"}
+                    </span>
                 </button>
 
                 <a

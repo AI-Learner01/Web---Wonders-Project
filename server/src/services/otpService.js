@@ -23,7 +23,7 @@ async function sendOtp(email) {
     const otp = await generateOtp(email);
 
     await transporter.sendMail({
-        from: process.env.MY_EMAIL,
+        from: process.env.EMAIL_USER,
         to: email,
         subject: "Travel and Tourism OTP Verification",
         text: `Your OTP code is: ${otp}`

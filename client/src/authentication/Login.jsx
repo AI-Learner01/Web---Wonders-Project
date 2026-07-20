@@ -23,18 +23,19 @@ const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,
 */
 
 function Login() {
-    const inputClass ="w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 placeholder:text-[#9a9a9a] focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
+    const inputClass = "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 placeholder:text-[#9a9a9a] focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
     //abve is the class for input fields, you can use it for all input fields in this form
-    
+
     //data for login form   
     const [emailOrPhone, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPass, setShowPass] = useState(false);
 
     //this used for button animation----------
-    const totalFields = 2; 
+    const totalFields = 2;
     const filledFields = [emailOrPhone, password].filter((val) => val.trim() !== "").length;//this used for button animation
     const fillPercent = (filledFields / totalFields) * 100;
+    const [cooldown, setCooldown] = useState(0);
     //--------------------------------------
 
 
@@ -43,13 +44,68 @@ function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
 
-        if (emailOrPhone === "" || password === "") {
+        if (cooldown > 0) return;
+
+        // Empty fields
+        if (!emailOrPhone.trim() || !password) {
             alert("Please fill in all fields");
             return;
         }
 
+        // Check if input is email or phone
+        const isEmail = emailOrPhone.includes("@");
+
+        if (isEmail) {
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(emailOrPhone)) {
+                alert("Please enter a valid email address");
+                return;
+            }
+        } else {
+            // Phone validation
+            if (!/^\d{10}$/.test(emailOrPhone)) {
+                alert("Please enter a valid 10-digit phone number");
+                return;
+            }
+        }
+
+        // Password validation
+        if (password.length < 8) {
+            alert("Password must be at least 8 characters long");
+            return;
+        }
+
+        // Start cooldown
+        setCooldown(5);
+
+        const timer = setInterval(() => {
+            setCooldown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        // fetch login API...
+
+
         try {
-            const response = await fetch("http://localhost:5000/login", {
+            setCooldown(5);
+
+            const timer = setInterval(() => {
+                setCooldown((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+            const response = await fetch("http://localhost:5000/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -143,18 +199,14 @@ function Login() {
 
                 <button
                     type="submit"
-                    className="relative isolate overflow-hidden mt-7 rounded-[10px] bg-[#0b6e46] py-[15px] text-base font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(20,195,142,0.28)]"
+                    disabled={cooldown > 0}
+                    className={`mt-6 w-full rounded-lg p-3 font-semibold transition
+                        ${cooldown > 0
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-[#0b6e46] text-white hover:bg-[#0d7c51]"
+                        }`}
                 >
-
-                    <span
-                        className="absolute left-0 top-0 h-full bg-[#1fd694] transition-all duration-500"
-                        style={{ width: `${fillPercent}%` }}
-                    ></span>
-
-                    <span className="relative z-10">
-                        Login
-                    </span>
-
+                    {cooldown > 0 ? `Wait ${cooldown}s` : "Login"}
                 </button>
 
                 {/* Forgot Password */}

@@ -78,16 +78,16 @@ function Contact() {
 
                         <div className="flex items-center gap-[10px] flex-wrap max-[480px]:flex-col max-[480px]:w-full">
                             <a
-                                href="mailto:contact@wonders.com"
+                                href="mailto:travelmate.supports@gmail.com"
                                 className="text-[#007bff] no-underline font-medium break-words hover:underline max-[480px]:text-sm max-[480px]:text-center"
                             >
-                                contact@wonders.com
+                                travelmate.supports@gmail.com
                             </a>
 
                             <button
                                 type="button"
                                 onClick={() => {
-                                    navigator.clipboard.writeText("contact@wonders.com");
+                                    navigator.clipboard.writeText("travelmate.supports@gmail.com");
                                     alert("Email copied!");
                                 }}
                                 className="bg-[#f3f4f6] text-[#333] border border-[#d1d5db] rounded-lg px-[14px] py-[7px] cursor-pointer text-sm font-semibold transition duration-[250ms] hover:bg-[#e5e7eb] hover:border-[#14c38e] hover:text-[#14c38e] max-[480px]:w-full max-[480px]:max-w-[180px]"
