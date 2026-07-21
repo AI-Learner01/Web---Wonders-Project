@@ -37,6 +37,8 @@ async function fetchLocation(locationName) {
         const pageData = pages[pageId];
 
 
+        let coords = null;
+
         // Map only the data we care about for the travel website
         return {
             title: pageData.title,

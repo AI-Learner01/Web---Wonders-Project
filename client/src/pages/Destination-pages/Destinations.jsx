@@ -117,7 +117,12 @@ const Destinations = () => {
         //Navigate the user dynamically!
         if (searchQuery.destination.trim()) {
             // Convert to a slug format (e.g., "New York" becomes "new-york")
-            const searchSlug = searchQuery.destination.trim().toLowerCase().replace(/\s+/g, '-');
+            const searchSlug = searchQuery.destination
+                               .trim()
+                               .normalize('NFD')
+                               .replace(/[\u0300-\u036f]/g, "") // Remove accent characters
+                               .toLowerCase()
+                               .replace(/\s+/g, '-'); // Replace spaces with hyphens
 
             // Navigate to the dynamic route you set up in App.jsx / DestApp.jsx
             navigate(`/destinations/${searchSlug}`);

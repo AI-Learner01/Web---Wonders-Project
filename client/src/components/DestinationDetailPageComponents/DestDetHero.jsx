@@ -30,7 +30,7 @@ const DestDetHero = ({
 
                         {/* Country */}
                         <p className="flex flex-row gap-2 mt-5 text-3xl font-light tracking-wide">
-                            ✵ <p className='font-semibold'>{country}</p>
+                            ✵ <span className='font-semibold'>{country}</span>
                         </p>
                     </div>
                 </div>

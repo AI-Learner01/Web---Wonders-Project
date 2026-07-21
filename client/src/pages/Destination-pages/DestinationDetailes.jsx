@@ -28,9 +28,13 @@ const DestinationDetailes = () => {
             // 2. Format the search term for Wikipedia!
             // If local data exists, use the exact name (e.g., "Swiss Alps"). 
             // If not, try to clean up the URL slug by replacing hyphens with spaces.
-            const wikiSearchTerm = localData
+            const rawSearchTerm = localData
                 ? (localData.wikiTitle || localData.name)
                 : slug.replace(/-/g, ' ');
+
+            const wikiSearchTerm = rawSearchTerm
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, "");
 
             try {
                 // 2. Fetch live data from your Wikipedia API backend
@@ -57,7 +61,19 @@ const DestinationDetailes = () => {
                 }
 
                 else {
-                    setDestData(null); // Not found in API or Local
+                    // FIX: Create a generic profile instead of failing completely
+                    const formattedName = slug
+                        .split('-')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+
+                    setDestData({
+                        name: formattedName,
+                        country: "Custom Destination",
+                        image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800', // Generic hero image
+                        rating: 'New',
+                        about: "Detailed Wikipedia information is currently unavailable for this specific location, but you can explore its exact coordinates on the map!"
+                    });
                 }
             }
 
@@ -90,7 +106,11 @@ const DestinationDetailes = () => {
                 rating={destData.rating}
             />
             {/* Pass the newly fetched Wikipedia extract down to the Tabs component */}
-            <DestDetTabs aboutText={destData.about} />
+            <DestDetTabs 
+                aboutText={destData.about} 
+                locationName={destData.name}
+                caption={destData.country}
+            />
         </>
     )
 }
