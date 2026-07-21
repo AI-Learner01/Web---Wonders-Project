@@ -1,6 +1,7 @@
 import React, {useState} from 'react'
 import DestDetAbout from "./DestDetAbout"
 import DestDetGallery from "./DestDetGallery"
+import DestDetWeather from './DestDetWeather'
 import DestDetMap from "./DestDetMap"
 
 const DestDetTabs = ({aboutText, locationName, caption}) => {
@@ -9,7 +10,7 @@ const DestDetTabs = ({aboutText, locationName, caption}) => {
     const tabs = [
         {id: "about", label: "About"},
         {id: "map", label: "Map"},
-        {id: "gallery" , label: "Gallery"},
+        {id: "weather" , label: "Live Weather"},
     ];
   return (
     <div>
@@ -39,7 +40,7 @@ const DestDetTabs = ({aboutText, locationName, caption}) => {
         <div className='mx-auto max-w-7xl px-6 py-10'>
                 {activeTab === "about" && <DestDetAbout aboutText = {aboutText}/>}
                 {activeTab === "map" && <DestDetMap locationName={locationName} caption = {caption}/>}
-                {activeTab === "gallery" && <DestDetGallery/>}
+                {activeTab === "weather" && <DestDetWeather locationName={locationName}/>}
         </div>
       </section>
     </div>

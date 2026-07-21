@@ -4,6 +4,7 @@ import { images } from '../../data-destination/imageUrls'
 import DestDetTabs from '../../components/DestinationDetailPageComponents/DestDetTabs'
 import { useParams } from 'react-router-dom'
 import { destinations } from '../../data-destination/destinations'
+import DestDetWeather from '../../components/DestinationDetailPageComponents/DestDetWeather'
 
 const DestinationDetailes = () => {
 
@@ -105,6 +106,8 @@ const DestinationDetailes = () => {
                 country={destData.country}
                 rating={destData.rating}
             />
+            
+
             {/* Pass the newly fetched Wikipedia extract down to the Tabs component */}
             <DestDetTabs 
                 aboutText={destData.about} 

@@ -1,5 +1,6 @@
 
-const {db} = require('../config/db')
+const {db} = require('../config/db');
+const { fetchWeather } = require('../services/weatherService');
 const {fetchLocation} = require('../services/wikiService')
 
 const getDestinationInfo = async (req, res) => {
@@ -37,7 +38,6 @@ const getDestinationInfo = async (req, res) => {
 }
 
 //Autocomplete Destination Suggestions
-
 const getAutocompleteSuggestions = async (req, res) => {
     try {
         const { q } = req.query;
@@ -70,8 +70,43 @@ const getAutocompleteSuggestions = async (req, res) => {
     }
 };
 
+const getDestinationWeather = async (req, res) => {
+    try {
+        const {name} = req.query;
+
+        if (!name) {
+            return res.status(400).json({
+                success: false,
+                message: "Location 'name' query parameter is required."
+            });
+        }
+
+        const weatherData = await fetchWeather(name);
+
+        if (!weatherData) {
+            return res.status(404).json({
+                success: false,
+                message: `Weather data not found for location '${name}'.`
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: weatherData
+        });
+    }
+
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch weather data.",
+            error: error.message
+        });
+    }
+}
 
 module.exports = {
     getDestinationInfo,
-    getAutocompleteSuggestions
+    getAutocompleteSuggestions,
+    getDestinationWeather
 };
