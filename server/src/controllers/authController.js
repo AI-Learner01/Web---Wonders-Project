@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { collectionUserData, collectionOtps } = require("../config/db");
+const { collectionUserData, collectionOtps ,collectionQuries} = require("../config/db");
 const { sendOtp } = require("../services/otpService");
 
 /**
@@ -201,10 +201,27 @@ const login = async (req, res) => {
     }
 };
 
+const contactUs = async (req,res) =>{
+    const { topic, emailOrPhone, message } = req.body;
+
+    // Process the contact message (e.g., save to database, send email, etc.)
+
+    await collectionQuries.insertOne({
+        "topic": topic,
+        "contact": emailOrPhone,
+        "message": message
+    });
+
+    // This is a placeholder - replace with actual implementation
+
+    return res.status(200).json({ "success": true, "message": "Message sent successfully!" });
+};
+
 module.exports = {
     login,
     signup,
     sendOtpController,
     verifyOtp,
-    resetPassword // Exporting clean function context
+    resetPassword, // Exporting clean function context
+    contactUs
 };

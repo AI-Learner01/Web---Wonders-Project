@@ -12,7 +12,9 @@ const {
 
     verifyOtp,
 
-    resetPassword
+    resetPassword,
+
+    contactUs
 
 } = require("../controllers/authController");
 
@@ -25,5 +27,7 @@ router.post("/send-otp", sendOtpController);
 router.post("/verify-otp", verifyOtp);
 
 router.post("/reset-password", resetPassword);
+
+router.post("/contact-us",contactUs);
 
 module.exports = router;

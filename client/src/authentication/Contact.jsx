@@ -24,7 +24,7 @@ const helperIcon = "https://res.cloudinary.com/xzjjff1k/image/upload/v1784309997
 
 
 function Contact() {
-    
+
     //used for OTP popUp
     const [popupOpen, setPopupOpen] = useState(false);//used to open the popup when the message is sent successfully
 
@@ -37,6 +37,128 @@ function Contact() {
 
     const inputClass =
         "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
+
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        const topic = document.getElementById('contactDropdown').value;
+        const emailOrPhone = document.getElementById('contactEmail').value;
+        const message = document.getElementById('contactMessage').value;
+
+        // if (topic && emailOrPhone && message) {
+        //     //check email or phone is valid or not
+        //     const isEmail = emailOrPhone.includes('@');
+        //     if (isEmail) {
+        //         //check email is valid or not
+        //         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        //         if (!emailRegex.test(emailOrPhone)) {
+        //             alert('Please enter a valid email address.');
+        //             return;
+        //         }
+        //         else {
+        //             //send the message to the server
+        //             try {
+                       
+        //                 const response = await fetch("http://localhost:5000/auth/contact-us", {
+        //                     method: 'POST',
+        //                     headers: {'Content-Type': 'application/json',},
+        //                     credentials: 'include',
+        //                     body: JSON.stringify({ topic, emailOrPhone, message })
+        //                 });
+
+        //                 const data = await response.json();
+        //                 if (data.success) {
+        //                     setPopupOpen(true);
+        //                     clearForm();
+        //                 }
+        //                 else {
+        //                     alert(data.message);
+        //                 }
+        //             }
+        //             catch (error) {
+        //                 console.error('Error sending message:', error);
+        //                 alert('Failed to send message. Please try again.');
+        //             }
+        //         }
+        //     }
+        //     else {
+        //         //check phone number is valid or not
+        //         const phoneRegex = /^\d{10}$/;
+        //         if (!phoneRegex.test(emailOrPhone)) {
+        //             alert('Please enter a valid 10-digit phone number.');
+        //             return;
+        //         }
+        //         else {
+        //             //send the message to the server
+        //             try {
+        //                 const response = await fetch('/auth/contact-us', {
+        //                     method: 'POST',
+        //                     headers: {
+        //                         'Content-Type': 'application/json'
+        //                     },
+        //                     body: JSON.stringify({ topic, emailOrPhone, message })
+        //                 });
+        //                 const data = await response.json();
+        //                 if (data.success) {
+        //                     setPopupOpen(true);
+        //                     clearForm();
+        //                 }
+        //                 else {
+        //                     alert(data.message);
+        //                 }
+        //             }
+        //             catch (error) {
+        //                 console.error('Error sending message:', error);
+        //                 alert('Failed to send message. Please try again.');
+        //             }
+        //         }
+        //     }
+        // }
+        // else {
+        //     alert('Please fill in all fields before sending the message.');
+        // }
+        if(!topic || !emailOrPhone || !message){
+            alert('Please fill in all fields before sending the message.');
+            return;
+        }
+        else
+        {
+            //check email or phone is valid or not
+            const isEmail = emailOrPhone.includes('@');
+            if(isEmail){
+                //check email is valid or not
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if(!emailRegex.test(emailOrPhone)){
+                    alert('Please enter a valid email address.');
+                    return;
+                }
+            }
+            else{
+                //check phone number is valid or not
+                const phoneRegex = /^\d{10}$/;
+                if(!phoneRegex.test(emailOrPhone)){
+                    alert('Please enter a valid 10-digit phone number.');
+                    return;
+                }
+            }
+
+            const response = await fetch("http://localhost:5000/auth/contact-us", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json',},
+                credentials: 'include',
+                body: JSON.stringify({ topic, emailOrPhone, message })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                setPopupOpen(true);
+                clearForm();
+            }
+            else {
+                alert(data.message);
+            }
+        }
+    }
+
 
     return (
         <div
@@ -136,21 +258,14 @@ function Contact() {
                 <button
                     className="mt-7 bg-[#14c38e] text-white border-none rounded-[10px] p-[15px] text-base font-semibold cursor-pointer transition duration-300 hover:bg-[#0ea875] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(20,195,142,0.28)]"
                     onClick={() => {
-                        if (
-                            document.getElementById('contactDropdown').value !== '' &&
-                            document.getElementById('contactEmail').value !== '' &&
-                            document.getElementById('contactMessage').value !== ''
-                        ) {
-                            setPopupOpen(true);
-                            clearForm();
-                        } else {
-                            alert('Please fill in all fields before sending the message.');
-                        }
+                        handleSendMessage(event);
                     }}
                 >
-                    Send
+
+                    Send Message
                 </button>
             </form>
+
 
             {popupOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

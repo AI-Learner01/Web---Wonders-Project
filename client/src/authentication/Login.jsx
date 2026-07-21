@@ -119,6 +119,7 @@ function Login() {
 
                 alert("Login successful");
                 // Redirect to dashboard or perform other actions
+                window.location.href = "/";//redirect to home page
 
             } else {
                 alert(data.message);

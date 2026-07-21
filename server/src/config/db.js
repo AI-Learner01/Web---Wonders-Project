@@ -16,6 +16,7 @@ const dbDest = client.db("DestinationsNameForSearch");
 const collectionUserData = dbAuth.collection("UserData");
 const collectionOtps = dbAuth.collection("Otps");
 const collectionDestinations = dbDest.collection("Destinations");
+const collectionQuries = dbAuth.collection("Queries"); 
 
 /**
  * Connects to MongoDB Atlas Cluster and ensures indexes are created
@@ -38,5 +39,6 @@ module.exports = {
     dbAuth,                  // Exported for direct authentication db manipulation
     collectionUserData,
     collectionOtps,
-    collectionDestinations   // Exported so controllers can explicitly query the dataset
+    collectionDestinations,   // Exported so controllers can explicitly query the dataset
+    collectionQuries          // Exported for logging user queries
 };
