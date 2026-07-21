@@ -217,11 +217,48 @@ const contactUs = async (req,res) =>{
     return res.status(200).json({ "success": true, "message": "Message sent successfully!" });
 };
 
+const verifyToken = (req, res) => {
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            message: "Token not found"
+        });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid or expired token"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Token is valid",
+            email: decoded.email
+        });
+    });
+};
+
+const logout = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: false, // local server context
+        sameSite: "lax"
+    });
+    return res.status(200).json({ success: true, message: "Logout successful" });
+};
+
 module.exports = {
     login,
     signup,
     sendOtpController,
     verifyOtp,
     resetPassword, // Exporting clean function context
-    contactUs
+    contactUs,
+    verifyToken,
+    logout
 };
