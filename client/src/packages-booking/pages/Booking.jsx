@@ -54,12 +54,74 @@ function Booking({ selectedPackage, onBack, onContinue }) {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleContinue = () => {
-        if (!validateBooking()) return;
+    const handleContinue = async () => {
 
-        // navigate to summary
-    };
+    if (!validateBooking()) return;
 
+    try {
+
+        const booking = {
+
+            packageId: selectedPackage._id,
+
+            packageTitle: selectedPackage.title,
+
+            travellerName: bookingData.name,
+
+            email: bookingData.email,
+
+            phone: bookingData.phone,
+
+            travellers: bookingData.travellers,
+
+            travelDate: bookingData.departureDate,
+
+            roomType: bookingData.roomType,
+
+            services: bookingData.services,
+
+            totalAmount: total
+
+        };
+
+        const response = await fetch(
+            "http://localhost:5000/api/bookings",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(booking)
+            }
+        );
+
+        const result = await response.json();
+
+        if (!result.success) {
+
+            alert("Booking Failed");
+
+            return;
+
+        }
+
+        console.log("Booking Saved:", result.bookingId);
+
+        onContinue(bookingData);
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        alert("Server Error");
+
+    }
+
+};
 
     let total = selectedPackage.price * bookingData.travellers;
 
@@ -241,16 +303,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
                             </div>
 
                             <button
-                                onClick={() => {
-                                    if (validateBooking()) {
-                                        onContinue(bookingData);
-                                    }
-
-                                    else {
-                                        handleContinue();
-                                    }
-                                }
-                                }
+                                onClick={handleContinue}
                                 className="mt-10 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-4 rounded-2xl font-bold text-lg transition"
                             >
                                 Continue to Review →

@@ -1,12 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef} from "react";
 import PackageFilter from "../components/PackageFilter";
-import packages from "../data/packages";
 import PackageSection from "../components/PackageSection";
 import { motion } from "framer-motion";
 import { images } from "../data/imageUrls";
 import Navbar from "../../homepage/Navbar";
 
-function Packages({ onBookNow }) {
+function Packages({ packages,onBookNow }) {
     // --- States ---
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [searchInput, setSearchInput] = useState("");
@@ -20,6 +19,7 @@ function Packages({ onBookNow }) {
 
     const packagesSectionRef = useRef(null);
 
+    
     const categories = [
         "🏖 Beach",
         "🏔 Mountains",
@@ -212,8 +212,8 @@ function Packages({ onBookNow }) {
                             key={item}
                             onClick={() => handleCategoryClick(item)}
                             className={`rounded-full px-6 py-3 shadow-md transition-all duration-300 ${selectedCategory === item
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-white text-gray-800 hover:bg-blue-500 hover:text-white"
+                                ? "bg-blue-600 text-white"
+                                : "bg-white text-gray-800 hover:bg-blue-500 hover:text-white"
                                 }`}
                         >
                             {item}
