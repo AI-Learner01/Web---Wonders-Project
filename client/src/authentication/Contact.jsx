@@ -1,164 +1,92 @@
-import React, { useState } from 'react'
-// import helperIcon from "../assets/helper-icon.jpg";
-// import loginBg from "../assets/login-bg.jpg";
+import React, { useState } from 'react';
+
 const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,w_1920/v1784311631/login-bg_our3np.jpg";
 const helperIcon = "https://res.cloudinary.com/xzjjff1k/image/upload/v1784309997/helper-icon_znhxx3.jpg";
 
-/**
- * Developer Guide:
- * 
- *     has Two type of contact options, one is direct email and other is form to send message
- * 
- * flow => fill details ->check data -> than send msg to the server and show a popup that we will contact you soon
- * 
- * @returns Contect Us Page
- */
-
-
-/* do not delete this
-
-    later improvement :convert and make functions
-
-*/
-
-
-
 function Contact() {
+    // 1. Controlled State Management
+    const [formData, setFormData] = useState({
+        topic: '',
+        emailOrPhone: '',
+        message: ''
+    });
 
-    //used for OTP popUp
-    const [popupOpen, setPopupOpen] = useState(false);//used to open the popup when the message is sent successfully
-
-    //clear the form after sending the message
-    function clearForm() {
-        document.getElementById('contactDropdown').value = '';
-        document.getElementById('contactEmail').value = '';
-        document.getElementById('contactMessage').value = '';
-    }
+    const [loading, setLoading] = useState(false);
+    const [popupOpen, setPopupOpen] = useState(false);
 
     const inputClass =
         "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
 
+    // Handle Input Changes
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    // Form Reset Helper
+    const clearForm = () => {
+        setFormData({
+            topic: '',
+            emailOrPhone: '',
+            message: ''
+        });
+    };
+
+    // 2. Submit Handler
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        const topic = document.getElementById('contactDropdown').value;
-        const emailOrPhone = document.getElementById('contactEmail').value;
-        const message = document.getElementById('contactMessage').value;
+        const { topic, emailOrPhone, message } = formData;
 
-        // if (topic && emailOrPhone && message) {
-        //     //check email or phone is valid or not
-        //     const isEmail = emailOrPhone.includes('@');
-        //     if (isEmail) {
-        //         //check email is valid or not
-        //         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        //         if (!emailRegex.test(emailOrPhone)) {
-        //             alert('Please enter a valid email address.');
-        //             return;
-        //         }
-        //         else {
-        //             //send the message to the server
-        //             try {
-                       
-        //                 const response = await fetch("http://localhost:5000/auth/contact-us", {
-        //                     method: 'POST',
-        //                     headers: {'Content-Type': 'application/json',},
-        //                     credentials: 'include',
-        //                     body: JSON.stringify({ topic, emailOrPhone, message })
-        //                 });
-
-        //                 const data = await response.json();
-        //                 if (data.success) {
-        //                     setPopupOpen(true);
-        //                     clearForm();
-        //                 }
-        //                 else {
-        //                     alert(data.message);
-        //                 }
-        //             }
-        //             catch (error) {
-        //                 console.error('Error sending message:', error);
-        //                 alert('Failed to send message. Please try again.');
-        //             }
-        //         }
-        //     }
-        //     else {
-        //         //check phone number is valid or not
-        //         const phoneRegex = /^\d{10}$/;
-        //         if (!phoneRegex.test(emailOrPhone)) {
-        //             alert('Please enter a valid 10-digit phone number.');
-        //             return;
-        //         }
-        //         else {
-        //             //send the message to the server
-        //             try {
-        //                 const response = await fetch('/auth/contact-us', {
-        //                     method: 'POST',
-        //                     headers: {
-        //                         'Content-Type': 'application/json'
-        //                     },
-        //                     body: JSON.stringify({ topic, emailOrPhone, message })
-        //                 });
-        //                 const data = await response.json();
-        //                 if (data.success) {
-        //                     setPopupOpen(true);
-        //                     clearForm();
-        //                 }
-        //                 else {
-        //                     alert(data.message);
-        //                 }
-        //             }
-        //             catch (error) {
-        //                 console.error('Error sending message:', error);
-        //                 alert('Failed to send message. Please try again.');
-        //             }
-        //         }
-        //     }
-        // }
-        // else {
-        //     alert('Please fill in all fields before sending the message.');
-        // }
-        if(!topic || !emailOrPhone || !message){
+        // Validation Checks
+        if (!topic || !emailOrPhone || !message) {
             alert('Please fill in all fields before sending the message.');
             return;
         }
-        else
-        {
-            //check email or phone is valid or not
-            const isEmail = emailOrPhone.includes('@');
-            if(isEmail){
-                //check email is valid or not
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if(!emailRegex.test(emailOrPhone)){
-                    alert('Please enter a valid email address.');
-                    return;
-                }
-            }
-            else{
-                //check phone number is valid or not
-                const phoneRegex = /^\d{10}$/;
-                if(!phoneRegex.test(emailOrPhone)){
-                    alert('Please enter a valid 10-digit phone number.');
-                    return;
-                }
-            }
 
+        const isEmail = emailOrPhone.includes('@');
+        if (isEmail) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailOrPhone)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+        } else {
+            const phoneRegex = /^\d{10}$/;
+            if (!phoneRegex.test(emailOrPhone)) {
+                alert('Please enter a valid 10-digit phone number.');
+                return;
+            }
+        }
+
+        // 3. API Call to Backend
+        try {
+            setLoading(true);
             const response = await fetch("http://localhost:5000/auth/contact-us", {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json',},
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ topic, emailOrPhone, message })
+                body: JSON.stringify({ 
+                    topic, 
+                    emailOrPhone, 
+                    message,
+                    status: "pending" // Default status saved in mongoDB
+                })
             });
 
             const data = await response.json();
+
             if (data.success) {
                 setPopupOpen(true);
                 clearForm();
+            } else {
+                alert(data.message || 'Failed to submit query.');
             }
-            else {
-                alert(data.message);
-            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message. Please check server connection.');
+        } finally {
+            setLoading(false);
         }
-    }
-
+    };
 
     return (
         <div
@@ -168,10 +96,10 @@ function Contact() {
         >
             <form
                 id="contactForm"
-                onSubmit={(e) => e.preventDefault()}
+                onSubmit={handleSendMessage}
                 className="w-full max-w-[430px] bg-white p-10 rounded-[18px] shadow-[0_15px_40px_rgba(0,0,0,0.08)] flex flex-col max-[480px]:p-7 max-[480px]:rounded-2xl"
             >
-                {/* Top Row */}
+                {/* Header Row */}
                 <div className="flex justify-between items-center mb-7">
                     <p className="text-[2rem] font-bold text-[#222] max-[480px]:text-[1.7rem]">
                         Contact Us
@@ -185,7 +113,7 @@ function Contact() {
                     </a>
                 </div>
 
-                {/* OPTION 1: Direct email */}
+                {/* Direct Email Card */}
                 <div className="flex items-center gap-[15px] bg-[#f8f8f8] p-[15px] rounded-xl mb-[10px] max-[480px]:flex-col max-[480px]:text-center max-[480px]:gap-3 max-[480px]:p-[18px]">
                     <img
                         src={helperIcon}
@@ -227,10 +155,11 @@ function Contact() {
                     <div className="flex-1 border-b border-[#ccc]" />
                 </div>
 
-                {/* OPTION 2: Send message via form */}
+                {/* Input 1: Topic Dropdown */}
                 <select
-                    id="contactDropdown"
-                    defaultValue=""
+                    name="topic"
+                    value={formData.topic}
+                    onChange={handleChange}
                     className={`${inputClass} cursor-pointer text-[#444]`}
                 >
                     <option value="" disabled>Select a topic</option>
@@ -242,35 +171,40 @@ function Contact() {
                 <p className="text-[0.9rem] font-semibold text-[#444] mt-[18px] mb-2 max-[480px]:text-[0.82rem]">
                     Email or Phone
                 </p>
+
+                {/* Input 2: Email or Phone */}
                 <input
-                    id="contactEmail"
+                    name="emailOrPhone"
                     type="text"
                     placeholder="Enter your email or phone"
+                    value={formData.emailOrPhone}
+                    onChange={handleChange}
                     className={inputClass}
                 />
 
+                {/* Input 3: Message Textarea */}
                 <textarea
-                    id="contactMessage"
+                    name="message"
                     placeholder="Write your message here"
+                    value={formData.message}
+                    onChange={handleChange}
                     className={`${inputClass} h-[120px] resize-none mt-[5px]`}
                 ></textarea>
 
+                {/* Submit Button */}
                 <button
-                    className="mt-7 bg-[#14c38e] text-white border-none rounded-[10px] p-[15px] text-base font-semibold cursor-pointer transition duration-300 hover:bg-[#0ea875] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(20,195,142,0.28)]"
-                    onClick={() => {
-                        handleSendMessage(event);
-                    }}
+                    type="submit"
+                    disabled={loading}
+                    className="mt-7 bg-[#14c38e] text-white border-none rounded-[10px] p-[15px] text-base font-semibold cursor-pointer transition duration-300 hover:bg-[#0ea875] hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(20,195,142,0.28)] disabled:opacity-50"
                 >
-
-                    Send Message
+                    {loading ? "Sending..." : "Send Message"}
                 </button>
             </form>
 
-
+            {/* Success Popup */}
             {popupOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="w-[90%] max-w-[360px] bg-white px-10 py-9 rounded-[18px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] text-center">
-
                         <p className="text-[1.15rem] font-semibold text-[#14c38e] mb-[22px]">
                             We will contact you soon!
                         </p>
@@ -281,7 +215,6 @@ function Contact() {
                         >
                             Close
                         </button>
-
                     </div>
                 </div>
             )}

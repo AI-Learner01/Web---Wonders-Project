@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { collectionUserData, collectionOtps ,collectionQuries} = require("../config/db");
+const { collectionUserData, collectionOtps, collectionQuries } = require("../config/db");
 const { sendOtp } = require("../services/otpService");
 
 /**
@@ -177,11 +177,22 @@ const login = async (req, res) => {
 
     if (user) {
         const isPasswordValid = await bcrypt.compare(password, user.password);
+        const Email=user.email;
+
+        //check rol form Email (admin<number>@aura.com)
+
+        const isAdmin = /^admin(\d+)?@aura\.com$/.test(user.email);
+
         if (isPasswordValid) {
             const token = jwt.sign(
-                { "email": emailOrPhone },
+                {
+                    email: user.email,
+                    role: isAdmin ? "admin" : "user"
+                },
                 process.env.JWT_SECRET,
-                { "expiresIn": "1h" }
+                {
+                    expiresIn: "1h"
+                }
             );
             console.log("Generated Token(from server):", token);
 
@@ -201,20 +212,35 @@ const login = async (req, res) => {
     }
 };
 
-const contactUs = async (req,res) =>{
-    const { topic, emailOrPhone, message } = req.body;
+const contactUs = async (req, res) => {
+    try {
+        const { topic, emailOrPhone, message } = req.body;
 
-    // Process the contact message (e.g., save to database, send email, etc.)
+        if (!topic || !emailOrPhone || !message) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
 
-    await collectionQuries.insertOne({
-        "topic": topic,
-        "contact": emailOrPhone,
-        "message": message
-    });
+        // Standard Mongo Document Structure
+        const newQuery = {
+            topic,
+            contact: emailOrPhone,      // Saved as 'contact' or 'emailOrPhone'
+            emailOrPhone: emailOrPhone, 
+            message,
+            status: "pending",          // Default status for Admin Dashboard
+            createdAt: new Date()
+        };
 
-    // This is a placeholder - replace with actual implementation
+        await collectionQuries.insertOne(newQuery);
 
-    return res.status(200).json({ "success": true, "message": "Message sent successfully!" });
+        return res.status(200).json({
+            success: true,
+            message: "Query submitted successfully"
+        });
+
+    } catch (err) {
+        console.error("Contact US Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
 };
 
 const verifyToken = (req, res) => {
@@ -238,9 +264,12 @@ const verifyToken = (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Token is valid",
-            email: decoded.email
+            email: decoded.email,
+            role: decoded.role
         });
     });
+
+
 };
 
 const logout = (req, res) => {

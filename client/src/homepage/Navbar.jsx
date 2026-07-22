@@ -16,7 +16,7 @@ export default function Navbar() {
   const { pathname } = useLocation();
 
 
-  const [currentUserEmail, setcurrentUserEmail] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const checkCurrentUser = async () => {
     try {
 
@@ -28,14 +28,15 @@ export default function Navbar() {
       const data = await response.json();
 
       if (data.success) {
-        setcurrentUserEmail(data.email);
+        // setcurrentUser(data.email);
+        setCurrentUser({ email: data.email, role: data.role });
       }
       else {
-        setcurrentUserEmail(null);
+        setCurrentUser(null);
       }
     } catch (error) {
       console.error("Error checking current user:", error);
-      setcurrentUserEmail(null);
+      setCurrentUser(null);
     }
   }
   useEffect(() => {
@@ -43,11 +44,11 @@ export default function Navbar() {
   }, []);
 
   const navRight = () => {
-    if (currentUserEmail) {
+    if (currentUser?.email) {
       return (
         <>
           <span className="text-sm font-semibold text-[#3B443E]">
-            {currentUserEmail}
+            {currentUser?.email}
           </span>
 
           <button className="rounded-full bg-red-500 px-5 py-2 text-sm font-semibold text-white"
@@ -59,7 +60,7 @@ export default function Navbar() {
                 });
                 const data = await response.json();
                 if (data.success) {
-                  setcurrentUserEmail(null);
+                  setCurrentUser(null);
                   alert(data.message);
                 }
               } catch (error) {
