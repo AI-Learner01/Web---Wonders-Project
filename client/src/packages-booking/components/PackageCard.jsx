@@ -18,20 +18,37 @@ function PackageCard({ packageData, onBookNow }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="group bg-white rounded-2xl shadow-x1 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+            className="group overflow-hidden rounded-[32px] bg-white/35 backdrop-blur-2xl border border-white/30 shadow-[0_20px_60px_rgba(16,185,129,0.15)] hover:shadow-[0_30px_80px_rgba(16,185,129,0.28)] hover:scale-[1.03] hover:-translate-y-2 transition-all duration-500">
 
             {/* Image */}
-            <div className="relative overflow-hidden">
+            <div className="relative overflow-hidden rounded-t-[32px]">
 
                 <img
                     src={packageData.image}
                     alt={packageData.title}
-                    className="w-full h-60 object-cover group-hover:scale-110 transition-transform duration-500"
-                />
+                    className="w-full
+h-64
+object-cover
+group-hover:scale-110
+transition-transform
+duration-700"/>
 
                 <div className="absolute top-4 right-4 flex items-center gap-3">
 
-                    <button className="bg-white/90 hover:bg-red-500 hover:text-white transition-all duration-300 p-2 rounded-full shadow-md hover:scale-110">
+                    <button className="
+bg-white/30
+backdrop-blur-xl
+border
+border-white/40
+hover:bg-red-500
+hover:text-white
+transition-all
+duration-300
+p-3
+rounded-full
+shadow-lg
+hover:scale-110
+">
 
                         ❤
 
@@ -39,7 +56,17 @@ function PackageCard({ packageData, onBookNow }) {
 
 
                     {/* Badge */}
-                    <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold shadow">
+                    <div className="
+bg-emerald-600/90
+backdrop-blur-md
+text-white
+px-4
+py-1.5
+rounded-full
+text-sm
+font-semibold
+shadow-lg
+">
 
                         {packageData.badge}
 
@@ -49,7 +76,20 @@ function PackageCard({ packageData, onBookNow }) {
 
 
                 {/* Rating */}
-                <div className="absolute top-4 left-4 bg-white px-3 py-1 rounded-full flex items-center gap-1 shadow">
+                <div className="absolute
+top-4
+left-4
+bg-white/35
+backdrop-blur-xl
+border
+border-white/40
+px-3
+py-2
+rounded-full
+flex
+items-center
+gap-2
+shadow-lg">
 
                     <FaStar className="text-yellow-500" />
 
@@ -63,7 +103,7 @@ function PackageCard({ packageData, onBookNow }) {
             </div>
 
             {/* Content */}
-            <div className="p-6">
+            <div className="p-7">
 
                 <h3 className="text-2xl font-bold text-gray-800">
 
@@ -95,7 +135,7 @@ function PackageCard({ packageData, onBookNow }) {
 
                         <div
                             key={index}
-                            className="flex items-center gap-1 text-sm text-gray-700 bg-slate-100 px-3 py-2 rounded-full"
+                            className="flex items-center gap-1 text-sm text-gray-700 bg-white/30 backdrop-blur-xl border border-white/40 px-3 py-2 rounded-full shadow-sm"
                         >
 
                             {feature === "Hotel" && <FaHotel />}
@@ -132,7 +172,7 @@ function PackageCard({ packageData, onBookNow }) {
                                 className="flex items-center gap-2 text-sm text-gray-600"
                             >
 
-                                <span className="text-green-500">✔</span>
+                                <span className="text-emerald-600 font-bold">✔</span>
 
                                 <span>{place}</span>
 
@@ -156,7 +196,7 @@ function PackageCard({ packageData, onBookNow }) {
 
                     <div className="flex items-end gap-3">
 
-                        <span className="text-3xl font-bold text-blue-700">
+                        <span className="text-4xl font-extrabold text-emerald-600 drop-shadow-sm">
 
                             ₹{packageData.price.toLocaleString()}
 
@@ -177,7 +217,7 @@ function PackageCard({ packageData, onBookNow }) {
                     </div>
 
                 </div>
-                <p className="text-green-600 font-semibold mt-2">
+                <p className="text-emerald-700 font-semibold mt-2">
 
                     Save ₹
                     {(
@@ -194,8 +234,35 @@ function PackageCard({ packageData, onBookNow }) {
                         console.log("Button clicked");
                         onBookNow(packageData);
                     }}
-                    className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    > Book Now
+                    className="
+mt-7
+w-full
+rounded-2xl
+py-4
+font-bold
+text-lg
+text-white
+flex
+justify-center
+items-center
+gap-3
+
+bg-gradient-to-r
+from-emerald-500
+to-green-600
+
+hover:from-emerald-600
+hover:to-green-700
+
+shadow-lg
+hover:shadow-xl
+
+transition-all
+duration-300
+
+hover:scale-[1.02]
+"
+                > Book Now
 
                     <FaArrowRight />
 

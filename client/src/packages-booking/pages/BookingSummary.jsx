@@ -23,17 +23,17 @@ function BookingSummary({
 
     return (
 
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
 
             {/* Hero */}
 
-            <section className="bg-gradient-to-r from-blue-700 to-sky-500 text-white">
+            <section className="bg-gradient-to-r from-green-900 via-green-800 to-emerald-600 text-white">
 
                 <div className="max-w-7xl mx-auto px-6 py-16">
 
                     <button
                         onClick={onBack}
-                        className="mb-6 bg-white text-blue-700 px-5 py-2 rounded-full shadow hover:bg-blue-50 transition"
+                        className="mb-6 bg-white/15 backdrop-blur-lg border border-white/30 text-white px-5 py-2 rounded-full shadow-xl hover:bg-white/25 transition-all duration-300"
                     >
                         ← Back
                     </button>

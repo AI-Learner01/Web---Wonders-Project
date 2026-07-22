@@ -6,40 +6,54 @@ import Packages from "./pages/Packages";
 import ScrollToTop from "../components/DestinationDetailPageComponents/ScrollToTop";
 
 function PackagesWrapper() {
+
     const [packages, setPackages] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const fetchPackages = async () => {
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await fetch("http://localhost:5000/api/packages");
+
+            if (!response.ok) {
+                throw new Error("Server Error");
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                setPackages(result.data);
+            } else {
+                setError(result.message || "Unable to load packages.");
+            }
+
+        } catch (err) {
+            console.error(err);
+            setError("Unable to connect to the server.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchPackages = async () => {
-            try {
-                const response = await fetch("http://localhost:5000/api/packages");
-                const result = await response.json();
-
-                if (result.success) {
-                    setPackages(result.data);
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchPackages();
     }, []);
 
-    if (loading) {
-        return <h2>Loading...</h2>;
-    }
 
-    return <PackagesRoutes packages={packages} />;
+    return <PackagesRoutes packages={packages} loading={loading} error={error} onRetry={fetchPackages} />;
 }
 
-function PackagesRoute({packages}) {
+function PackagesRoute({ packages,loading,error,onRetry }) {
     const navigate = useNavigate();
     return (
         <Packages
             packages={packages}
+            loading={loading}
+            error={error}
+            onRetry={onRetry}
             onBookNow={(tourPackage) =>
                 navigate(`/packages/booking/${tourPackage._id}`)
             }
@@ -47,10 +61,10 @@ function PackagesRoute({packages}) {
     );
 }
 
-function BookingRoute({packages}) {
+function BookingRoute({ packages }) {
     const navigate = useNavigate();
     const { packageId } = useParams();
-    
+
     const selectedPackage = packages.find(
         (tourPackage) => tourPackage._id === packageId
     );
@@ -73,11 +87,11 @@ function BookingRoute({packages}) {
     );
 }
 
-function BookingSummaryRoute({packages}) {
+function BookingSummaryRoute({ packages }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { packageId } = useParams();
-    
+
     const selectedPackage = packages.find(
         (tourPackage) => tourPackage._id === packageId
     );
@@ -100,18 +114,20 @@ function BookingSummaryRoute({packages}) {
     );
 }
 
-function PackagesRoutes({packages}) {
+function PackagesRoutes({ packages, loading, error, onRetry }) {
     return (
         <>
-            <ScrollToTop/>
+            <ScrollToTop />
             <Routes>
                 {/* Use 'index' to guarantee it perfectly matches the base /packages route */}
-                <Route index element={<PackagesRoute packages={packages} />} />
-                
+                <Route index element={<PackagesRoute packages={packages} loading={loading}
+                    error={error}
+                    onRetry={onRetry} />} />
+
                 {/*  Relative child routes */}
                 <Route path="booking/:packageId" element={<BookingRoute packages={packages} />} />
                 <Route path="booking/:packageId/summary" element={<BookingSummaryRoute packages={packages} />} />
-                
+
                 {/* Safe absolute fallback to prevent infinite loops */}
                 <Route path="*" element={<Navigate to="/packages" replace />} />
             </Routes>

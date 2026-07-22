@@ -23,6 +23,10 @@ function Booking({ selectedPackage, onBack, onContinue }) {
 
     const [errors, setErrors] = useState({});
 
+    const [isSaving, setIsSaving] = useState(false);
+
+    const [saveError, setSaveError] = useState("");
+
     const validateBooking = () => {
 
         const newErrors = {};
@@ -56,72 +60,82 @@ function Booking({ selectedPackage, onBack, onContinue }) {
 
     const handleContinue = async () => {
 
-    if (!validateBooking()) return;
+        setSaveError("");
 
-    try {
+        setIsSaving(true);
 
-        const booking = {
+        if (!validateBooking()) return;
 
-            packageId: selectedPackage._id,
+        try {
 
-            packageTitle: selectedPackage.title,
+            const booking = {
 
-            travellerName: bookingData.name,
+                packageId: selectedPackage._id,
 
-            email: bookingData.email,
+                packageTitle: selectedPackage.title,
 
-            phone: bookingData.phone,
+                travellerName: bookingData.name,
 
-            travellers: bookingData.travellers,
+                email: bookingData.email,
 
-            travelDate: bookingData.departureDate,
+                phone: bookingData.phone,
 
-            roomType: bookingData.roomType,
+                travellers: bookingData.travellers,
 
-            services: bookingData.services,
+                travelDate: bookingData.departureDate,
 
-            totalAmount: total
+                roomType: bookingData.roomType,
 
-        };
+                services: bookingData.services,
 
-        const response = await fetch(
-            "http://localhost:5000/api/bookings",
-            {
-                method: "POST",
+                totalAmount: total
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+            };
 
-                body: JSON.stringify(booking)
+            const response = await fetch(
+                "http://localhost:5000/api/bookings",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(booking)
+                }
+            );
+
+            const result = await response.json();
+
+            if (!result.success) {
+
+                setIsSaving(false);
+
+                setSaveError("Unable to save your booking. Please try again.");
+
+                return;
+
             }
-        );
 
-        const result = await response.json();
+            console.log("Booking Saved:", result.bookingId);
 
-        if (!result.success) {
+            setIsSaving(false);
 
-            alert("Booking Failed");
-
-            return;
+            onContinue(bookingData);
 
         }
 
-        console.log("Booking Saved:", result.bookingId);
+        catch (err) {
 
-        onContinue(bookingData);
+            console.error(err);
 
-    }
+            setIsSaving(false);
 
-    catch (err) {
+            setSaveError("Unable to connect to the server.");
 
-        console.error(err);
+        }
 
-        alert("Server Error");
-
-    }
-
-};
+    };
 
     let total = selectedPackage.price * bookingData.travellers;
 
@@ -154,7 +168,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
 
             {/* Hero */}
 
-            <section className="w-full py-20 bg-gradient-to-r from-blue-700 to-sky-500 text-white">
+            <section className="w-full py-20 bg-gradient-to-r from-emerald-900 via-green-700 to-emerald-500 text-white">
 
                 <div className="max-w-7xl mx-auto px-6 py-20">
 
@@ -203,7 +217,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
 
                     <div>
 
-                        <div className="bg-white rounded-3xl shadow-xl p-6 sticky top-6">
+                        <div className="bg-white/60 backdrop-blur-xl border border-white/30 rounded-3xl shadow-2xl p-6 sticky top-6">
 
                             <h2 className="text-2xl font-bold">
 
@@ -292,7 +306,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
                                 </div>
 
 
-                                <div className="flex justify-between font-bold text-blue-700 text-xl pt-4">
+                                <div className="flex justify-between font-bold text-green-700 text-xl pt-4">
 
                                     <span>Total</span>
 
@@ -302,11 +316,39 @@ function Booking({ selectedPackage, onBack, onContinue }) {
 
                             </div>
 
-                            <button
+                            {saveError && (
+                                <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4">
+                                    <p className="text-sm font-medium text-red-700">
+                                        {saveError}
+                                    </p>
+                                </div>
+                            )}
+
+                            <button disabled={isSaving}
                                 onClick={handleContinue}
-                                className="mt-10 w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white py-4 rounded-2xl font-bold text-lg transition"
+                                className={`mt-10 w-full py-4 rounded-2xl font-bold text-lg transition
+${isSaving
+                                        ? "bg-gray-400 cursor-not-allowed"
+                                        : "bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:shadow-[0_0_35px_rgba(16,185,129,0.5)] text-white"
+                                    }`}
                             >
-                                Continue to Review →
+                                {
+                                    isSaving ? (
+
+                                        <div className="flex items-center justify-center gap-3">
+
+                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+
+                                            Saving Booking...
+
+                                        </div>
+
+                                    ) : (
+
+                                        "Continue to Review →"
+
+                                    )
+                                }
                             </button>
                         </div>
 
