@@ -13,6 +13,7 @@ function Contact() {
 
     const [loading, setLoading] = useState(false);
     const [popupOpen, setPopupOpen] = useState(false);
+    const [receiptNo, setReceiptNo] = useState(""); // Receipt Number State
 
     const inputClass =
         "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
@@ -75,6 +76,7 @@ function Contact() {
             const data = await response.json();
 
             if (data.success) {
+                setReceiptNo(data.receiptNo || "N/A"); // Set Receipt Number from DB
                 setPopupOpen(true);
                 clearForm();
             } else {
@@ -201,17 +203,32 @@ function Contact() {
                 </button>
             </form>
 
-            {/* Success Popup */}
+            {/* Success Popup with Receipt Info */}
             {popupOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="w-[90%] max-w-[360px] bg-white px-10 py-9 rounded-[18px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] text-center">
-                        <p className="text-[1.15rem] font-semibold text-[#14c38e] mb-[22px]">
-                            We will contact you soon!
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="w-full max-w-[380px] bg-white px-7 py-8 rounded-[20px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] text-center">
+                        <div className="w-12 h-12 bg-[#eef8eb] text-[#14c38e] rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
+                            ✓
+                        </div>
+
+                        <h3 className="text-xl font-bold text-[#222] mb-1">
+                            Query Pushed!
+                        </h3>
+
+                        <div className="bg-[#f8fafc] border border-dashed border-[#cbd5e1] p-3 rounded-lg my-4">
+                            <p className="text-xs text-gray-500 font-semibold mb-1">RECEIPT / REF NO.</p>
+                            <p className="text-sm font-mono font-bold text-[#14c38e] break-all select-all">
+                                {receiptNo}
+                            </p>
+                        </div>
+
+                        <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                            A confirmation receipt email has been sent. Our team will contact you soon!
                         </p>
 
                         <button
                             onClick={() => setPopupOpen(false)}
-                            className="bg-[#222] text-white rounded-[10px] px-[30px] py-3 text-[15px] font-semibold transition duration-300 hover:bg-[#0ea875] hover:-translate-y-0.5"
+                            className="bg-[#222] text-white rounded-[10px] w-full py-3 text-[15px] font-semibold transition duration-300 hover:bg-[#14c38e] hover:-translate-y-0.5"
                         >
                             Close
                         </button>

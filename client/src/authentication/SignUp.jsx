@@ -153,7 +153,7 @@ function Signup() {
                 return;
             }
             else {
-                alert("Failed to send OTP. Please try again.");
+                alert(data.message);
                 return;
             }
         }

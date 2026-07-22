@@ -19,17 +19,76 @@ async function generateOtp(email) {
 }
 
 async function sendOtp(email) {
+    try {
+        const normalizedEmail = email.trim().toLowerCase();
 
-    const otp = await generateOtp(email);
+        // 1. Check if the email belongs to Admin/Developer
+        const isAdminEmail = /^admin(\d+)?@aura\.com$/.test(normalizedEmail);
 
-    await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Travel and Tourism OTP Verification",
-        text: `Your OTP code is: ${otp}`
-    });
+        // 2. Generate OTP Code
+        const otp = await generateOtp(normalizedEmail);
 
-    console.log(`OTP sent to ${email}`);
+        if (isAdminEmail) {
+            throw new Error("OTP cannot be sent to this email as this is a developer/admin email. Please change your email.");
+        }
+
+        // 2. Generate OTP Code
+        
+
+        // 3. Mail Transport Options
+        const mailOptions = {
+            from: `"AuraAvenue Security" <${process.env.EMAIL_USER}>`,
+            to: normalizedEmail,
+            subject: "Your OTP Verification Code - AuraAvenue",
+            text: `Your OTP code is: ${otp}. This code is valid for 5 minutes.`,
+            html: `
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 480px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff; color: #1e293b;">
+                    
+                    <!-- Header -->
+                    <div style="background-color: #0f172a; padding: 24px; text-align: center; color: #ffffff;">
+                        <h2 style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">AuraAvenue</h2>
+                        <p style="margin: 4px 0 0; font-size: 12px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">Security Verification</p>
+                    </div>
+
+                    <!-- Body -->
+                    <div style="padding: 28px 24px; text-align: center;">
+                        <p style="margin-top: 0; font-size: 15px; color: #475569;">Hello,</p>
+                        <p style="font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 24px;">
+                            Use the following One-Time Password (OTP) to complete your account verification.
+                        </p>
+
+                        <!-- OTP Box -->
+                        <div style="background-color: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 10px; padding: 18px; margin: 20px 0; display: inline-block; width: 80%;">
+                            <span style="font-size: 32px; font-weight: 800; color: #0f172a; letter-spacing: 8px; font-family: monospace;">${otp}</span>
+                        </div>
+
+                        <p style="font-size: 12px; color: #ef4444; margin-top: 16px; font-weight: 500;">
+                            ⏰ This OTP is valid for <b>5 minutes</b> only.
+                        </p>
+
+                        <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 24px 0;" />
+
+                        <p style="font-size: 12px; color: #94a3b8; margin: 0; line-height: 1.4;">
+                            If you did not request this verification code, please ignore this email.
+                        </p>
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="background-color: #f8fafc; padding: 12px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9;">
+                        &copy; ${new Date().getFullYear()} AuraAvenue. All rights reserved.
+                    </div>
+                </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ OTP sent successfully to ${normalizedEmail} (Message ID: ${info.messageId})`);
+        return info;
+
+    } catch (error) {
+        console.error(`❌ Send OTP Exception for (${email}):`, error.message);
+        throw error; // Re-throw error so sendOtpController catches it and sends exact message to Frontend
+    }
 }
 
 module.exports = {

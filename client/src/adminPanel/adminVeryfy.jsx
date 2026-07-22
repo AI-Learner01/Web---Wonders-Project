@@ -18,7 +18,7 @@ export default function AdminRoute({ children }) {
 
             const data = await response.json();
 
-            if (data.success && data.role === "user") {
+            if (data.success && data.role === "admin") {
                 setIsAdmin(true);
             }
         } catch (err) {
