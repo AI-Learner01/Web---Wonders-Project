@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-import helperIcon from "../assets/helper-icon.jpg";
-import loginBg from "../assets/login-bg.jpg";
+// import helperIcon from "../assets/helper-icon.jpg";
+// import loginBg from "../assets/login-bg.jpg";
+const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,w_1920/v1784311631/login-bg_our3np.jpg";
+const helperIcon = "https://res.cloudinary.com/xzjjff1k/image/upload/v1784309997/helper-icon_znhxx3.jpg";
 
 /**
  * Developer Guide:

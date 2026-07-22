@@ -1,6 +1,8 @@
 import React from 'react'
+import { useNavigate } from "react-router-dom";
 
 const DestinationCard = ({
+    slug,
     name,
     country,
     description,
@@ -8,6 +10,8 @@ const DestinationCard = ({
     rating,
     featured,
 }) => {
+
+    const navigate = useNavigate();
     return (
         <>
             {/* destination card */}
@@ -42,11 +46,13 @@ const DestinationCard = ({
                     </div>
                 </div>
                 <div className="flex justify-center mt-auto pt-4 pb-5">
-                    <button className="group mt-2 mb-4 cursor-pointer flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-600">
+                    <button 
+                    onClick={() => navigate(`/destinations/${slug}`)}
+                    className="group mt-2 mb-4 cursor-pointer flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-600">
                         <span>Explore</span>
 
                         <svg
-                            className="w-6 h-6 transition-transform duration-300 group-hover:rotate-45"
+                            className="w-6 h-6 transition-transform duration-300 group-hover:rotate-44"
                             viewBox="0 0 25 25"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"

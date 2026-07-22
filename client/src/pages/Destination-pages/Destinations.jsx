@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import Navbar from '../../components/DestinationDetailPageComponents/Navbar'
-import herodest from '../../assets/Images/herobgdest.jpg'
-// import SearchBar from '../components/SearchBar';
+
 import { images } from '../../data-destination/imageUrls';
 import DestinationCard from '../../components/DestinationDetailPageComponents/DestinationCard';
 import { destinations } from "../../data-destination/destinations"
@@ -85,7 +83,6 @@ const Destinations = () => {
 
     return (
         <>
-            <Navbar />
 
             {/* hero section */}
             <section className='relative h-screen min-h-[600px] w-full bg-cover bg-center bg-no-repeat' style={{ backgroundImage: `url(${images.hero.destinations})` }}>

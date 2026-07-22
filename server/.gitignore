@@ -1,15 +1,20 @@
 # Dependencies
 node_modules/
 
-# Environment variables / Secrets
+# Environment Variables
 .env
-.env.local
 
 # Logs
 logs
 *.log
 npm-debug.log*
 
-# OS Refuses (Optional but good)
+# OS Files
 .DS_Store
 Thumbs.db
+
+# VS Code
+.vscode/
+
+# Coverage
+coverage/
