@@ -50,8 +50,8 @@ function PackageSection({
             {showAll ? (
                 // Responsive Grid View
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-2">
-                    {packages.map((item) => (
-                        <div key={item.id} className="w-full flex justify-center">
+                    {packages.map((item, index) => (
+                        <div key={item._id || item.id || index} className="w-full flex justify-center">
                             <PackageCard
                                 packageData={item}
                                 onBookNow={onBookNow}
@@ -76,9 +76,9 @@ function PackageSection({
                         className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar snap-x snap-mandatory px-4 py-4"
                         style={{ willChange: "scroll-position" }}
                     >
-                        {packages.map((item) => (
+                        {packages.map((item, index) => (
                             <div
-                                key={item.id}
+                                key={item._id || item.id || index}
                                 // Added transform-gpu here to ensure the container itself is hardware accelerated
                                 className="min-w-[320px] max-w-[320px] flex-shrink-0 snap-start transform-gpu"
                             >
