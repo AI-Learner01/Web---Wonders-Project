@@ -118,11 +118,11 @@ const Destinations = () => {
         if (searchQuery.destination.trim()) {
             // Convert to a slug format (e.g., "New York" becomes "new-york")
             const searchSlug = searchQuery.destination
-                               .trim()
-                               .normalize('NFD')
-                               .replace(/[\u0300-\u036f]/g, "") // Remove accent characters
-                               .toLowerCase()
-                               .replace(/\s+/g, '-'); // Replace spaces with hyphens
+                .trim()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, "") // Remove accent characters
+                .toLowerCase()
+                .replace(/\s+/g, '-'); // Replace spaces with hyphens
 
             // Navigate to the dynamic route you set up in App.jsx / DestApp.jsx
             navigate(`/destinations/${searchSlug}`);
@@ -229,26 +229,28 @@ const Destinations = () => {
 
 
             {/* Popular destination */}
-            <section className="py-16 bg-gray-50">
+            <section className="py-16 bg-slate-200 relative overflow-hidden">
 
-                <div className="max-w-7xl mx-auto px-6">
+                {/* Optional: Add a subtle color blob behind the text to make the glass effect visible on the light background */}
+                <div className="absolute top-10 left-10 w-64 h-64 bg-gray-500/70 rounded-full mix-blend-multiply filter blur-3xl opacity-90 animate-pulse"></div>
 
-                    {/*Seaction Heading + SLider*/}
-                    <div className="flex items-center justify-between mb-8">
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    {/*Section Heading + Slider*/}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
 
-                        <div>
-                            <h2 className="text-4xl font-bold">
+                        {/* --- GLASSMORPHISM TEXT AREA --- */}
+                        <div className="backdrop-blur-xl bg-white/40 border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-3xl py-5 px-8 inline-block">
+                            <h2 className="text-4xl font-extrabold text-slate-800 tracking-tight">
                                 Popular Destinations
                             </h2>
-
-                            <p className="text-gray-500 mt-2">
+                            <p className="text-slate-600 mt-2 font-medium">
                                 Explore our handpicked destinations around the globe.
                             </p>
                         </div>
 
 
                         {/* Left & Right Navigation Buttons */}
-                        <div className="flex gap-3">
+                        <div className="flex justify-center items-center gap-3">
 
                             <button
                                 onClick={scrollLeft}

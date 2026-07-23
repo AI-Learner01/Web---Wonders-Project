@@ -43,13 +43,13 @@ const DestinationDetailes = () => {
                 const apiData = await res.json();
 
                 if (apiData.success) {
-                    // Merge local and API data smoothly
                     setDestData({
                         name: apiData.data.title || localData?.name || slug,
                         country: apiData.data.description || localData?.country || 'Global Destination',
-                        image: apiData.data.thumbnail || localData?.image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800', // Fallback image
+                        caption: apiData.data.caption || apiData.data.travelCaption, // Set caption here
+                        image: apiData.data.heroImage || localData?.image,
                         rating: localData?.rating || 'New',
-                        about: apiData.data.extract || localData?.description || 'No detailed information available.'
+                        about: apiData.data.extract || localData?.description
                     });
                 }
 
@@ -104,13 +104,14 @@ const DestinationDetailes = () => {
                 heroImage={destData.image}
                 name={destData.name}
                 country={destData.country}
+                caption={destData.caption}
                 rating={destData.rating}
             />
-            
+
 
             {/* Pass the newly fetched Wikipedia extract down to the Tabs component */}
-            <DestDetTabs 
-                aboutText={destData.about} 
+            <DestDetTabs
+                aboutText={destData.about}
                 locationName={destData.name}
                 caption={destData.country}
             />

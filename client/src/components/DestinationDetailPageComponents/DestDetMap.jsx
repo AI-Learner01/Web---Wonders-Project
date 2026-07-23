@@ -78,7 +78,7 @@ const DestDetMap = ({ locationName, caption }) => {
 
     return (
         <div className="h-[450px] w-full overflow-hidden rounded-2xl shadow-lg relative z-0">
-            <MapContainer center={coordinates} zoom={12} scrollWheelZoom={false} className="h-full w-full">
+            <MapContainer center={coordinates} zoom={12} scrollWheelZoom={true} touchZoom={true} className="h-full w-full">
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
