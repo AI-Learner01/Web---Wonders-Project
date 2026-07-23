@@ -1,5 +1,7 @@
-const dns = require('dns');
-dns.setServers(['8.8.8.8', '1.1.1.1']);
+const dns = require('dns');// Set DNS servers to Google's and Cloudflare's public DNS servers for reliable domain name resolution
+dns.setServers(['8.8.8.8', '1.1.1.1']);// Import the DNS module and set DNS servers to Google's and Cloudflare's public DNS servers for reliable domain name resolution
+//above code is used to set the DNS servers for the application to Google's public DNS server 
+
 require("dotenv").config();
 
 const app = require("./app");

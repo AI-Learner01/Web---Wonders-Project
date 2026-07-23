@@ -1,10 +1,24 @@
 import { useState, useEffect } from "react";
 
+
+
+/**
+ * Admin Layout Component
+ * 
+ * This component serves as the main layout for the admin panel, providing navigation and rendering different sections based on the active page.
+ * @returns JSX Element representing the admin layout
+ * 
+ */
+
 import AdminSidebar from "./AdminSidebar";
 import AdminDashboard from "./AdminDashboard";
 import PendingQueries from "./PendingQueries";
 import ResolvedQueries from "./ResolvedQueries";
 import AdminOtpLogs from "./AdminOtpLogs";
+
+// 📥 Reusable Cards Import
+import ErrorModal from "../ReusableCards/ErrorModal.jsx";
+import SuccessModal from "../ReusableCards/SuccessModal.jsx";
 
 function AdminLayout() {
   const [activePage, setActivePage] = useState("dashboard");
@@ -12,6 +26,22 @@ function AdminLayout() {
   const [resolvedQueries, setResolvedQueries] = useState([]);
   const [otpLogs, setOtpLogs] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+
+  // 🔴 🟢 Modals State
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+
+  const triggerError = (msg) => {
+    setErrorMsg(msg);
+    setIsErrorOpen(true);
+  };
+
+  const triggerSuccess = (msg) => {
+    setSuccessMsg(msg);
+    setIsSuccessOpen(true);
+  };
 
   useEffect(() => {
     fetchPendingQueries();
@@ -43,9 +73,12 @@ function AdminLayout() {
       const data = await response.json();
       if (data.success) {
         setPendingQueries(data.queries ?? []);
+      } else {
+        triggerError(data.message || "Failed to fetch pending queries.");
       }
     } catch (err) {
       console.error("Error fetching pending queries:", err);
+      triggerError("Server error while fetching pending queries.");
     }
   }
 
@@ -57,9 +90,12 @@ function AdminLayout() {
       const data = await response.json();
       if (data.success) {
         setResolvedQueries(data.queries ?? []);
+      } else {
+        triggerError(data.message || "Failed to fetch resolved queries.");
       }
     } catch (err) {
       console.error("Error fetching resolved queries:", err);
+      triggerError("Server error while fetching resolved queries.");
     }
   }
 
@@ -71,9 +107,12 @@ function AdminLayout() {
       const data = await response.json();
       if (data.success) {
         setOtpLogs(data.otpLogs ?? []);
+      } else {
+        triggerError(data.message || "Failed to fetch OTP logs.");
       }
     } catch (err) {
       console.error("Error fetching OTP logs:", err);
+      triggerError("Server error while fetching OTP logs.");
     }
   }
 
@@ -96,13 +135,16 @@ function AdminLayout() {
         await fetchPendingQueries();
         await fetchResolvedQueries();
         setActivePage("dashboard");
+        // 📩 Server ka exact success response render hoga
+        triggerSuccess(data.message || "Query resolved successfully!");
       } else {
-        alert("Error - " + (data.message || "Failed to resolve query"));
+        // 📩 Server ka exact error message card me render hoga
+        triggerError(data.message || "Failed to resolve query.");
         setActivePage("dashboard");
       }
     } catch (err) {
       console.error(err);
-      alert("Error - " + err.message);
+      triggerError(err.message || "Server connection failed.");
       setActivePage("dashboard");
     }
   }
@@ -159,6 +201,20 @@ function AdminLayout() {
           )}
         </main>
       </div>
+
+      {/* 🔴 ERROR MODAL CARD */}
+      <ErrorModal
+        isOpen={isErrorOpen}
+        message={errorMsg}
+        onClose={() => setIsErrorOpen(false)}
+      />
+
+      {/* 🟢 SUCCESS MODAL CARD */}
+      <SuccessModal
+        isOpen={isSuccessOpen}
+        message={successMsg}
+        onClose={() => setIsSuccessOpen(false)}
+      />
     </div>
   );
 }

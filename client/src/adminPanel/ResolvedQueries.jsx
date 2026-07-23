@@ -1,3 +1,11 @@
+/**
+ * this component displays a list of resolved customer queries in the admin panel.
+ * @param {Array} resolved - Array of resolved query objects
+ * @returns JSX Element representing the resolved queries section
+ */
+
+
+
 function ResolvedQueries({ resolved }) {
   return (
     <div className="space-y-4">

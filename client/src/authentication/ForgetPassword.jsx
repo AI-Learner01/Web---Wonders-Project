@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
+// 📥 Tumhare Reusable Cards Import
+import ErrorModal from '../ReusableCards/ErrorModal';
+import SuccessModal from '../ReusableCards/SuccessModal';
+
 // ==========================================
-// ⚙️ EASY CONFIGURATION (Yahan se Time badlo)
+// ⚙️ EASY CONFIGURATION
 // ==========================================
-const OTP_COOLDOWN_TIME = 10;      // Pehle page ka timer (Seconds me)
-const POPUP_COOLDOWN_TIME = 5;    // Popup window ka timer (Seconds me)
+const OTP_COOLDOWN_TIME = 10;
+const POPUP_COOLDOWN_TIME = 5;
 
 const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,w_1920/v1784311631/login-bg_our3np.jpg";
 
@@ -18,13 +22,23 @@ function ForgotPassword() {
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [showPass, setShowPass] = useState(false);
 
+    // 🔴 🟢 Modals State
+    const [errorMsg, setErrorMsg] = useState('');
+    const [isErrorOpen, setIsErrorOpen] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
+    const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+
     // Timers & Progress States
     const [cooldown, setCooldown] = useState(0);
     const [popupCooldown, setPopupCooldown] = useState(0);
 
-    // Percentage Calculation for Smooth Visual Progress Fill
     const fillPercent = cooldown > 0 ? ((OTP_COOLDOWN_TIME - cooldown) / OTP_COOLDOWN_TIME) * 100 : 0;
     const popupFillPercent = popupCooldown > 0 ? ((POPUP_COOLDOWN_TIME - popupCooldown) / POPUP_COOLDOWN_TIME) * 100 : 0;
+
+    const triggerError = (msg) => {
+        setErrorMsg(msg);
+        setIsErrorOpen(true);
+    };
 
     // Timer 1: Main Page Send OTP Button
     useEffect(() => {
@@ -49,13 +63,13 @@ function ForgotPassword() {
         if (cooldown > 0) return;
 
         if (!email.trim()) {
-            alert("Please enter your registered email address");
+            triggerError("Please enter your registered email address.");
             return;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            alert("Please enter a valid email address");
+            triggerError("Please enter a valid email address.");
             return;
         }
 
@@ -70,18 +84,17 @@ function ForgotPassword() {
             const data = await response.json();
 
             if (data.success) {
-                alert(data.message || "Verification code sent to your email.");
                 setOtp('');
                 setNewPassword('');
                 setConfirmNewPassword('');
                 setIsPopupOpen(true);
             } else {
-                alert(data.message || "Account identity credentials not found.");
+                triggerError(data.message || "Account identity credentials not found.");
                 setCooldown(0);
             }
         } catch (error) {
             console.error("Error:", error);
-            alert("Something went wrong!");
+            triggerError("Something went wrong!");
             setCooldown(0);
         }
     };
@@ -91,21 +104,20 @@ function ForgotPassword() {
         if (popupCooldown > 0) return;
 
         if (!otp.trim()) {
-            alert("Please enter the verification code");
+            triggerError("Please enter the verification code.");
             return;
         }
 
         if (newPassword.length < 8) {
-            alert("Password must be at least 8 characters long");
+            triggerError("Password must be at least 8 characters long.");
             return;
         }
 
         if (newPassword !== confirmNewPassword) {
-            alert("Passwords do not match");
+            triggerError("Passwords do not match.");
             return;
         }
 
-        // Start animation/cooldown on popup button click
         setPopupCooldown(POPUP_COOLDOWN_TIME);
 
         try {
@@ -117,18 +129,23 @@ function ForgotPassword() {
             const data = await response.json();
 
             if (data.success) {
-                alert("Password updated successfully! Redirecting to login.");
                 setIsPopupOpen(false);
-                window.location.href = "/login";
+                setSuccessMsg("Password updated successfully! Redirecting to login.");
+                setIsSuccessOpen(true);
             } else {
-                alert(data.message || "Verification failed or token expired.");
-                setPopupCooldown(0); // Reset timer if API fails
+                triggerError(data.message || "Verification failed or token expired.");
+                setPopupCooldown(0);
             }
         } catch (error) {
             console.error("Error:", error);
-            alert("Something went wrong!");
+            triggerError("Something went wrong!");
             setPopupCooldown(0);
         }
+    };
+
+    const handleSuccessClose = () => {
+        setIsSuccessOpen(false);
+        window.location.href = "/login";
     };
 
     return (
@@ -179,7 +196,7 @@ function ForgotPassword() {
                 </button>
             </form>
 
-            {/* Popup Window Modals */}
+            {/* OTP & Password Reset Modal */}
             {isPopupOpen && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center p-4 z-[999]">
                     <form
@@ -228,7 +245,6 @@ function ForgotPassword() {
                             className={inputClass}
                         />
 
-                        {/* Popup Submit Button with Fill Animation */}
                         <button
                             type="submit"
                             disabled={popupCooldown > 0}
@@ -257,6 +273,20 @@ function ForgotPassword() {
                     </form>
                 </div>
             )}
+
+            {/* 🔴 ERROR MODAL */}
+            <ErrorModal
+                isOpen={isErrorOpen}
+                message={errorMsg}
+                onClose={() => setIsErrorOpen(false)}
+            />
+
+            {/* 🟢 SUCCESS MODAL */}
+            <SuccessModal
+                isOpen={isSuccessOpen}
+                message={successMsg}
+                onClose={handleSuccessClose}
+            />
         </div>
     );
 }

@@ -1,5 +1,15 @@
 import React from 'react';
 
+/**
+ * 
+ * Admin Sidebar Component
+ * 
+ * This component provides navigation links for the admin panel, allowing users to switch between different sections such as Dashboard, Pending Queries, Resolved Queries, and Admin OTP Logs.
+ * @param {string} activePage - The currently active page
+ * @param {function} setActivePage - Function to set the active page
+ * @returns JSX Element representing the admin sidebar
+ */
+
 function AdminSidebar({ activePage, setActivePage }) {
   const navItems = [
     {

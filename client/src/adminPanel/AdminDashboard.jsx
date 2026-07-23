@@ -1,6 +1,17 @@
 import React from "react";
 
-function AdminDashboard({ pendingCount, resolvedCount, totalCount }) {
+// Admin Dashboard Component
+
+/**
+ * 
+ *this component displays the admin dashboard with key metrics about customer inquiries.
+ * @param {number} pendingCount - Number of pending queries
+ * @param {number} resolvedCount - Number of resolved queries
+ * @param {number} totalCount - Total number of queries (optional, defaults to sum of pending and resolved)
+ * @returns JSX Element representing the admin dashboard
+ */
+
+function AdminDashboard({ pendingCount, resolvedCount, totalCount }) {//props destructuring for counts of queries
   const metrics = [
     {
       title: "Pending Queries",

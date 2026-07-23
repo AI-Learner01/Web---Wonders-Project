@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
 
+/**
+ * 
+ * this component provides a contact form for users to send messages or queries to the support team. It includes fields for topic selection, email or phone input, and a message textarea. Upon submission, it sends the data to the backend and displays a success popup with a receipt number or an error modal if any issues occur.
+ * @returns JSX Element representing the contact form and its functionalities
+ */
+
+
+// 📥 Reusable Error Modal Import
+import ErrorModal from '../ReusableCards/ErrorModal';
+
 const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,w_1920/v1784311631/login-bg_our3np.jpg";
 const helperIcon = "https://res.cloudinary.com/xzjjff1k/image/upload/v1784309997/helper-icon_znhxx3.jpg";
 
@@ -13,10 +23,19 @@ function Contact() {
 
     const [loading, setLoading] = useState(false);
     const [popupOpen, setPopupOpen] = useState(false);
-    const [receiptNo, setReceiptNo] = useState(""); // Receipt Number State
+    const [receiptNo, setReceiptNo] = useState("");
+
+    // 🔴 Error Modal State
+    const [errorMsg, setErrorMsg] = useState('');
+    const [isErrorOpen, setIsErrorOpen] = useState(false);
 
     const inputClass =
         "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
+
+    const triggerError = (msg) => {
+        setErrorMsg(msg);
+        setIsErrorOpen(true);
+    };
 
     // Handle Input Changes
     const handleChange = (e) => {
@@ -37,9 +56,9 @@ function Contact() {
         e.preventDefault();
         const { topic, emailOrPhone, message } = formData;
 
-        // Validation Checks
+        // Basic Client Validations
         if (!topic || !emailOrPhone || !message) {
-            alert('Please fill in all fields before sending the message.');
+            triggerError('Please fill in all fields before sending the message.');
             return;
         }
 
@@ -47,13 +66,13 @@ function Contact() {
         if (isEmail) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(emailOrPhone)) {
-                alert('Please enter a valid email address.');
+                triggerError('Please enter a valid email address.');
                 return;
             }
         } else {
             const phoneRegex = /^\d{10}$/;
             if (!phoneRegex.test(emailOrPhone)) {
-                alert('Please enter a valid 10-digit phone number.');
+                triggerError('Please enter a valid 10-digit phone number.');
                 return;
             }
         }
@@ -69,22 +88,23 @@ function Contact() {
                     topic, 
                     emailOrPhone, 
                     message,
-                    status: "pending" // Default status saved in mongoDB
+                    status: "pending" 
                 })
             });
 
             const data = await response.json();
 
             if (data.success) {
-                setReceiptNo(data.receiptNo || "N/A"); // Set Receipt Number from DB
+                setReceiptNo(data.receiptNo || "N/A");
                 setPopupOpen(true);
                 clearForm();
             } else {
-                alert(data.message || 'Failed to submit query.');
+                // 📩 Server jo message bheje, wahi directly Card me dikhayenge
+                triggerError(data.message || 'Failed to submit query.');
             }
         } catch (error) {
             console.error('Error sending message:', error);
-            alert('Failed to send message. Please check server connection.');
+            triggerError('Failed to send message. Please check server connection.');
         } finally {
             setLoading(false);
         }
@@ -140,7 +160,7 @@ function Contact() {
                                 type="button"
                                 onClick={() => {
                                     navigator.clipboard.writeText("travelmate.supports@gmail.com");
-                                    alert("Email copied!");
+                                    // Error card / simple message trigger kar sakte hain agar chahein
                                 }}
                                 className="bg-[#f3f4f6] text-[#333] border border-[#d1d5db] rounded-lg px-[14px] py-[7px] cursor-pointer text-sm font-semibold transition duration-[250ms] hover:bg-[#e5e7eb] hover:border-[#14c38e] hover:text-[#14c38e] max-[480px]:w-full max-[480px]:max-w-[180px]"
                             >
@@ -235,6 +255,13 @@ function Contact() {
                     </div>
                 </div>
             )}
+
+            {/* 🔴 ERROR MODAL CARD */}
+            <ErrorModal
+                isOpen={isErrorOpen}
+                message={errorMsg}
+                onClose={() => setIsErrorOpen(false)}
+            />
         </div>
     );
 }

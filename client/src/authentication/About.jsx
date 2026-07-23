@@ -1,5 +1,11 @@
 import React from "react";
 
+/**
+ * this component provides information about the AuraAvenue platform, including its mission, offerings, and reasons to choose it. It also includes a navigation button to the admin panel.
+ * @returns JSX Element representing the About section of the platform
+ */
+
+
 const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,w_1920/v1784311631/login-bg_our3np.jpg";
 
 function About() {

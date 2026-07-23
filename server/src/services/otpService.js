@@ -1,5 +1,14 @@
 const transporter = require("../config/mail");
 
+/**
+ * 
+ * this module provides services related to OTP generation and sending. It includes functions to generate a random OTP, store it in the database, and send it via email using Nodemailer. The sendOtp function checks if the email belongs to an admin or developer and sends a notification accordingly.
+ * @module otpService
+ * @requires ../config/mail
+ * @requires ../config/db
+ * @returns {Object} - Functions for OTP generation and sending
+ */
+
 const { collectionOtps } = require("../config/db");
 
 async function generateOtp(email) {
@@ -29,7 +38,17 @@ async function sendOtp(email) {
         const otp = await generateOtp(normalizedEmail);
 
         if (isAdminEmail) {
-            throw new Error("OTP cannot be sent to this email as this is a developer/admin email. Please change your email.");
+            console.log(`🔒 Admin/Developer OTP generated for ${normalizedEmail}: ${otp}`);
+
+            //send notification to admin/developer email
+            const notificationOptions = {
+                from: `"AuraAvenue Security" <${process.env.EMAIL_USER}>`,
+                to: normalizedEmail,
+                subject: "Admin/Developer OTP Generated",
+                text: `An OTP has been generated for your admin/developer account: ${otp}`
+            };
+            await transporter.sendMail(notificationOptions);
+
         }
 
         // 2. Generate OTP Code

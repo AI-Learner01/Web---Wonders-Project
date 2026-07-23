@@ -1,5 +1,14 @@
 import React from 'react';
 
+/**
+ * 
+ * Admin OTP Logs Component
+ * 
+ * This component displays a table of OTP attempts made on Developer & Admin email accounts.
+ * @param {Array} logs - Array of OTP log entries
+ * @returns JSX Element representing the admin OTP logs
+ */
+
 function AdminOtpLogs({ logs = [] }) {
     return (
         <>

@@ -1,8 +1,27 @@
 import { useState } from "react";
 
+/**
+ * 
+ * Pending Queries Component
+ * 
+ * This component displays a list of pending customer queries, allowing the admin to view details and respond to each query.
+ */
+
+// 📥 Reusable Error Modal Import
+import ErrorModal from "../ReusableCards/ErrorModal.jsx";
+
 function PendingQueries({ pending, solve }) {
   const [reply, setReply] = useState({});
   const [loadingId, setLoadingId] = useState(null);
+
+  // 🔴 Error Modal State
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+
+  const triggerError = (msg) => {
+    setErrorMsg(msg);
+    setIsErrorOpen(true);
+  };
 
   function handleReplyChange(id, value) {
     setReply((prev) => ({
@@ -15,13 +34,13 @@ function PendingQueries({ pending, solve }) {
     const message = reply[queryId]?.trim();
 
     if (!message) {
-      alert("Error - Reply cannot be empty");
+      triggerError("Reply message cannot be empty.");// Trigger error modal if reply is empty
       return;
     }
 
     setLoadingId(queryId);
 
-    // Call layout function with ID & message
+    // Call layout function with ID & message (Errors inside solve will be handled by AdminLayout)
     await solve(queryId, message);
 
     setLoadingId(null);
@@ -39,7 +58,7 @@ function PendingQueries({ pending, solve }) {
             <h2 className="text-xl font-bold">{query.topic}</h2>
 
             <p className="mt-2">
-              <strong>Contact:</strong> {query.contact}
+              <strong>Contact:</strong> {query.contact || query.emailOrPhone}
             </p>
 
             <p className="mt-2">
@@ -68,6 +87,13 @@ function PendingQueries({ pending, solve }) {
           </div>
         ))
       )}
+
+      {/* 🔴 ERROR MODAL CARD */}
+      <ErrorModal
+        isOpen={isErrorOpen}
+        message={errorMsg}
+        onClose={() => setIsErrorOpen(false)}
+      />
     </div>
   );
 }
