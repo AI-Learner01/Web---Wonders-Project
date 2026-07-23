@@ -142,10 +142,10 @@ function Packages({ packages,loading,error,onRetry,onBookNow }) {
         : [];
 
     // --- Default Arrays ---
-    const popularPackages = packages.filter((pkg) => pkg.badge === "Bestseller" || pkg.badge === "Popular" || pkg.badge === "Trending");
-    const indiaPackages = packages.filter((pkg) => pkg.category === "India");
-    const asiaPackages = packages.filter((pkg) => pkg.continent === "Asia" && pkg.category === "International");
-    const worldPackages = packages.filter((pkg) => pkg.continent !== "Asia");
+    const popularPackages = packages.filter((pkg) => pkg.badge === "Bestseller" || pkg.badge === "Popular" || pkg.badge === "Trending").slice(0,8);
+    const indiaPackages = packages.filter((pkg) => pkg.category === "India").slice(0,8);
+    const asiaPackages = packages.filter((pkg) => pkg.continent === "Asia" && pkg.category === "International").slice(0,8);
+    const worldPackages = packages.filter((pkg) => pkg.continent !== "Asia").slice(0,8);
 
     return (
         <div className="min-h-screen bg-slate-50">

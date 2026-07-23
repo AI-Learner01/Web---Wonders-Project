@@ -22,12 +22,22 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
             </div>
         );
     }
+    const searchKeyword = selectedPackage.title.split(" ")[0].toLowerCase();
 
     // Filter similar packages based on the category/type of the current one
     const similarPackages = packages
-        .filter((p) => p.type === selectedPackage.type && p.id !== selectedPackage.id)
-        .slice(0, 5); // Take up to 5 similar packages
+        .filter((p) => {
+            // Ensure we don't show the exact package the user is currently looking at
+            const isNotCurrentPackage = (p._id || p.id) !== (selectedPackage._id || selectedPackage.id);
+            
+            // Check if the keyword exists in the new package's title or location
+            const titleMatch = String(p.title || "").toLowerCase().includes(searchKeyword);
+            const locationMatch = String(p.location || "").toLowerCase().includes(searchKeyword);
 
+            return isNotCurrentPackage && (titleMatch || locationMatch);
+        })
+        .slice(0, 5); // Take up to 5 similar packages
+        
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* 1. HERO SECTION */}
