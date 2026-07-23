@@ -1,15 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { images } from '../../data-destination/imageUrls';
-import DestinationCard from '../../components/DestinationDetailPageComponents/DestinationCard';
 import { destinations } from "../../data-destination/destinations"
+import DestinationCard from "../../components/DestinationDetailPageComponents/DestinationCard"
 
 const Destinations = () => {
     const navigate = useNavigate();
     // Explore All Destinations filters
     const [selectedContinent, setSelectedContinent] = useState("All");
-    const [selectedRating, setSelectedRating] = useState("All");
-    const [visibleCards, setVisibleCards] = useState(8);
+    
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(8);
 
     //Autocomplete Suggestion
     const [suggestions, setSuggestions] = useState([]);
@@ -68,15 +70,20 @@ const Destinations = () => {
     }, []);
 
     useEffect(() => {
-        //mobile set only 4 cards
+        // mobile set only 4 cards per page
         if (window.innerWidth < 640) {
-            setVisibleCards(4)
+            setItemsPerPage(4);
         }
-        // others set 8 cards
+        // others set 8 cards per page
         else {
-            setVisibleCards(8)
+            setItemsPerPage(4);
         }
-    }, [])
+    }, []);
+
+    // Reset to page 1 whenever the filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedContinent]);
 
     const continents = [
         "All",
@@ -133,17 +140,15 @@ const Destinations = () => {
 
         if (destination.featured) return false;
 
-        const continentMatch =
-            selectedContinent === "All" ||
-            destination.continent === selectedContinent;
-
-        const ratingMatch =
-            selectedRating === "All" ||
-            destination.rating >= Number(selectedRating);
-
-        return continentMatch && ratingMatch;
+        return selectedContinent === "All" || destination.continent === selectedContinent;
     });
 
+
+    // --- PAGINATION LOGIC ---
+    const indexOfLastItem = currentPage * itemsPerPage; //Finds EndPoit of that page
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage; //Finding Start Point
+    const currentDestinations = filteredDestinations.slice(indexOfFirstItem, indexOfLastItem); //Slicing the array 
+    const totalPages = Math.ceil(filteredDestinations.length / itemsPerPage);// Calculating Total Pages
 
     return (
         <>
@@ -316,74 +321,68 @@ const Destinations = () => {
 
                     </div>
 
-                    {/* Filters */}
-
-                    <div className="flex flex-wrap justify-center gap-4 mb-12">
-
-                        {/* Continent */}
-
-                        <select
-                            value={selectedContinent}
-                            onChange={(e) => setSelectedContinent(e.target.value)}
-                            className="rounded-full border px-5 py-3 shadow-sm cursor-pointer"
-                        >
-                            {
-                                continents.map((continent) => (
-                                    <option key={continent} value={continent}>
-                                        {continent}
-                                    </option>
-                                ))
-                            }
-                        </select>
-
-                        {/* Rating */}
-
-                        <select
-                            value={selectedRating}
-                            onChange={(e) => setSelectedRating(e.target.value)}
-                            className="rounded-full border px-5 py-3 shadow-sm cursor-pointer"
-                        >
-                            <option value="All">All Ratings</option>
-                            <option value="4.5">4.5+</option>
-                            <option value="4.7">4.7+</option>
-                            <option value="4.8">4.8+</option>
-                            <option value="4.9">4.9</option>
-                        </select>
-
+                    {/* Filters - Tab Style */}
+                    <div className="border-b border-gray-400 mb-12">
+                        <div className="flex overflow-x-auto no-scrollbar gap-8">
+                            {continents.map((continent) => (
+                                <button
+                                    key={continent}
+                                    onClick={() => setSelectedContinent(continent)}
+                                    className={`pb-4 text-lg font-medium whitespace-nowrap transition-colors duration-200 border-b-2 focus:outline-none cursor-pointer ${selectedContinent === continent
+                                            ? "border-emerald-500 text-emerald-600"
+                                            : "border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-500 transition-1"
+                                        }`}
+                                >
+                                    {continent}
+                                </button>
+                            ))}
+                        </div>
                     </div>
+
 
                     {/* Destination Grid */}
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-
-                        {filteredDestinations
-                            .slice(0, Math.min(visibleCards, 16))
-                            .map((destination) => (
-
-                                <DestinationCard
-                                    key={destination.id}
-                                    {...destination}
-                                />
-
-                            ))}
-
+                        {currentDestinations.map((destination) => (
+                            <DestinationCard
+                                key={destination.id}
+                                {...destination}
+                            />
+                        ))}
                     </div>
 
-                    {/* Load More */}
-
-                    {visibleCards < Math.min(filteredDestinations.length, 16) && (
-
-                        <div className="flex justify-center mt-12">
+                   {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-2 mt-12">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
+                            >
+                                Prev
+                            </button>
+                            
+                            {[...Array(totalPages)].map((_, index) => (
+                                <button
+                                    key={index + 1}
+                                    onClick={() => setCurrentPage(index + 1)}
+                                    className={`w-10 h-10 rounded-lg font-medium transition-colors cursor-pointer ${
+                                        currentPage === index + 1
+                                            ? "bg-emerald-500 text-white shadow-md border-transparent"
+                                            : "border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
+                                    }`}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
 
                             <button
-                                onClick={() => setVisibleCards((prev) => prev + 4)}
-                                className="rounded-full bg-emerald-500 px-8 py-4 text-white font-semibold hover:bg-emerald-600 transition cursor-pointer"
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
                             >
-                                Load More ↓
+                                Next
                             </button>
-
                         </div>
-
                     )}
 
                 </div>
