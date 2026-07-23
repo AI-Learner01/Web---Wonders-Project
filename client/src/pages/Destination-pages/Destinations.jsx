@@ -1,17 +1,22 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react'
-import { useNavigate } from 'react-router-dom';
 import { images } from '../../data-destination/imageUrls';
 import { destinations } from "../../data-destination/destinations"
 import DestinationCard from "../../components/DestinationDetailPageComponents/DestinationCard"
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const Destinations = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+
     // Explore All Destinations filters
-    const [selectedContinent, setSelectedContinent] = useState("All");
-    
+    const selectedContinent = searchParams.get("continent") || "All";
+
     // Pagination states
-    const [currentPage, setCurrentPage] = useState(1);
+    const currentPage = parseInt(searchParams.get("page")) || 1;
     const [itemsPerPage, setItemsPerPage] = useState(8);
+
+    // Create a reference for the top of the destination grid
+    const gridTopRef = useRef(null);
 
     //Autocomplete Suggestion
     const [suggestions, setSuggestions] = useState([]);
@@ -24,6 +29,27 @@ const Destinations = () => {
         date: '',
         guests: '1 Guest'
     });
+
+
+    // Helper function to update the continent in the URL (and reset page to 1)
+    const handleContinentChange = (continent) => {
+        setSearchParams({ continent: continent, page: 1 });
+    };
+
+
+    // Helper function to update the page in the URL and scroll on mobile
+    const handlePageChange = (page) => {
+        setSearchParams({ continent: selectedContinent, page: page });
+
+        // Auto-scroll logic for small devices
+        if (window.innerWidth < 640 && gridTopRef.current) {
+            // -80px offset accounts for your fixed h-14 navbar (56px) + some top padding
+            const yOffset = -80;
+            const y = gridTopRef.current.getBoundingClientRect().top + window.scrollY + yOffset - 100;
+
+            window.scrollTo({ top: y, behavior: "smooth" });
+        }
+    };
 
     useEffect(() => {
         const fetchSuggestions = async () => {
@@ -80,10 +106,6 @@ const Destinations = () => {
         }
     }, []);
 
-    // Reset to page 1 whenever the filter changes
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [selectedContinent]);
 
     const continents = [
         "All",
@@ -327,10 +349,10 @@ const Destinations = () => {
                             {continents.map((continent) => (
                                 <button
                                     key={continent}
-                                    onClick={() => setSelectedContinent(continent)}
+                                    onClick={() => handleContinentChange(continent)}
                                     className={`pb-4 text-lg font-medium whitespace-nowrap transition-colors duration-200 border-b-2 focus:outline-none cursor-pointer ${selectedContinent === continent
-                                            ? "border-emerald-500 text-emerald-600"
-                                            : "border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-500 transition-1"
+                                        ? "border-emerald-500 text-emerald-600"
+                                        : "border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-500 transition-1"
                                         }`}
                                 >
                                     {continent}
@@ -341,7 +363,7 @@ const Destinations = () => {
 
 
                     {/* Destination Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div ref={gridTopRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         {currentDestinations.map((destination) => (
                             <DestinationCard
                                 key={destination.id}
@@ -350,33 +372,33 @@ const Destinations = () => {
                         ))}
                     </div>
 
-                   {/* Pagination Controls */}
+
+                    {/* Pagination Controls */}
                     {totalPages > 1 && (
                         <div className="flex justify-center items-center gap-2 mt-12">
                             <button
-                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                                 disabled={currentPage === 1}
                                 className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
                             >
                                 Prev
                             </button>
-                            
+
                             {[...Array(totalPages)].map((_, index) => (
                                 <button
                                     key={index + 1}
-                                    onClick={() => setCurrentPage(index + 1)}
-                                    className={`w-10 h-10 rounded-lg font-medium transition-colors cursor-pointer ${
-                                        currentPage === index + 1
-                                            ? "bg-emerald-500 text-white shadow-md border-transparent"
-                                            : "border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
-                                    }`}
+                                    onClick={() => handlePageChange(index + 1)}
+                                    className={`w-10 h-10 rounded-lg font-medium transition-colors cursor-pointer ${currentPage === index + 1
+                                        ? "bg-emerald-500 text-white shadow-md border-transparent"
+                                        : "border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
+                                        }`}
                                 >
                                     {index + 1}
                                 </button>
                             ))}
 
                             <button
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                                 disabled={currentPage === totalPages}
                                 className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
                             >
