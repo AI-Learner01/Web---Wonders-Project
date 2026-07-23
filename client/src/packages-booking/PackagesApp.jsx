@@ -3,7 +3,14 @@ import { useEffect, useState } from "react";
 import Booking from "./pages/Booking";
 import BookingSummary from "./pages/BookingSummary";
 import Packages from "./pages/Packages";
+import PackageDetails from "./pages/PackageDetails";
 import ScrollToTop from "../components/DestinationDetailPageComponents/ScrollToTop";
+
+// Helper function to create URL-friendly titles (e.g., "Shimla & Manali" -> "shimla-manali")
+const createSlug = (title) => {
+    if (!title) return "";
+    return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+};
 
 function PackagesWrapper() {
 
@@ -46,7 +53,7 @@ function PackagesWrapper() {
     return <PackagesRoutes packages={packages} loading={loading} error={error} onRetry={fetchPackages} />;
 }
 
-function PackagesRoute({ packages,loading,error,onRetry }) {
+function PackagesRoute({ packages, loading, error, onRetry }) {
     const navigate = useNavigate();
     return (
         <Packages
@@ -55,8 +62,21 @@ function PackagesRoute({ packages,loading,error,onRetry }) {
             error={error}
             onRetry={onRetry}
             onBookNow={(tourPackage) =>
-                navigate(`/packages/booking/${tourPackage._id}`)
+                navigate(`/packages/details/${createSlug(tourPackage.title)}`)
             }
+        />
+    );
+}
+
+function PackageDetailsRoute({ packages }) {
+    const navigate = useNavigate();
+    return (
+        <PackageDetails
+            packages={packages}
+            // The actual booking logic triggered inside the details page
+            onBookNow={(tourPackage) => navigate(`/packages/booking/${createSlug(tourPackage.title)}`)}
+            // For the similar packages slider to also open details pages
+            onViewDetails={(tourPackage) => navigate(`/packages/details/${createSlug(tourPackage.title)}`)}
         />
     );
 }
@@ -65,8 +85,9 @@ function BookingRoute({ packages }) {
     const navigate = useNavigate();
     const { packageId } = useParams();
 
+    // Find the package by comparing the slugified title
     const selectedPackage = packages.find(
-        (tourPackage) => tourPackage._id === packageId
+        (tourPackage) => createSlug(tourPackage.title) === packageId
     );
 
     // If a user types a fake ID in the URL, safely send them back to the packages page
@@ -77,9 +98,9 @@ function BookingRoute({ packages }) {
     return (
         <Booking
             selectedPackage={selectedPackage}
-            onBack={() => navigate("/packages")}
+            onBack={() => navigate(`/packages/details/${createSlug(selectedPackage.title)}`)}
             onContinue={(bookingData) =>
-                navigate(`/packages/booking/${selectedPackage._id}/summary`, {
+                navigate(`/packages/booking/${createSlug(selectedPackage.title)}/summary`, {
                     state: { bookingData },
                 })
             }
@@ -93,8 +114,9 @@ function BookingSummaryRoute({ packages }) {
     const { packageId } = useParams();
 
     const selectedPackage = packages.find(
-        (tourPackage) => tourPackage._id === packageId
+        (tourPackage) => createSlug(tourPackage.title) === packageId
     );
+
     const bookingData = location.state?.bookingData;
 
     if (!selectedPackage) {
@@ -102,14 +124,14 @@ function BookingSummaryRoute({ packages }) {
     }
 
     if (!bookingData) {
-        return <Navigate to={`/packages/booking/${selectedPackage._id}`} replace />;
+        return <Navigate to={`/packages/booking/${createSlug(selectedPackage.title)}`} replace />;
     }
 
     return (
         <BookingSummary
             selectedPackage={selectedPackage}
             bookingData={bookingData}
-            onBack={() => navigate(`/packages/booking/${selectedPackage._id}`)}
+            onBack={() => navigate(`/packages/booking/${createSlug(selectedPackage.title)}`)}
         />
     );
 }
@@ -125,6 +147,7 @@ function PackagesRoutes({ packages, loading, error, onRetry }) {
                     onRetry={onRetry} />} />
 
                 {/*  Relative child routes */}
+                <Route path="details/:packageId" element={<PackageDetailsRoute packages={packages} />} />
                 <Route path="booking/:packageId" element={<BookingRoute packages={packages} />} />
                 <Route path="booking/:packageId/summary" element={<BookingSummaryRoute packages={packages} />} />
 

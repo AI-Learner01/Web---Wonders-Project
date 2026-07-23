@@ -161,7 +161,7 @@ function Packages({ packages,loading,error,onRetry,onBookNow }) {
                     transition={{ duration: 0.8 }}
                     className="relative max-w-7xl mx-auto px-6 h-full flex flex-col justify-center"
                 >
-                    <span className="bg-orange-500 text-white px-5 py-2 rounded-full w-fit font-semibold mb-5">
+                    <span className="bg-emerald-600 text-white px-5 py-2 rounded-full w-fit font-semibold mb-5 shadow-md">
                         🌍 Explore the World
                     </span>
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight max-w-3xl">
@@ -172,8 +172,8 @@ function Packages({ packages,loading,error,onRetry,onBookNow }) {
                     </p>
                     <button
                         onClick={scrollToPackages}
-                        className="mt-8 bg-blue-600 hover:bg-blue-700 transition px-8 py-4 rounded-full font-semibold text-white w-fit"
-                    >
+                        className="mt-8 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-4 rounded-full font-semibold text-white w-fit hover:scale-105"
+>
                         Explore Packages
                     </button>
                 </motion.div>
@@ -213,7 +213,7 @@ function Packages({ packages,loading,error,onRetry,onBookNow }) {
                             onClick={() => handleCategoryClick(item)}
                             className={`rounded-full px-6 py-3 shadow-md transition-all duration-300 ${selectedCategory === item
                                 ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white"
-                                : "bg-white/20 backdrop-blur-lg border border-white/30"
+                                : "bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
                                 }`}
                         >
                             {item}
@@ -231,7 +231,7 @@ function Packages({ packages,loading,error,onRetry,onBookNow }) {
                 <section className="max-w-7xl mx-auto px-6 py-16">
                     <div className="flex flex-col items-center justify-center py-24">
 
-                        <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                        <div className="w-16 h-16 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin"></div>
 
                         <h2 className="mt-8 text-2xl font-semibold text-gray-700">
                             Loading Packages...
@@ -263,7 +263,7 @@ function Packages({ packages,loading,error,onRetry,onBookNow }) {
 
             <button
                 onClick={onRetry}
-                className="mt-6 px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
+                className="mt-6 px-6 py-3 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 hover:underline font-medium"
             >
                 Retry
             </button>

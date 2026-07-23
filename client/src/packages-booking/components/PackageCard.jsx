@@ -18,7 +18,7 @@ function PackageCard({ packageData, onBookNow }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="group overflow-hidden rounded-[32px] bg-white/35 backdrop-blur-2xl border border-white/30 shadow-[0_20px_60px_rgba(16,185,129,0.15)] hover:shadow-[0_30px_80px_rgba(16,185,129,0.28)] hover:scale-[1.03] hover:-translate-y-2 transition-all duration-500">
+            className="group flex flex-col h-full overflow-hidden rounded-[32px] bg-white/35 backdrop-blur-2xl border border-white/30 shadow-[0_20px_60px_rgba(16,185,129,0.15)] hover:shadow-[0_30px_80px_rgba(16,185,129,0.28)] hover:scale-[1.03] hover:-translate-y-2 transition-all duration-500">
 
             {/* Image */}
             <div className="relative overflow-hidden rounded-t-[32px]">
@@ -103,7 +103,7 @@ shadow-lg">
             </div>
 
             {/* Content */}
-            <div className="p-7">
+            <div className="p-7 flex flex-col flex-grow">
 
                 <h3 className="text-2xl font-bold text-gray-800">
 
@@ -186,87 +186,61 @@ shadow-lg">
 
                 {/* Price */}
 
-                <div className="mt-6">
+                <div classname="mt-auto pt-6">
 
-                    <p className="text-sm text-gray-500 font-medium">
+                    <div className="mt-6">
 
-                        Starting From
+                        <p className="text-sm text-gray-500 font-medium">
+
+                            Starting From
+
+                        </p>
+
+                        <div className="flex items-end gap-3">
+
+                            <span className="text-4xl font-extrabold text-emerald-600 drop-shadow-sm">
+
+                                ₹{packageData.price.toLocaleString()}
+
+                            </span>
+
+                            <span className="text-gray-500 mb-1">
+
+                                / person
+
+                            </span>
+
+                            <span className="text-gray-400 line-through text-lg">
+
+                                ₹{packageData.originalPrice.toLocaleString()}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+                    <p className="text-emerald-700 font-semibold mt-2">
+
+                        Save ₹
+                        {(
+                            packageData.originalPrice -
+                            packageData.price
+                        ).toLocaleString()}
 
                     </p>
 
-                    <div className="flex items-end gap-3">
+                    {/* Button */}
 
-                        <span className="text-4xl font-extrabold text-emerald-600 drop-shadow-sm">
-
-                            ₹{packageData.price.toLocaleString()}
-
-                        </span>
-
-                        <span className="text-gray-500 mb-1">
-
-                            / person
-
-                        </span>
-
-                        <span className="text-gray-400 line-through text-lg">
-
-                            ₹{packageData.originalPrice.toLocaleString()}
-
-                        </span>
-
-                    </div>
-
+                    <button
+                        onClick={() => {
+                            onBookNow(packageData); // This will now trigger the details page navigation
+                        }}
+                        className="mt-7 w-full rounded-2xl py-4 font-bold text-lg text-white flex justify-center items-center gap-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                    >
+                        View Details
+                        <FaArrowRight />
+                    </button>
                 </div>
-                <p className="text-emerald-700 font-semibold mt-2">
-
-                    Save ₹
-                    {(
-                        packageData.originalPrice -
-                        packageData.price
-                    ).toLocaleString()}
-
-                </p>
-
-                {/* Button */}
-
-                <button
-                    onClick={() => {
-                        console.log("Button clicked");
-                        onBookNow(packageData);
-                    }}
-                    className="
-mt-7
-w-full
-rounded-2xl
-py-4
-font-bold
-text-lg
-text-white
-flex
-justify-center
-items-center
-gap-3
-
-bg-gradient-to-r
-from-emerald-500
-to-green-600
-
-hover:from-emerald-600
-hover:to-green-700
-
-shadow-lg
-hover:shadow-xl
-
-transition-all
-duration-300
-
-hover:scale-[1.02]
-"
-                > Book Now
-
-                    <FaArrowRight />
-
-                </button>
 
             </div>
 
