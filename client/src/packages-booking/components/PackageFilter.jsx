@@ -12,7 +12,7 @@ function PackageFilter({ filters, onFilterChange }) {
         <select 
           value={filters.destination}
           onChange={(e) => onFilterChange("destination", e.target.value)}
-          className="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500"
+          className="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
         >
           <option value="">Destination</option>
           <option value="Goa">Goa</option>
@@ -25,7 +25,7 @@ function PackageFilter({ filters, onFilterChange }) {
         <select 
           value={filters.budget}
           onChange={(e) => onFilterChange("budget", e.target.value)}
-          className="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500"
+          className="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
         >
           <option value="">Budget</option>
           <option value="10k-20k">₹10,000 - ₹20,000</option>
@@ -37,7 +37,7 @@ function PackageFilter({ filters, onFilterChange }) {
         <select 
           value={filters.duration}
           onChange={(e) => onFilterChange("duration", e.target.value)}
-          className="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500"
+          className="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
         >
           <option value="">Duration</option>
           <option value="1-3">1-3 Days</option>
@@ -49,7 +49,7 @@ function PackageFilter({ filters, onFilterChange }) {
         <select 
           value={filters.category}
           onChange={(e) => onFilterChange("category", e.target.value)}
-          className="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500"
+          className="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
         >
           <option value="">Category</option>
           <option value="Beach">Beach</option>
