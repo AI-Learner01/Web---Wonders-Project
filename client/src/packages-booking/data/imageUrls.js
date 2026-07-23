@@ -3,9 +3,9 @@ export const images = {
         destinations: "https://res.cloudinary.com/ryuoasgq/image/upload/v1783502561/herobgdest_iqqka6.jpg"
     },
     packages: {
-        bali: "https://res.cloudinary.com/ryuoasgq/image/upload/v1783506073/bali-img_ybqlli.jpg",
-        goa: "https://res.cloudinary.com/ryuoasgq/image/upload/v1783506073/goa-img_wvcz3f.jpg",
-        switzerland: "https://res.cloudinary.com/ryuoasgq/image/upload/v1783506073/switzerland-img_yvut6k.jpg",
+        bali: "https://res.cloudinary.com/ryuoasgq/image/upload/w_600,f_auto,q_auto/v1783506073/bali-img_ybqlli.jpg",
+        goa: "https://res.cloudinary.com/ryuoasgq/image/upload/w_600,f_auto,q_auto/v1783506073/goa-img_wvcz3f.jpg",
+        switzerland: "https://res.cloudinary.com/ryuoasgq/image/upload/w_600,f_auto,q_auto/v1783506073/switzerland-img_yvut6k.jpg",
         shimla: "https://res.cloudinary.com/ryuoasgq/image/upload/f_auto,q_auto,w_800/shimla_l4ipaj",
         santorini: "https://res.cloudinary.com/ryuoasgq/image/upload/f_auto,q_auto,w_800/santorini_epkpxx",
         rajasthan: "https://res.cloudinary.com/ryuoasgq/image/upload/f_auto,q_auto,w_800/rajasthan_wyfmmf",
