@@ -7,203 +7,123 @@ import {
     FaUtensils,
     FaArrowRight,
 } from "react-icons/fa";
-
 import { motion } from "framer-motion";
+import { useState } from "react";
 
-function PackageCard({ packageData, onBookNow }) {
+function PackageCard({ packageData, onBookNow, isSlider }) {
+    // 1. DYNAMIC WRAPPER: If it's a slider, completely bypass Framer Motion overhead using a native div.
+    const CardContainer = isSlider ? "div" : motion.div;
+
+    const [isLiked, setIsLiked] = useState(false);
+
+    // 2. Only apply motion props if it's in the grid view
+    const motionProps = isSlider
+        ? {}
+        : { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
+
     return (
-
-        <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="group bg-white rounded-2xl shadow-x1 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-
+        <CardContainer
+            {...motionProps}
+            // 3. PERFORMANCE FIXES: 
+            // - Replaced `transition-all` with `transition-[transform,box-shadow]`
+            // - Added `transform-gpu` to force Hardware Acceleration (GPU rendering)
+            className="group flex flex-col h-full overflow-hidden rounded-[32px] bg-white border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_60px_rgba(16,185,129,0.15)] hover:scale-[1.02] hover:-translate-y-1 transition-[transform,box-shadow] duration-300 transform-gpu"
+        >
             {/* Image */}
-            <div className="relative overflow-hidden">
-
+            <div className="relative overflow-hidden rounded-t-[32px] bg-gray-100">
                 <img
                     src={packageData.image}
                     alt={packageData.title}
-                    className="w-full h-60 object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
+                    // Added will-change-transform to smooth out the image hover scale
+                    className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700 will-change-transform"
                 />
 
                 <div className="absolute top-4 right-4 flex items-center gap-3">
-
-                    <button className="bg-white/90 hover:bg-red-500 hover:text-white transition-all duration-300 p-2 rounded-full shadow-md hover:scale-110">
-
-                        ❤
-
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation(); // Prevents the click from triggering the card link
+                            setIsLiked(!isLiked);
+                        }}
+                        className="bg-white/80 backdrop-blur-md border border-white transition-all duration-300 rounded-full p-2.5 shadow-sm hover:scale-110 z-10"
+                    >
+                        {isLiked ? "❤️" : "🤍"}
                     </button>
-
-
                     {/* Badge */}
-                    <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold shadow">
-
+                    <div className="bg-emerald-600/95 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-md">
                         {packageData.badge}
-
                     </div>
-
                 </div>
-
 
                 {/* Rating */}
-                <div className="absolute top-4 left-4 bg-white px-3 py-1 rounded-full flex items-center gap-1 shadow">
-
-                    <FaStar className="text-yellow-500" />
-
-                    <span className="font-semibold text-sm">
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-white px-3 py-2 rounded-full flex items-center gap-1.5 shadow-sm">
+                    <FaStar className="text-yellow-500 text-sm" />
+                    <span className="font-bold text-sm text-gray-800">
                         {packageData.rating}
                     </span>
-
                 </div>
-
-
             </div>
 
             {/* Content */}
-            <div className="p-6">
-
-                <h3 className="text-2xl font-bold text-gray-800">
-
+            <div className="p-7 flex flex-col flex-grow">
+                <h3 className="text-2xl font-bold text-gray-900 leading-tight">
                     {packageData.title}
-
                 </h3>
 
-                <div className="flex items-center gap-2 text-gray-500 mt-2">
-
-                    <FaMapMarkerAlt />
-
+                <div className="flex items-center gap-2 text-gray-500 mt-3 font-medium">
+                    <FaMapMarkerAlt className="text-emerald-500" />
                     <span>{packageData.location}</span>
-
                 </div>
 
-                <div className="flex items-center gap-2 mt-3 text-gray-600">
-
-                    <FaClock />
-
+                <div className="flex items-center gap-2 mt-2 text-gray-500 font-medium">
+                    <FaClock className="text-emerald-500" />
                     <span>{packageData.duration}</span>
-
                 </div>
 
-                {/* Features */}
-
-                <div className="flex flex-wrap gap-3 mt-5">
-
+                {/* Features (Pills) */}
+                <div className="flex flex-wrap gap-2 mt-5">
                     {packageData.features.map((feature, index) => (
-
                         <div
                             key={index}
-                            className="flex items-center gap-1 text-sm text-gray-700 bg-slate-100 px-3 py-2 rounded-full"
+                            className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-md"
                         >
-
-                            {feature === "Hotel" && <FaHotel />}
-
-                            {feature === "Flight" && <FaPlane />}
-
+                            {feature === "Hotel" && <FaHotel className="text-gray-400" />}
+                            {feature === "Flight" && <FaPlane className="text-gray-400" />}
                             {(feature === "Breakfast" || feature === "Meals") && (
-                                <FaUtensils />
+                                <FaUtensils className="text-gray-400" />
                             )}
-
                             <span>{feature}</span>
-
                         </div>
-
                     ))}
                 </div>
 
-                {/* Itinerary Highlights */}
-
-                <div className="mt-5">
-
-                    <h4 className="text-sm font-semibold text-gray-800 mb-2">
-
-                        ✨ Trip Highlights
-
-                    </h4>
-
-                    <div className="space-y-1">
-
-                        {packageData.itinerary.map((place, index) => (
-
-                            <div
-                                key={index}
-                                className="flex items-center gap-2 text-sm text-gray-600"
-                            >
-
-                                <span className="text-green-500">✔</span>
-
-                                <span>{place}</span>
-
-                            </div>
-
-                        ))}
-
+                {/* Price & Booking Button */}
+                <div className="mt-auto pt-8">
+                    <div>
+                        <p className="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">
+                            Starting From
+                        </p>
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-3xl font-extrabold text-emerald-600 tracking-tight">
+                                ₹ {packageData.price.toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-gray-400 font-medium">/ pp</span>
+                        </div>
+                        <p className="text-gray-400 line-through text-sm mt-1">
+                            ₹ {packageData.originalPrice.toLocaleString()}
+                        </p>
                     </div>
 
+                    <button
+                        onClick={() => onBookNow(packageData)}
+                        className="mt-6 w-full rounded-2xl py-3.5 font-bold text-lg text-white flex justify-center items-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-xl transition-all duration-300"
+                    >
+                        View Details
+                        <FaArrowRight className="text-sm" />
+                    </button>
                 </div>
-
-                {/* Price */}
-
-                <div className="mt-6">
-
-                    <p className="text-sm text-gray-500 font-medium">
-
-                        Starting From
-
-                    </p>
-
-                    <div className="flex items-end gap-3">
-
-                        <span className="text-3xl font-bold text-blue-700">
-
-                            ₹{packageData.price.toLocaleString()}
-
-                        </span>
-
-                        <span className="text-gray-500 mb-1">
-
-                            / person
-
-                        </span>
-
-                        <span className="text-gray-400 line-through text-lg">
-
-                            ₹{packageData.originalPrice.toLocaleString()}
-
-                        </span>
-
-                    </div>
-
-                </div>
-                <p className="text-green-600 font-semibold mt-2">
-
-                    Save ₹
-                    {(
-                        packageData.originalPrice -
-                        packageData.price
-                    ).toLocaleString()}
-
-                </p>
-
-                {/* Button */}
-
-                <button
-                    onClick={() => {
-                        console.log("Button clicked");
-                        onBookNow(packageData);
-                    }}
-                    className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    > Book Now
-
-                    <FaArrowRight />
-
-                </button>
-
             </div>
-
-        </motion.div>
+        </CardContainer>
     );
 }
 

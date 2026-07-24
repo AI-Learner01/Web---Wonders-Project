@@ -1,26 +1,111 @@
-import React, { useState, useRef, useEffect } from 'react'
-
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react'
 import { images } from '../../data-destination/imageUrls';
-import DestinationCard from '../../components/DestinationDetailPageComponents/DestinationCard';
 import { destinations } from "../../data-destination/destinations"
+import DestinationCard from "../../components/DestinationDetailPageComponents/DestinationCard"
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const Destinations = () => {
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // Explore All Destinations filters
-    const [selectedContinent, setSelectedContinent] = useState("All");
-    const [selectedRating, setSelectedRating] = useState("All");
-    const [visibleCards, setVisibleCards] = useState(8);
+    const selectedContinent = searchParams.get("continent") || "All";
+
+    // Pagination states
+    const currentPage = parseInt(searchParams.get("page")) || 1;
+    const [itemsPerPage, setItemsPerPage] = useState(8);
+
+    // Create a reference for the top of the destination grid
+    const gridTopRef = useRef(null);
+
+    //Autocomplete Suggestion
+    const [suggestions, setSuggestions] = useState([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Stores values entered in hero search form
+    const [searchQuery, setSearchQuery] = useState({
+        destination: '',
+        date: '',
+        guests: '1 Guest'
+    });
+
+
+    // Helper function to update the continent in the URL (and reset page to 1)
+    const handleContinentChange = (continent) => {
+        setSearchParams({ continent: continent, page: 1 });
+    };
+
+
+    // Helper function to update the page in the URL and scroll on mobile
+    const handlePageChange = (page) => {
+        setSearchParams({ continent: selectedContinent, page: page });
+
+        // Auto-scroll logic for small devices
+        if (window.innerWidth < 640 && gridTopRef.current) {
+            // -80px offset accounts for your fixed h-14 navbar (56px) + some top padding
+            const yOffset = -80;
+            const y = gridTopRef.current.getBoundingClientRect().top + window.scrollY + yOffset - 100;
+
+            window.scrollTo({ top: y, behavior: "smooth" });
+        }
+    };
 
     useEffect(() => {
-        //mobile set only 4 cards
-        if (window.innerWidth < 640) {
-            setVisibleCards(4)
-        } 
-        // others set 8 cards
-        else {
-            setVisibleCards(8)
+        const fetchSuggestions = async () => {
+            const term = searchQuery.destination.trim();
+
+            if (term.length < 2) {
+                setSuggestions([])
+                return;
+            }
+            try {
+                const res = await fetch(`http://localhost:5000/api/destinations/autocomplete?q=${term}`);
+                if (!res.ok) throw new Error("API network error");
+                const data = await res.json();
+                setSuggestions(data);
+            }
+
+            catch (err) {
+                console.warn("Backend API unavailable, falling back to local dataset matching...", err);
+                const localFallback = destinations.filter(d =>
+                    d.name.toLowerCase().startsWith(term.toLowerCase()) ||
+                    d.country.toLowerCase().startsWith(term.toLowerCase())
+                ).map(d => ({ name: d.name, country: d.country }));
+                setSuggestions(localFallback.slice(0, 6));
+            }
+
         }
-    }, [])
+        // Debounce typing inputs to optimize resource processing rates
+        const delayDebounce = setTimeout(() => {
+            fetchSuggestions();
+        }, 250);
+
+        return () => clearTimeout(delayDebounce);
+    }, [searchQuery.destination])
+
+    // Closes popup list instantly if clicking outside the elements structure bounds
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        // mobile set only 4 cards per page
+        if (window.innerWidth < 640) {
+            setItemsPerPage(4);
+        }
+        // others set 8 cards per page
+        else {
+            setItemsPerPage(4);
+        }
+    }, []);
+
 
     const continents = [
         "All",
@@ -52,113 +137,118 @@ const Destinations = () => {
         });
     };
 
-    // Stores values entered in hero search form
-    const [searchQuery, setSearchQuery] = useState({
-        destination: '',
-        date: '',
-        guests: '1 Guest'
-    });
+
 
     const handleSearch = (e) => {
         e.preventDefault();
         console.log('Searching for:', searchQuery);
-        // Integrate your routing or search API here
+
+        //Navigate the user dynamically!
+        if (searchQuery.destination.trim()) {
+            // Convert to a slug format (e.g., "New York" becomes "new-york")
+            const searchSlug = searchQuery.destination
+                .trim()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, "") // Remove accent characters
+                .toLowerCase()
+                .replace(/\s+/g, '-'); // Replace spaces with hyphens
+
+            // Navigate to the dynamic route you set up in App.jsx / DestApp.jsx
+            navigate(`/destinations/${searchSlug}`);
+        }
     };
 
     const filteredDestinations = destinations.filter((destination) => {
 
         if (destination.featured) return false;
 
-        const continentMatch =
-            selectedContinent === "All" ||
-            destination.continent === selectedContinent;
-
-        const ratingMatch =
-            selectedRating === "All" ||
-            destination.rating >= Number(selectedRating);
-
-        return continentMatch && ratingMatch;
+        return selectedContinent === "All" || destination.continent === selectedContinent;
     });
 
+
+    // --- PAGINATION LOGIC ---
+    const indexOfLastItem = currentPage * itemsPerPage; //Finds EndPoit of that page
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage; //Finding Start Point
+    const currentDestinations = filteredDestinations.slice(indexOfFirstItem, indexOfLastItem); //Slicing the array 
+    const totalPages = Math.ceil(filteredDestinations.length / itemsPerPage);// Calculating Total Pages
 
     return (
         <>
 
-            {/* hero section */}
+            {/* Hero Section */}
             <section className='relative h-screen min-h-[600px] w-full bg-cover bg-center bg-no-repeat' style={{ backgroundImage: `url(${images.hero.destinations})` }}>
-
-                {/* Light dark overlay for writing text */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/10 to-transparent" />
-
-                {/* hero content contianer */}
                 <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-4 sm:px-6 lg:px-8">
-
-                    {/* Main Heading */}
                     <div className="max-w-3xl text-left text-white mb-10">
-
                         <span className="inline-block rounded-full bg-black/50 px-4 py-1.5 text-sm font-semibold tracking-wide uppercase backdrop-blur-sm mb-4">
                             Plan Your Next Escape
                         </span>
-
                         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                            Explore the World’s <span className="text-[#3C6300]">Hidden Gems</span>
+                            Explore the World's <span className="text-[#3C6300]">Hidden Gems</span>
                         </h1>
-
-                        <br />
-                        <br />
-
+                        <br /><br />
                         <div className="inline-block max-w-2xl rounded-full border border-white/10 bg-black/50 px-6 py-3 text-[18px] text-gray backdrop-blur-[4px]">
                             <p className='brightness-150'>
-                                Discover breathtaking destinations, curated local experiences,
-                                and exclusive travel deals tailored just for you.
+                                Discover breathtaking destinations, curated local experiences, and exclusive travel deals tailored just for you.
                             </p>
                         </div>
-
                     </div>
 
-                    {/* Hero search Widget */}
+                    {/* Search Widget Container */}
                     <div className="w-full max-w-5xl rounded-2xl bg-white p-4 shadow-2xl md:p-6 backdrop-blur-md bg-white/95">
+                        <form onSubmit={handleSearch} className="grid grid-cols-1 gap-4 lg:grid-cols-4">
 
-                        <form
-                            onSubmit={handleSearch}
-                            className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-
-                            {/* Destination Input */}
-                            <div className="lg:col-span-3 flex flex-col justify-center border-b pb-2 lg:border-b-0 lg:border-r lg:pr-6">
-
+                            {/* Autocomplete Input Block */}
+                            <div ref={dropdownRef} className="lg:col-span-3 flex flex-col justify-center border-b pb-2 lg:border-b-0 lg:border-r lg:pr-6 relative">
                                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-                                    📍 Where to?
+                                    Where to?
                                 </label>
-
                                 <input
                                     type="text"
                                     placeholder="Country, city, or resort"
                                     value={searchQuery.destination}
-                                    onChange={(e) => setSearchQuery({ ...searchQuery, destination: e.target.value })}
+                                    onChange={(e) => {
+                                        setSearchQuery({ ...searchQuery, destination: e.target.value });
+                                        setShowDropdown(true);
+                                    }}
+                                    onFocus={() => setShowDropdown(true)}
                                     className="w-full bg-transparent py-1 text-lg text-gray-800 placeholder-gray-400 focus:outline-none"
                                     required
+                                    autoComplete="off"
                                 />
 
+                                {/* Interactive Suggestions Dropdown List overlay menu */}
+                                {showDropdown && suggestions.length > 0 && (
+                                    <ul className="absolute left-0 top-[105%] z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl bg-white p-2 shadow-2xl border border-gray-100 transition-all duration-200">
+                                        {suggestions.map((place, idx) => (
+                                            <li
+                                                key={idx}
+                                                onClick={() => {
+                                                    setSearchQuery({ ...searchQuery, destination: place.name });
+                                                    setShowDropdown(false);
+                                                }}
+                                                className="cursor-pointer rounded-lg px-4 py-2.5 text-left text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition font-medium flex justify-between items-center"
+                                            >
+                                                <span className="font-semibold text-gray-800">{place.name}</span>
+                                                <span className="text-xs font-semibold uppercase bg-gray-100 text-gray-400 px-2 py-0.5 rounded-md">{place.country}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
 
-                            {/* Search Button */}
+                            {/* Search Submission Buttons */}
                             <div className="lg:col-span-1 flex items-center">
-
                                 <button
                                     type="submit"
                                     className="w-full rounded-xl bg-emerald-500 py-4 px-6 font-semibold text-white transition duration-200 hover:bg-emerald-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 lg:h-full text-xl"
                                 >
                                     Search
                                 </button>
-
                             </div>
-
                         </form>
-
                     </div>
-
                 </div>
-
             </section>
             {/* Heroes Section ends */}
 
@@ -166,26 +256,28 @@ const Destinations = () => {
 
 
             {/* Popular destination */}
-            <section className="py-16 bg-gray-50">
+            <section className="py-16 bg-slate-200 relative overflow-hidden">
 
-                <div className="max-w-7xl mx-auto px-6">
+                {/* Optional: Add a subtle color blob behind the text to make the glass effect visible on the light background */}
+                <div className="absolute top-10 left-10 w-64 h-64 bg-gray-500/70 rounded-full mix-blend-multiply filter blur-3xl opacity-90 animate-pulse"></div>
 
-                    {/*Seaction Heading + SLider*/}
-                    <div className="flex items-center justify-between mb-8">
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    {/*Section Heading + Slider*/}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
 
-                        <div>
-                            <h2 className="text-4xl font-bold">
+                        {/* --- GLASSMORPHISM TEXT AREA --- */}
+                        <div className="backdrop-blur-xl bg-white/40 border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-3xl py-5 px-8 inline-block">
+                            <h2 className="text-4xl font-extrabold text-slate-800 tracking-tight">
                                 Popular Destinations
                             </h2>
-
-                            <p className="text-gray-500 mt-2">
+                            <p className="text-slate-600 mt-2 font-medium">
                                 Explore our handpicked destinations around the globe.
                             </p>
                         </div>
 
 
                         {/* Left & Right Navigation Buttons */}
-                        <div className="flex gap-3">
+                        <div className="flex justify-center items-center gap-3">
 
                             <button
                                 onClick={scrollLeft}
@@ -251,74 +343,68 @@ const Destinations = () => {
 
                     </div>
 
-                    {/* Filters */}
-
-                    <div className="flex flex-wrap justify-center gap-4 mb-12">
-
-                        {/* Continent */}
-
-                        <select
-                            value={selectedContinent}
-                            onChange={(e) => setSelectedContinent(e.target.value)}
-                            className="rounded-full border px-5 py-3 shadow-sm cursor-pointer"
-                        >
-                            {
-                                continents.map((continent) => (
-                                    <option key = {continent} value={continent}>
-                                        {continent}
-                                    </option>
-                                ))
-                            }
-                        </select>
-
-                        {/* Rating */}
-
-                        <select
-                            value={selectedRating}
-                            onChange={(e) => setSelectedRating(e.target.value)}
-                            className="rounded-full border px-5 py-3 shadow-sm cursor-pointer"
-                        >
-                            <option value="All">All Ratings</option>
-                            <option value="4.5">4.5+</option>
-                            <option value="4.7">4.7+</option>
-                            <option value="4.8">4.8+</option>
-                            <option value="4.9">4.9</option>
-                        </select>
-
+                    {/* Filters - Tab Style */}
+                    <div className="border-b border-gray-400 mb-12">
+                        <div className="flex overflow-x-auto no-scrollbar gap-8">
+                            {continents.map((continent) => (
+                                <button
+                                    key={continent}
+                                    onClick={() => handleContinentChange(continent)}
+                                    className={`pb-4 text-lg font-medium whitespace-nowrap transition-colors duration-200 border-b-2 focus:outline-none cursor-pointer ${selectedContinent === continent
+                                        ? "border-emerald-500 text-emerald-600"
+                                        : "border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-500 transition-1"
+                                        }`}
+                                >
+                                    {continent}
+                                </button>
+                            ))}
+                        </div>
                     </div>
+
 
                     {/* Destination Grid */}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-
-                        {filteredDestinations
-                            .slice(0, Math.min(visibleCards, 16))
-                            .map((destination) => (
-
-                                <DestinationCard
-                                    key={destination.id}
-                                    {...destination}
-                                />
-
-                            ))}
-
+                    <div ref={gridTopRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {currentDestinations.map((destination) => (
+                            <DestinationCard
+                                key={destination.id}
+                                {...destination}
+                            />
+                        ))}
                     </div>
 
-                    {/* Load More */}
 
-                    {visibleCards < Math.min(filteredDestinations.length, 16) && (
-
-                        <div className="flex justify-center mt-12">
-
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-2 mt-12">
                             <button
-                                onClick={() => setVisibleCards((prev) => prev+4)}
-                                className="rounded-full bg-emerald-500 px-8 py-4 text-white font-semibold hover:bg-emerald-600 transition cursor-pointer"
+                                onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
                             >
-                                Load More ↓
+                                Prev
                             </button>
 
-                        </div>
+                            {[...Array(totalPages)].map((_, index) => (
+                                <button
+                                    key={index + 1}
+                                    onClick={() => handlePageChange(index + 1)}
+                                    className={`w-10 h-10 rounded-lg font-medium transition-colors cursor-pointer ${currentPage === index + 1
+                                        ? "bg-emerald-500 text-white shadow-md border-transparent"
+                                        : "border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
+                                        }`}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
 
+                            <button
+                                onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium cursor-pointer"
+                            >
+                                Next
+                            </button>
+                        </div>
                     )}
 
                 </div>

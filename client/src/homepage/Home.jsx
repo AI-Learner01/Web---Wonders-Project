@@ -149,27 +149,64 @@ function PackageCardSkeleton() {
   );
 }
 
+// Rotating color palette for news category badges — picked deterministically
+// from the category text so real, varied categories from the live feed
+// still get consistent, readable colors without hardcoding one per item.
+const NEWS_TAG_PALETTES = [
+  { tagClass: "bg-[#1EA35B]/10 text-[#167A44]", dotClass: "bg-[#167A44]" },
+  { tagClass: "bg-[#FEF3E2] text-[#B4690E]", dotClass: "bg-[#F2A93B]" },
+  { tagClass: "bg-[#E8F0FE] text-[#1D4ED8]", dotClass: "bg-[#3B82F6]" },
+  { tagClass: "bg-[#E0F7F4] text-[#0E6E68]", dotClass: "bg-[#0E6E68]" },
+  { tagClass: "bg-[#EAF6FA] text-[#1E5FA8]", dotClass: "bg-[#1E5FA8]" },
+];
+
+function getNewsPalette(category = "") {
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) hash = (hash * 31 + category.charCodeAt(i)) >>> 0;
+  return NEWS_TAG_PALETTES[hash % NEWS_TAG_PALETTES.length];
+}
+
+function timeAgo(dateString) {
+  const then = new Date(dateString).getTime();
+  if (Number.isNaN(then)) return "";
+  const minutes = Math.floor((Date.now() - then) / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+}
+
+// Real article from the live news feed — opens the actual source article
+// (not an internal page), so we're never showing a headline that doesn't
+// lead somewhere real.
 function NewsItem({ item }) {
+  const palette = getNewsPalette(item.category);
   return (
-    <Link
-      to="/news"
+    <a
+      href={item.url}
+      target="_blank"
+      rel="noopener noreferrer"
       className="group flex items-start gap-4 rounded-2xl border border-[#E5E7E0] bg-white p-5 transition-shadow hover:shadow-md"
     >
-      <span className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full ${item.dotClass}`} aria-hidden="true" />
+      <span className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full ${palette.dotClass}`} aria-hidden="true" />
       <div className="flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${item.tagClass}`}>
-            {item.tag}
+          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${palette.tagClass}`}>
+            {item.category}
           </span>
-          <span className="text-xs text-[#8A9089]">{item.date}</span>
+          <span className="text-xs text-[#8A9089]">{timeAgo(item.publishedAt)}</span>
+          {item.source && <span className="text-xs text-[#8A9089]">· {item.source}</span>}
         </div>
         <h3 className="mt-2 text-base font-bold text-[#14201A] transition-colors duration-300 motion-reduce:transition-none group-hover:text-[#167A44]">
           {item.headline}
         </h3>
-        <p className="mt-1 text-sm text-[#6B7167]">{item.blurb}</p>
+        {item.blurb && <p className="mt-1 text-sm text-[#6B7167]">{item.blurb}</p>}
       </div>
       <ArrowIcon className="mt-1.5 h-4 w-4 flex-shrink-0 text-[#8A9089] transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:translate-x-1 group-hover:text-[#167A44]" />
-    </Link>
+    </a>
   );
 }
 
@@ -186,6 +223,20 @@ function NewsItemSkeleton() {
   );
 }
 
+function RefreshIcon({ className = "h-4 w-4" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 
 const SAVED_KEY = "auraavenue:savedDestinations";
 
@@ -198,6 +249,7 @@ function getInitialSaved() {
     return [];
   }
 }
+
 
 
 function DestinationCard({ dest, weatherEntry, isSaved, onToggleSave, compact = false }) {
@@ -269,54 +321,6 @@ const TRUST_POINTS = [
   { title: "50,000+ Happy Travelers", desc: "And counting, every year" },
 ];
 
-
-const NEWS_UPDATES = [
-  {
-    id: "japan-visa",
-    tag: "Entry Requirements",
-    date: "2 days ago",
-    headline: "Japan Extends Visa-Free Stay to 90 Days for 68 Countries",
-    blurb: "Travelers from eligible countries can now stay longer without applying for a separate visa.",
-    tagClass: "bg-[#1EA35B]/10 text-[#167A44]",
-    dotClass: "bg-[#167A44]",
-  },
-  {
-    id: "santorini-cap",
-    tag: "Travel Advisory",
-    date: "4 days ago",
-    headline: "Santorini Introduces Daily Visitor Cap Starting This Summer",
-    blurb: "A new cap on cruise-ship arrivals aims to ease crowding in Fira and Oia during peak season.",
-    tagClass: "bg-[#FEF3E2] text-[#B4690E]",
-    dotClass: "bg-[#F2A93B]",
-  },
-  {
-    id: "marrakech-routes",
-    tag: "New Route",
-    date: "1 week ago",
-    headline: "New Direct Flights Connect Marrakech to 12 European Cities",
-    blurb: "Two low-cost carriers added routes this month, cutting average travel time by nearly two hours.",
-    tagClass: "bg-[#E8F0FE] text-[#1D4ED8]",
-    dotClass: "bg-[#3B82F6]",
-  },
-  {
-    id: "machu-picchu-trail",
-    tag: "Trail Update",
-    date: "1 week ago",
-    headline: "Machu Picchu Reopens Sunrise Access After Trail Restoration",
-    blurb: "Early-morning entry permits are back on sale after a six-week maintenance closure.",
-    tagClass: "bg-[#E0F7F4] text-[#0E6E68]",
-    dotClass: "bg-[#0E6E68]",
-  },
-  {
-    id: "swiss-snowfall",
-    tag: "Weather",
-    date: "2 weeks ago",
-    headline: "Swiss Alps Resorts Report Record Early Snowfall This Season",
-    blurb: "Several resorts opened three weeks ahead of schedule thanks to an unusually cold October.",
-    tagClass: "bg-[#EAF6FA] text-[#1E5FA8]",
-    dotClass: "bg-[#1E5FA8]",
-  },
-];
 
 const DESTINATIONS = [
   {
@@ -470,9 +474,164 @@ export default function Home() {
   const [weather, setWeather] = useState({});
   const [contentReady, setContentReady] = useState(false);
   const [savedSlugs, setSavedSlugs] = useState(getInitialSaved);
+  const [newsArticles, setNewsArticles] = useState([]);
+  const [isLoadingNews, setIsLoadingNews] = useState(true);
+  const [isRefreshingNews, setIsRefreshingNews] = useState(false);
+  const [newsPage, setNewsPage] = useState(1);
+  const [newsError, setNewsError] = useState("");
+  const newsRequestIdRef = useRef(0);
   const recommendedScrollerRef = useRef(null);
   const heroScrollerRef = useRef(null);
   const [activeShowcase, setActiveShowcase] = useState(0);
+
+  // Live travel news via Currents API (currentsapi.services) — free,
+  // 1,000 requests/day, no credit card. Cached in localStorage for 20
+  // minutes so repeat visits are instant and don't burn the free quota.
+  // Pulled into a standalone function (not just inline in the effect)
+  // so the refresh button can call it too, on a different result page.
+  async function fetchNews(pageNumber, { useCache }) {
+    // Guards against a stale response landing after a newer request was
+    // already kicked off (e.g. double-clicking refresh) — only the most
+    // recent request is allowed to update state.
+    const requestId = ++newsRequestIdRef.current;
+    const NEWS_CACHE_KEY = "auraavenue:newsCache";
+    const NEWS_CACHE_TTL_MS = 20 * 60 * 1000;
+    const isCurrent = () => newsRequestIdRef.current === requestId;
+
+    if (pageNumber === 1 && useCache) {
+      setIsLoadingNews(true);
+    } else {
+      setIsRefreshingNews(true);
+    }
+    setNewsError("");
+
+    if (useCache) {
+      try {
+        const cached = JSON.parse(window.localStorage.getItem(NEWS_CACHE_KEY) || "null");
+        if (cached && Date.now() - cached.fetchedAt < NEWS_CACHE_TTL_MS) {
+          if (isCurrent()) {
+            setNewsArticles(cached.articles);
+            setIsLoadingNews(false);
+            setIsRefreshingNews(false);
+          }
+          return;
+        }
+      } catch {
+        // Corrupt or unreadable cache entry — fall through and fetch fresh.
+      }
+    }
+
+    const apiKey = import.meta.env.VITE_CURRENTS_API_KEY;
+    if (!apiKey) {
+      if (isCurrent()) {
+        setNewsError("Live news isn't configured yet — add VITE_CURRENTS_API_KEY to your .env file.");
+        setIsLoadingNews(false);
+        setIsRefreshingNews(false);
+      }
+      return;
+    }
+
+    try {
+      // "keywords=travel" matched anything containing the word "travel" —
+      // time-travel movie news, "space travel" science pieces, unrelated
+      // "business travel" HR articles, etc. Currents has no dedicated
+      // travel/tourism category (closest is the broad "lifestyle_leisure"),
+      // so precision comes from a boolean query instead: match genuinely
+      // tourism-shaped phrases, explicitly exclude the common false
+      // positives. v2's /search endpoint is what documents this boolean
+      // query syntax (AND / OR / NOT / quotes / parentheses).
+      const TRAVEL_QUERY =
+        '("tourism" OR "travel destination" OR "vacation" OR "travel advisory" OR ' +
+        '"tourist visa" OR "travel guide" OR "hotel booking" OR "flight route") ' +
+        'AND NOT ("time travel" OR "space travel")';
+      const url =
+        `https://api.currentsapi.services/v2/search?query=${encodeURIComponent(TRAVEL_QUERY)}` +
+        `&language=en&page_size=8&page_number=${pageNumber}&apiKey=${encodeURIComponent(apiKey)}`;
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        const message =
+          res.status === 401 || res.status === 403
+            ? "The news provider rejected our API key."
+            : res.status === 429
+            ? "The news provider's rate limit was hit — try again shortly."
+            : `The news provider returned an error (${res.status}).`;
+        throw new Error(message);
+      }
+
+      const data = await res.json();
+      const articles = (data.news || []).slice(0, 8).map((item) => {
+        let source = "";
+        try {
+          source = new URL(item.url).hostname.replace(/^www\./, "");
+        } catch {
+          // Malformed URL from the provider — leave source blank.
+        }
+        const rawCategory = item.category?.[0];
+        const category = rawCategory
+          ? rawCategory.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+          : "Travel";
+        const blurb =
+          item.description && item.description.length > 160
+            ? `${item.description.slice(0, 160).trim()}…`
+            : item.description || "";
+
+        return {
+          id: item.id,
+          headline: item.title,
+          blurb,
+          url: item.url,
+          source,
+          category,
+          publishedAt: item.published,
+        };
+      });
+
+      if (isCurrent()) {
+        if (articles.length === 0 && pageNumber !== 1) {
+          // Ran past the last page of results for this query — wrap back
+          // to page 1 instead of showing an empty refresh. This recursive
+          // call claims its own fresh requestId, so it safely supersedes
+          // the one we're finishing here.
+          setNewsPage(1);
+          fetchNews(1, { useCache: false });
+          return;
+        }
+        setNewsArticles(articles);
+        try {
+          window.localStorage.setItem(
+            NEWS_CACHE_KEY,
+            JSON.stringify({ articles, fetchedAt: Date.now() })
+          );
+        } catch {
+          // Storage full/disabled — the fetch still succeeded, just won't cache.
+        }
+      }
+    } catch (err) {
+      if (isCurrent()) setNewsError(err.message);
+    } finally {
+      if (isCurrent()) {
+        setIsLoadingNews(false);
+        setIsRefreshingNews(false);
+      }
+    }
+  }
+
+  useEffect(() => {
+    fetchNews(1, { useCache: true });
+    // Mount-only — fetchNews is stable enough for this single initial call.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Cycles through a handful of result pages so each click surfaces a
+  // different set of real articles instead of refetching the same top
+  // results. Always bypasses the cache — refreshing should mean fresh.
+  const handleRefreshNews = () => {
+    if (isRefreshingNews) return;
+    const nextPage = (newsPage % 5) + 1;
+    setNewsPage(nextPage);
+    fetchNews(nextPage, { useCache: false });
+  };
 
  
   const handleHeroScroll = () => {
@@ -814,20 +973,36 @@ export default function Home() {
                 Updates from tours around the world
               </h2>
             </div>
-            <Link
-              to="/news"
-              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-[#167A44] hover:text-[#125E36]"
+
+            <button
+              type="button"
+              onClick={handleRefreshNews}
+              disabled={isLoadingNews || isRefreshingNews}
+              aria-label="Show different travel news"
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-[#E5E7E0] bg-white px-4 py-2 text-sm font-semibold text-[#3B443E] transition hover:bg-[#F5F4EF] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#167A44] focus-visible:ring-offset-1"
             >
-              View all updates
-              <ArrowIcon className="h-4 w-4 transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:translate-x-1" />
-            </Link>
+              <RefreshIcon className={`h-4 w-4 ${isRefreshingNews ? "animate-spin" : ""}`} />
+              {isRefreshingNews ? "Refreshing…" : "Refresh news"}
+            </button>
           </div>
 
           <div className="mt-8 space-y-4">
-            {!contentReady
-              ? Array.from({ length: 5 }).map((_, i) => <NewsItemSkeleton key={i} />)
-              : NEWS_UPDATES.map((item) => <NewsItem key={item.id} item={item} />)}
+            {isLoadingNews ? (
+              Array.from({ length: 5 }).map((_, i) => <NewsItemSkeleton key={i} />)
+            ) : newsError ? (
+              <p className="rounded-2xl border border-dashed border-[#F2A93B]/40 bg-[#FEF3E2] px-6 py-8 text-center text-sm text-[#8A5A0A]">
+                Couldn't load live news right now: {newsError}
+              </p>
+            ) : newsArticles.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-[#E5E7E0] px-6 py-8 text-center text-sm text-[#6B7167]">
+                No travel news to show right now — check back soon.
+              </p>
+            ) : (
+              newsArticles.map((item) => <NewsItem key={item.id} item={item} />)
+            )}
           </div>
+
+          
         </section>
 
         {/* ---------- Featured packages ---------- */}

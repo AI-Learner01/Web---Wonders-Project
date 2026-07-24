@@ -30,67 +30,70 @@ function PackageSection({
         }
     };
 
+    // Derived boolean to tell the card if it's currently inside a slider
+    const isSlider = !showAll;
+
     return (
         <section className="mb-16">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-bold text-gray-800">
                     {title}
                 </h2>
-
-                {/* Toggle Button */}
                 <button
                     onClick={() => setShowAll(!showAll)}
                     className="text-green-600 font-semibold hover:text-green-700 hover:underline transition"
                 >
-                    {showAll ? "Show Less ←" : "See All →"}
+                    {showAll ? "Show Less ↑" : "See All →"}
                 </button>
             </div>
 
             {showAll ? (
-                // Responsive Grid View (Shows when "See All" is clicked)
+                // Responsive Grid View
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-2">
-                    {packages.map((item) => (
-                        <div key={item.id} className="w-full flex justify-center">
+                    {packages.map((item, index) => (
+                        <div key={item._id || item.id || index} className="w-full flex justify-center">
                             <PackageCard
                                 packageData={item}
                                 onBookNow={onBookNow}
+                                isSlider={isSlider}
                             />
                         </div>
                     ))}
                 </div>
             ) : (
-                // Horizontal Slider View (Default)
+                // Horizontal Slider View
                 <div className="relative">
-                    {/* Left Arrow */}
                     <button
                         onClick={scrollLeft}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-xl border flex items-center justify-center hover:bg-green-600 hover:text-white transition"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-xl border border-gray-100 flex items-center justify-center hover:bg-green-600 hover:text-white transition"
                     >
                         <FaChevronLeft />
                     </button>
-
-                    {/* Cards Container */}
+                    
+                    {/* Added willChange style to prepare the browser for smooth scrolling */}
                     <div
                         ref={scrollRef}
-                        className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar snap-x snap-mandatory px-14 py-4"
+                        className="flex gap-6 overflow-x-auto scroll-smooth no-scrollbar snap-x snap-mandatory px-4 py-4"
+                        style={{ willChange: "scroll-position" }}
                     >
-                        {packages.map((item) => (
+                        {packages.map((item, index) => (
                             <div
-                                key={item.id}
-                                className="min-w-[350px] max-w-[350px] flex-shrink-0 snap-start"
+                                key={item._id || item.id || index}
+                                // Added transform-gpu here to ensure the container itself is hardware accelerated
+                                className="min-w-[320px] max-w-[320px] flex-shrink-0 snap-start transform-gpu"
                             >
                                 <PackageCard
                                     packageData={item}
                                     onBookNow={onBookNow}
+                                    isSlider={isSlider}
                                 />
                             </div>
                         ))}
                     </div>
 
-                    {/* Right Arrow */}
                     <button
                         onClick={scrollRight}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-xl border flex items-center justify-center hover:bg-green-600 hover:text-white transition"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-xl border border-gray-100 flex items-center justify-center hover:bg-green-600 hover:text-white transition"
                     >
                         <FaChevronRight />
                     </button>

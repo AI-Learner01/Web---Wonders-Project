@@ -1,12 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import PackageFilter from "../components/PackageFilter";
-import packages from "../data/packages";
 import PackageSection from "../components/PackageSection";
 import { motion } from "framer-motion";
 import { images } from "../data/imageUrls";
 import Navbar from "../../homepage/Navbar";
 
-function Packages({ onBookNow }) {
+function Packages({ packages, loading, error, onRetry, onBookNow }) {
     // --- States ---
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [searchInput, setSearchInput] = useState("");
@@ -19,6 +18,7 @@ function Packages({ onBookNow }) {
     });
 
     const packagesSectionRef = useRef(null);
+
 
     const categories = [
         "🏖 Beach",
@@ -73,6 +73,11 @@ function Packages({ onBookNow }) {
         setAppliedSearch("");
         setSearchInput("");
         scrollToPackages();
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
     };
 
     const clearAllFilters = () => {
@@ -147,8 +152,31 @@ function Packages({ onBookNow }) {
     const asiaPackages = packages.filter((pkg) => pkg.continent === "Asia" && pkg.category === "International");
     const worldPackages = packages.filter((pkg) => pkg.continent !== "Asia");
 
+
+    // --- Skeleton Loader Component ---
+    const SkeletonLoader = () => (
+        <section className="max-w-7xl mx-auto px-6 py-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    <div key={i} className="animate-pulse flex flex-col h-[480px] rounded-[32px] bg-white border border-gray-100 shadow-md overflow-hidden">
+                        <div className="w-full h-56 bg-gray-200"></div>
+                        <div className="p-7 flex flex-col flex-grow space-y-4">
+                            <div className="h-7 bg-gray-200 rounded-md w-3/4"></div>
+                            <div className="h-4 bg-gray-200 rounded-md w-1/2"></div>
+                            <div className="h-4 bg-gray-200 rounded-md w-full mt-4"></div>
+                            <div className="h-4 bg-gray-200 rounded-md w-full"></div>
+                            <div className="mt-auto pt-6">
+                                <div className="h-12 bg-gray-200 rounded-2xl w-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>
+    );
+
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-slate-50 relative pb-20">
             {/* Hero */}
             <section
                 className="relative min-h-[500px] md:h-[650px] bg-cover bg-center"
@@ -161,7 +189,7 @@ function Packages({ onBookNow }) {
                     transition={{ duration: 0.8 }}
                     className="relative max-w-7xl mx-auto px-6 h-full flex flex-col justify-center"
                 >
-                    <span className="bg-orange-500 text-white px-5 py-2 rounded-full w-fit font-semibold mb-5">
+                    <span className="bg-emerald-600 text-white px-5 py-2 rounded-full w-fit font-semibold mb-5 shadow-md">
                         🌍 Explore the World
                     </span>
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight max-w-3xl">
@@ -170,50 +198,32 @@ function Packages({ onBookNow }) {
                     <p className="text-gray-200 text-lg mt-6 max-w-2xl">
                         Choose from carefully curated holiday packages designed to create unforgettable travel experiences.
                     </p>
-                    <button
-                        onClick={scrollToPackages}
-                        className="mt-8 bg-blue-600 hover:bg-blue-700 transition px-8 py-4 rounded-full font-semibold text-white w-fit"
-                    >
-                        Explore Packages
-                    </button>
                 </motion.div>
             </section>
 
-            {/* Search Bar */}
-            <section className="relative z-20 -mt-12">
-                <div className="max-w-5xl mx-auto px-6">
-                    <div className="bg-white rounded-2xl shadow-2xl p-4 flex flex-col md:flex-row gap-4">
-                        <input
-                            type="text"
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearchClick()}
-                            placeholder="Search destinations (e.g. Goa, Bali, Kashmir)"
-                            className="flex-1 px-5 py-4 rounded-xl border border-gray-200 outline-none focus:border-blue-500"
-                        />
-                        <button
-                            onClick={handleSearchClick}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-semibold transition"
-                        >
-                            Search
-                        </button>
-                    </div>
-                </div>
-            </section>
+            {/* Sticky Trip Finder Widget (Overlaps Hero) */}
+            <div className="sticky top-20 z-40 max-w-6xl mx-auto px-6 -mt-12 md:-mt-16">
+                <PackageFilter
+                    searchInput={searchInput}
+                    setSearchInput={setSearchInput}
+                    handleSearchClick={handleSearchClick}
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                />
+            </div>
 
-            {/* Categories Pills */}
-            <section className="max-w-7xl mx-auto px-6 mt-8">
-                <h2 className="text-3xl font-bold text-gray-800">Popular Categories</h2>
-                <div className="flex flex-wrap gap-4 mt-8">
+            {/* Quick Access Categories Pills */}
+            <section className="max-w-7xl mx-auto px-6 mt-12 mb-8 flex flex-col items-center">
+                <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                     {categories.map((item) => (
                         <motion.button
-                            whileHover={{ scale: 1.08 }}
-                            whileTap={{ scale: 0.96 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             key={item}
                             onClick={() => handleCategoryClick(item)}
-                            className={`rounded-full px-6 py-3 shadow-md transition-all duration-300 ${selectedCategory === item
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-white text-gray-800 hover:bg-blue-500 hover:text-white"
+                            className={`rounded-full px-6 py-2.5 font-medium shadow-sm transition-all duration-300 ${selectedCategory === item
+                                    ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md border-transparent"
+                                    : "bg-white border border-gray-200 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
                                 }`}
                         >
                             {item}
@@ -222,42 +232,62 @@ function Packages({ onBookNow }) {
                 </div>
             </section>
 
-            {/* Dropdown Filters */}
-            <div className="max-w-7xl mx-auto px-6">
-                <PackageFilter filters={filters} onFilterChange={handleFilterChange} />
-            </div>
+            {/* Loading / Error States */}
+            {loading && <SkeletonLoader />}
+
+            {!loading && error && (
+                <section className="max-w-7xl mx-auto px-6 py-16">
+                    <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center shadow-sm">
+                        <div className="text-5xl mb-4">⚠️</div>
+                        <h2 className="text-2xl font-bold text-red-700">
+                            Unable to Load Packages
+                        </h2>
+                        <p className="text-gray-600 mt-2">{error}</p>
+                        <button
+                            onClick={onRetry}
+                            className="mt-6 px-6 py-3 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 hover:underline font-medium"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                </section>
+            )}
 
             {/* Packages Display Section */}
-            <section ref={packagesSectionRef} className="max-w-7xl mx-auto px-6 py-16">
-                {isFilteringActive ? (
-                    filteredPackages.length > 0 ? (
-                        <PackageSection
-                            title="Search Results"
-                            packages={filteredPackages}
-                            onBookNow={onBookNow}
-                        />
+            {!loading && !error && (
+                <section ref={packagesSectionRef} className="max-w-7xl mx-auto px-6 py-10">
+                    {isFilteringActive ? (
+                        filteredPackages.length > 0 ? (
+                            <PackageSection
+                                title="Search Results"
+                                packages={filteredPackages}
+                                onBookNow={onBookNow}
+                            />
+                        ) : (
+                            <div className="text-center py-20">
+                                <div className="text-6xl mb-4">🏜️</div>
+                                <h3 className="text-2xl font-bold text-gray-700">
+                                    No packages found matching your criteria.
+                                </h3>
+                                <p className="text-gray-500 mt-2">Try adjusting your filters or destination name.</p>
+                                <button
+                                    onClick={clearAllFilters}
+                                    className="mt-6 px-6 py-2 rounded-full bg-emerald-100 text-emerald-700 font-semibold hover:bg-emerald-200 transition"
+                                >
+                                    Clear all filters
+                                </button>
+                            </div>
+                        )
                     ) : (
-                        <div className="text-center py-12">
-                            <h3 className="text-2xl font-semibold text-gray-600">
-                                No packages found matching your criteria.
-                            </h3>
-                            <button
-                                onClick={clearAllFilters}
-                                className="mt-4 text-blue-600 hover:underline"
-                            >
-                                Clear all filters
-                            </button>
-                        </div>
-                    )
-                ) : (
-                    <>
-                        <PackageSection title="⭐ Popular Packages" packages={popularPackages} onBookNow={onBookNow} />
-                        <PackageSection title="🇮🇳 India" packages={indiaPackages} onBookNow={onBookNow} />
-                        <PackageSection title="🌏 Asia" packages={asiaPackages} onBookNow={onBookNow} />
-                        <PackageSection title="🌍 World" packages={worldPackages} onBookNow={onBookNow} />
-                    </>
-                )}
-            </section>
+                        <>
+                            <PackageSection title="🔥 Popular Packages" packages={popularPackages} onBookNow={onBookNow} />
+                            <PackageSection title="📍 India" packages={indiaPackages} onBookNow={onBookNow} />
+                            <PackageSection title="🌏 Asia" packages={asiaPackages} onBookNow={onBookNow} />
+                            <PackageSection title="✈️ World" packages={worldPackages} onBookNow={onBookNow} />
+                        </>
+                    )}
+                </section>
+            )}
         </div>
     );
 }
