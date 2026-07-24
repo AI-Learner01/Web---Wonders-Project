@@ -5,6 +5,55 @@ const { fetchLocation } = require('../services/wikiService')
 const { fetchImageFromUnsplash } = require('../services/imageService')
 
 
+// Add this below your getDestinationInfo function
+const getDestinationCardInfo = async (req, res) => {
+    try {
+        const { name } = req.query;
+        if (!name) {
+            return res.status(400).json({ success: false, message: "Location 'name' is required." });
+        }
+
+        const cleanName = name.trim();
+
+        // 1. Look for URL first from MongoDB Cache (Case-insensitive)
+        const destinationRecord = await collectionDestinations.findOne({
+            city: { $regex: `^${cleanName}$`, $options: "i" }
+        });
+
+        if (destinationRecord) {
+            // WORKFLOW MATCH: If Unsplash image exists (Hero was visited), return it!
+            if (destinationRecord.imageUrl) {
+                return res.status(200).json({ success: true, image: destinationRecord.imageUrl, source: 'unsplash' });
+            }
+            // If we previously cached a Wikipedia image, return that to save API calls
+            if (destinationRecord.wikiThumbnail) {
+                return res.status(200).json({ success: true, image: destinationRecord.wikiThumbnail, source: 'wikipedia-cache' });
+            }
+        }
+
+        // 2. If nothing in DB, take from Wikipedia
+        const wikiData = await fetchLocation(cleanName);
+        const wikiImage = wikiData && wikiData.thumbnail 
+            ? wikiData.thumbnail 
+            : "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800"; // Generic fallback
+
+        // 3. Save Wikipedia thumbnail to MongoDB so we don't fetch it again
+        await collectionDestinations.updateOne(
+            { city: { $regex: `^${cleanName}$`, $options: "i" } },
+            {
+                $set: { city: cleanName, wikiThumbnail: wikiImage },
+                $setOnInsert: { country: wikiData ? wikiData.description : "Unknown" }
+            },
+            { upsert: true }
+        );
+
+        return res.status(200).json({ success: true, image: wikiImage, source: 'wikipedia-api' });
+    }
+    catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 
 const getDestinationInfo = async (req, res) => {
     try {
@@ -152,9 +201,109 @@ const getDestinationWeather = async (req, res) => {
         });
     }
 }
+// Helper function to remove accents/diacritics (e.g., "Nāsik" -> "Nasik")
+const removeDiacritics = (str) => {
+    if (!str) return "";
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
+// Server-Side Paginated API for ~1,000 Famous Destinations
+const getPaginatedDestinations = async (req, res) => {
+    try {
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, parseInt(req.query.limit) || 8);
+        const region = req.query.continent || "India";
+        
+        const MAX_ITEMS_PER_TAB = 160; 
+        let balancedPool = [];
+
+        // 1. INDIA TAB LOGIC 
+        if (region.toLowerCase() === "india") {
+            balancedPool = await collectionDestinations
+                .find({ country: { $regex: /^India$/i } })
+                .project({ city: 1, country: 1, imageUrl: 1, wikiThumbnail: 1, rating: 1, description: 1 })
+                // Lock original insertion order to prevent shuffling when images are saved
+                .sort({ _id: 1 }) 
+                .limit(MAX_ITEMS_PER_TAB)
+                .toArray();
+        } 
+        
+        // 2. CONTINENTS TAB LOGIC (Mixed Countries, max 20 per country)
+        else {
+            let filter = {};
+            const regionMap = {
+                "Asia": ["Japan", "China", "Thailand", "Vietnam", "Malaysia", "Singapore", "Indonesia", "Maldives", "United Arab Emirates", "Sri Lanka", "South Korea", "Turkey", "Philippines"],
+                "Europe": ["France", "Switzerland", "Italy", "United Kingdom", "Spain", "Greece", "Germany", "Netherlands", "Austria", "Portugal", "Sweden", "Norway"],
+                "North America": ["United States", "Canada", "Mexico", "Cuba", "Costa Rica", "Jamaica"],
+                "South America": ["Brazil", "Argentina", "Peru", "Colombia", "Chile", "Ecuador"],
+                "Africa": ["South Africa", "Egypt", "Morocco", "Kenya", "Tanzania", "Mauritius"],
+                "Oceania": ["Australia", "New Zealand", "Fiji"]
+            };
+
+            if (regionMap[region]) {
+                filter.country = { $in: regionMap[region].map(c => new RegExp(`^${c}$`, 'i')) };
+            } else {
+                filter.continent = { $regex: `^${region.trim()}$`, $options: "i" };
+            }
+
+            const pipeline = [
+                { $match: filter },
+                // Step A: Lock order BEFORE grouping so we always pick the exact same 20 cities per country
+                { $sort: { _id: 1 } }, 
+                { $group: { _id: "$country", cities: { $push: "$$ROOT" } } },
+                { $project: { cities: { $slice: ["$cities", 20] } } },
+                { $unwind: "$cities" },
+                { $replaceRoot: { newRoot: "$cities" } },
+                // Step B: CRITICAL FIX. The $group stage scrambles document order entirely. 
+                // We MUST sort by _id again to undo the scramble and lock the grid layout permanently.
+                // (No alphabetical sort is used here).
+                { $sort: { _id: 1 } },
+                { $limit: MAX_ITEMS_PER_TAB }
+            ];
+
+            balancedPool = await collectionDestinations.aggregate(pipeline).toArray();
+        }
+
+        // 3. APPLY PAGINATION IN MEMORY
+        const totalItems = balancedPool.length;
+        const totalPages = Math.ceil(totalItems / limit);
+
+        if (page > totalPages && totalPages > 0) {
+            return res.status(200).json({ success: true, data: [], pagination: { currentPage: page, totalPages, totalItems, itemsPerPage: limit } });
+        }
+
+        const skip = (page - 1) * limit;
+        const paginatedItems = balancedPool.slice(skip, skip + limit);
+
+        // 4. FORMAT FOR FRONTEND
+        const formattedItems = paginatedItems.map((item) => {
+            const cleanCityName = removeDiacritics(item.city);
+            
+            return {
+                id: item._id,
+                name: cleanCityName,
+                slug: cleanCityName.toLowerCase().replace(/\s+/g, '-'),
+                country: item.country || "Global",
+                rating: item.rating || "4.8",
+                description: item.description || `Explore scenic spots, cultural heritage, and local experiences in ${cleanCityName}.`,
+                image: item.imageUrl || item.wikiThumbnail || "needs-fetch" 
+            };
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: formattedItems,
+            pagination: { currentPage: page, totalPages, totalItems, itemsPerPage: limit }
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 module.exports = {
     getDestinationInfo,
     getAutocompleteSuggestions,
-    getDestinationWeather
+    getDestinationWeather,
+    getDestinationCardInfo,
+    getPaginatedDestinations
 };
