@@ -11,6 +11,7 @@ import {
   HeartIcon,
 } from "../homepage/Icons";
 
+
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -53,6 +54,7 @@ class ErrorBoundary extends Component {
   }
 }
 
+
 function SmartImage({ src, alt, className = "", fallbackLabel, priority = false }) {
   const [errored, setErrored] = useState(false);
 
@@ -81,6 +83,9 @@ function SmartImage({ src, alt, className = "", fallbackLabel, priority = false 
   );
 }
 
+// WMO weather codes → a simple emoji, so the badge doesn't need an icon set.
+// Reference: https://open-meteo.com/en/docs (see "WMO Weather interpretation codes")
+
 function weatherEmoji(code) {
   if (code === 0) return "☀️";
   if (code === 1 || code === 2) return "🌤️";
@@ -95,6 +100,9 @@ function weatherEmoji(code) {
   return "🌡️";
 }
 
+/*
+ * useEffect in Home() below for the actual fetch.
+ */
 function WeatherBadge({ entry }) {
   if (!entry || entry.status === "loading") {
     return (
@@ -113,6 +121,7 @@ function WeatherBadge({ entry }) {
   );
 }
 
+/** Pulsing placeholder shown while the (simulated) listings "load". */
 function DestinationCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-[#E5E7E0] bg-white" aria-hidden="true">
@@ -140,7 +149,41 @@ function PackageCardSkeleton() {
   );
 }
 
+// Rotating color palette for news category badges — picked deterministically
+// from the category text so real, varied categories from the live feed
+// still get consistent, readable colors without hardcoding one per item.
+const NEWS_TAG_PALETTES = [
+  { tagClass: "bg-[#1EA35B]/10 text-[#167A44]", dotClass: "bg-[#167A44]" },
+  { tagClass: "bg-[#FEF3E2] text-[#B4690E]", dotClass: "bg-[#F2A93B]" },
+  { tagClass: "bg-[#E8F0FE] text-[#1D4ED8]", dotClass: "bg-[#3B82F6]" },
+  { tagClass: "bg-[#E0F7F4] text-[#0E6E68]", dotClass: "bg-[#0E6E68]" },
+  { tagClass: "bg-[#EAF6FA] text-[#1E5FA8]", dotClass: "bg-[#1E5FA8]" },
+];
+
+function getNewsPalette(category = "") {
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) hash = (hash * 31 + category.charCodeAt(i)) >>> 0;
+  return NEWS_TAG_PALETTES[hash % NEWS_TAG_PALETTES.length];
+}
+
+function timeAgo(dateString) {
+  const then = new Date(dateString).getTime();
+  if (Number.isNaN(then)) return "";
+  const minutes = Math.floor((Date.now() - then) / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+}
+
+// Real article from the live news feed — opens the actual source article
+// (not an internal page), so we're never showing a headline that doesn't
+// lead somewhere real.
 function NewsItem({ item }) {
+  const palette = getNewsPalette(item.category);
   return (
     <a
       href={item.url}
@@ -148,18 +191,19 @@ function NewsItem({ item }) {
       rel="noopener noreferrer"
       className="group flex items-start gap-4 rounded-2xl border border-[#E5E7E0] bg-white p-5 transition-shadow hover:shadow-md"
     >
-      <span className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full ${item.dotClass}`} aria-hidden="true" />
+      <span className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full ${palette.dotClass}`} aria-hidden="true" />
       <div className="flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${item.tagClass}`}>
-            {item.tag}
+          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${palette.tagClass}`}>
+            {item.category}
           </span>
-          <span className="text-xs text-[#8A9089]">{item.date}</span>
+          <span className="text-xs text-[#8A9089]">{timeAgo(item.publishedAt)}</span>
+          {item.source && <span className="text-xs text-[#8A9089]">· {item.source}</span>}
         </div>
         <h3 className="mt-2 text-base font-bold text-[#14201A] transition-colors duration-300 motion-reduce:transition-none group-hover:text-[#167A44]">
           {item.headline}
         </h3>
-        <p className="mt-1 text-sm text-[#6B7167]">{item.blurb}</p>
+        {item.blurb && <p className="mt-1 text-sm text-[#6B7167]">{item.blurb}</p>}
       </div>
       <ArrowIcon className="mt-1.5 h-4 w-4 flex-shrink-0 text-[#8A9089] transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:translate-x-1 group-hover:text-[#167A44]" />
     </a>
@@ -179,6 +223,21 @@ function NewsItemSkeleton() {
   );
 }
 
+function RefreshIcon({ className = "h-4 w-4" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+
 const SAVED_KEY = "auraavenue:savedDestinations";
 
 function getInitialSaved() {
@@ -190,6 +249,8 @@ function getInitialSaved() {
     return [];
   }
 }
+
+
 
 function DestinationCard({ dest, weatherEntry, isSaved, onToggleSave, compact = false }) {
   return (
@@ -246,8 +307,12 @@ function DestinationCard({ dest, weatherEntry, isSaved, onToggleSave, compact = 
 }
 
 /* ---------------------------------------------------------- */
-/* Data                                                       */
+/*  Data                                                       */
 /* ---------------------------------------------------------- */
+/*  Images are hotlinked from Unsplash (free to use under the  */
+/*  Unsplash License, no attribution required). Swap these for */
+/*  your own destination photos whenever you're ready — just   */
+/*  replace the `image` value with your own file/URL.          */
 
 const TRUST_POINTS = [
   { title: "Best Price Guarantee", desc: "Find it cheaper, we'll match it" },
@@ -256,58 +321,6 @@ const TRUST_POINTS = [
   { title: "50,000+ Happy Travelers", desc: "And counting, every year" },
 ];
 
-const FALLBACK_NEWS = [
-  {
-    id: "japan-visa",
-    tag: "Entry Requirements",
-    date: "2 days ago",
-    headline: "Japan Extends Visa-Free Stay to 90 Days for 68 Countries",
-    blurb: "Travelers from eligible countries can now stay longer without applying for a separate visa.",
-    tagClass: "bg-[#1EA35B]/10 text-[#167A44]",
-    dotClass: "bg-[#167A44]",
-    url: "#"
-  },
-  {
-    id: "santorini-cap",
-    tag: "Travel Advisory",
-    date: "4 days ago",
-    headline: "Santorini Introduces Daily Visitor Cap Starting This Summer",
-    blurb: "A new cap on cruise-ship arrivals aims to ease crowding in Fira and Oia during peak season.",
-    tagClass: "bg-[#FEF3E2] text-[#B4690E]",
-    dotClass: "bg-[#F2A93B]",
-    url: "#"
-  },
-  {
-    id: "marrakech-routes",
-    tag: "New Route",
-    date: "1 week ago",
-    headline: "New Direct Flights Connect Marrakech to 12 European Cities",
-    blurb: "Two low-cost carriers added routes this month, cutting average travel time by nearly two hours.",
-    tagClass: "bg-[#E8F0FE] text-[#1D4ED8]",
-    dotClass: "bg-[#3B82F6]",
-    url: "#"
-  },
-  {
-    id: "machu-picchu-trail",
-    tag: "Trail Update",
-    date: "1 week ago",
-    headline: "Machu Picchu Reopens Sunrise Access After Trail Restoration",
-    blurb: "Early-morning entry permits are back on sale after a six-week maintenance closure.",
-    tagClass: "bg-[#E0F7F4] text-[#0E6E68]",
-    dotClass: "bg-[#0E6E68]",
-    url: "#"
-  },
-  {
-    id: "swiss-snowfall",
-    tag: "Weather",
-    date: "2 weeks ago",
-    headline: "Swiss Alps Resorts Report Record Early Snowfall This Season",
-    blurb: "Several resorts opened three weeks ahead of schedule thanks to an unusually cold October.",
-    tagClass: "bg-[#EAF6FA] text-[#1E5FA8]",
-    dotClass: "bg-[#1E5FA8]",
-    url: "#"
-  },
-];
 
 const DESTINATIONS = [
   {
@@ -441,7 +454,10 @@ const PACKAGES = [
   },
 ];
 
+// Live weather per destination — free, no API key, CORS-enabled:
+// https://open-meteo.com/en/docs
 const WEATHER_ENDPOINT = "https://api.open-meteo.com/v1/forecast";
+
 
 const USD_TO_INR = 95.5;
 
@@ -451,27 +467,177 @@ function formatINR(usd) {
 }
 
 /* ---------------------------------------------------------- */
-/* Page                                                        */
+/*  Page                                                        */
 /* ---------------------------------------------------------- */
 
 export default function Home() {
   const [weather, setWeather] = useState({});
   const [contentReady, setContentReady] = useState(false);
   const [savedSlugs, setSavedSlugs] = useState(getInitialSaved);
-  
-  // State for completely dynamic news
-  const [newsUpdates, setNewsUpdates] = useState([]);
-  const [newsLoading, setNewsLoading] = useState(true);
-  const lastQueryRef = useRef(""); // Keeps track of what we just searched so we don't repeat it
-
+  const [newsArticles, setNewsArticles] = useState([]);
+  const [isLoadingNews, setIsLoadingNews] = useState(true);
+  const [isRefreshingNews, setIsRefreshingNews] = useState(false);
+  const [newsPage, setNewsPage] = useState(1);
+  const [newsError, setNewsError] = useState("");
+  const newsRequestIdRef = useRef(0);
   const recommendedScrollerRef = useRef(null);
   const heroScrollerRef = useRef(null);
   const [activeShowcase, setActiveShowcase] = useState(0);
 
+  // Live travel news via Currents API (currentsapi.services) — free,
+  // 1,000 requests/day, no credit card. Cached in localStorage for 20
+  // minutes so repeat visits are instant and don't burn the free quota.
+  // Pulled into a standalone function (not just inline in the effect)
+  // so the refresh button can call it too, on a different result page.
+  async function fetchNews(pageNumber, { useCache }) {
+    // Guards against a stale response landing after a newer request was
+    // already kicked off (e.g. double-clicking refresh) — only the most
+    // recent request is allowed to update state.
+    const requestId = ++newsRequestIdRef.current;
+    const NEWS_CACHE_KEY = "auraavenue:newsCache";
+    const NEWS_CACHE_TTL_MS = 20 * 60 * 1000;
+    const isCurrent = () => newsRequestIdRef.current === requestId;
+
+    if (pageNumber === 1 && useCache) {
+      setIsLoadingNews(true);
+    } else {
+      setIsRefreshingNews(true);
+    }
+    setNewsError("");
+
+    if (useCache) {
+      try {
+        const cached = JSON.parse(window.localStorage.getItem(NEWS_CACHE_KEY) || "null");
+        if (cached && Date.now() - cached.fetchedAt < NEWS_CACHE_TTL_MS) {
+          if (isCurrent()) {
+            setNewsArticles(cached.articles);
+            setIsLoadingNews(false);
+            setIsRefreshingNews(false);
+          }
+          return;
+        }
+      } catch {
+        // Corrupt or unreadable cache entry — fall through and fetch fresh.
+      }
+    }
+
+    const apiKey = import.meta.env.VITE_CURRENTS_API_KEY;
+    if (!apiKey) {
+      if (isCurrent()) {
+        setNewsError("Live news isn't configured yet — add VITE_CURRENTS_API_KEY to your .env file.");
+        setIsLoadingNews(false);
+        setIsRefreshingNews(false);
+      }
+      return;
+    }
+
+    try {
+      // "keywords=travel" matched anything containing the word "travel" —
+      // time-travel movie news, "space travel" science pieces, unrelated
+      // "business travel" HR articles, etc. Currents has no dedicated
+      // travel/tourism category (closest is the broad "lifestyle_leisure"),
+      // so precision comes from a boolean query instead: match genuinely
+      // tourism-shaped phrases, explicitly exclude the common false
+      // positives. v2's /search endpoint is what documents this boolean
+      // query syntax (AND / OR / NOT / quotes / parentheses).
+      const TRAVEL_QUERY =
+        '("tourism" OR "travel destination" OR "vacation" OR "travel advisory" OR ' +
+        '"tourist visa" OR "travel guide" OR "hotel booking" OR "flight route") ' +
+        'AND NOT ("time travel" OR "space travel")';
+      const url =
+        `https://api.currentsapi.services/v2/search?query=${encodeURIComponent(TRAVEL_QUERY)}` +
+        `&language=en&page_size=8&page_number=${pageNumber}&apiKey=${encodeURIComponent(apiKey)}`;
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        const message =
+          res.status === 401 || res.status === 403
+            ? "The news provider rejected our API key."
+            : res.status === 429
+            ? "The news provider's rate limit was hit — try again shortly."
+            : `The news provider returned an error (${res.status}).`;
+        throw new Error(message);
+      }
+
+      const data = await res.json();
+      const articles = (data.news || []).slice(0, 8).map((item) => {
+        let source = "";
+        try {
+          source = new URL(item.url).hostname.replace(/^www\./, "");
+        } catch {
+          // Malformed URL from the provider — leave source blank.
+        }
+        const rawCategory = item.category?.[0];
+        const category = rawCategory
+          ? rawCategory.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+          : "Travel";
+        const blurb =
+          item.description && item.description.length > 160
+            ? `${item.description.slice(0, 160).trim()}…`
+            : item.description || "";
+
+        return {
+          id: item.id,
+          headline: item.title,
+          blurb,
+          url: item.url,
+          source,
+          category,
+          publishedAt: item.published,
+        };
+      });
+
+      if (isCurrent()) {
+        if (articles.length === 0 && pageNumber !== 1) {
+          // Ran past the last page of results for this query — wrap back
+          // to page 1 instead of showing an empty refresh. This recursive
+          // call claims its own fresh requestId, so it safely supersedes
+          // the one we're finishing here.
+          setNewsPage(1);
+          fetchNews(1, { useCache: false });
+          return;
+        }
+        setNewsArticles(articles);
+        try {
+          window.localStorage.setItem(
+            NEWS_CACHE_KEY,
+            JSON.stringify({ articles, fetchedAt: Date.now() })
+          );
+        } catch {
+          // Storage full/disabled — the fetch still succeeded, just won't cache.
+        }
+      }
+    } catch (err) {
+      if (isCurrent()) setNewsError(err.message);
+    } finally {
+      if (isCurrent()) {
+        setIsLoadingNews(false);
+        setIsRefreshingNews(false);
+      }
+    }
+  }
+
+  useEffect(() => {
+    fetchNews(1, { useCache: true });
+    // Mount-only — fetchNews is stable enough for this single initial call.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Cycles through a handful of result pages so each click surfaces a
+  // different set of real articles instead of refetching the same top
+  // results. Always bypasses the cache — refreshing should mean fresh.
+  const handleRefreshNews = () => {
+    if (isRefreshingNews) return;
+    const nextPage = (newsPage % 5) + 1;
+    setNewsPage(nextPage);
+    fetchNews(nextPage, { useCache: false });
+  };
+
+ 
   const handleHeroScroll = () => {
     const el = heroScrollerRef.current;
     if (!el || !el.firstChild) return;
-    const cardWidth = el.firstChild.getBoundingClientRect().width + 16;
+    const cardWidth = el.firstChild.getBoundingClientRect().width + 16; // gap-4
     const index = Math.round(el.scrollLeft / cardWidth);
     setActiveShowcase(Math.max(0, Math.min(index, DESTINATIONS.length - 1)));
   };
@@ -489,6 +655,7 @@ export default function Home() {
     const cardWidth = el.firstChild.getBoundingClientRect().width + 16;
     el.scrollTo({ left: index * cardWidth, behavior: "smooth" });
   };
+
 
   useEffect(() => {
     try {
@@ -530,12 +697,14 @@ export default function Home() {
     el.scrollBy({ left: direction * Math.min(el.clientWidth * 0.9, 600), behavior: "smooth" });
   };
 
+ 
+
   useEffect(() => {
     const timer = window.setTimeout(() => setContentReady(true), 700);
     return () => window.clearTimeout(timer);
   }, []);
 
-  // Fetch Live Weather
+
   useEffect(() => {
     const controllers = DESTINATIONS.map(() => new AbortController());
 
@@ -566,97 +735,13 @@ export default function Home() {
     return () => controllers.forEach((c) => c.abort());
   }, []);
 
-
-  // --- NEW LOGIC: Fetch entirely fresh news by randomizing the search query ---
-  const fetchTravelNews = async () => {
-    setNewsLoading(true); // Triggers the skeleton loaders immediately
-    
-    try {
-      // A pool of different travel topics to guarantee fresh results and bypass the API cache
-      const TRAVEL_QUERIES = [
-        "travel+tourism+news",
-        "global+travel+destinations",
-        "airline+flight+updates",
-        "hotel+and+resort+news",
-        "sustainable+eco+tourism",
-        "adventure+travel+trends",
-        "luxury+vacation+destinations",
-        "budget+backpacking+travel",
-        "cruise+ship+tourism",
-        "international+visa+updates"
-      ];
-      
-      // Pick a random topic, but ensure it is different from the last one we just searched
-      let randomQuery = TRAVEL_QUERIES[Math.floor(Math.random() * TRAVEL_QUERIES.length)];
-      while(randomQuery === lastQueryRef.current) {
-          randomQuery = TRAVEL_QUERIES[Math.floor(Math.random() * TRAVEL_QUERIES.length)];
-      }
-      lastQueryRef.current = randomQuery;
-
-      // Construct the Google URL with our new random topic
-      const googleNewsRSS = `https://news.google.com/rss/search?q=${randomQuery}&hl=en-US&gl=US&ceid=US:en`;
-      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(googleNewsRSS)}`;
-
-      const res = await fetch(apiUrl);
-      if (!res.ok) throw new Error("Failed to fetch from RSS2JSON");
-      
-      const data = await res.json();
-      
-      if (data.status === 'ok' && data.items && data.items.length > 0) {
-        const themes = [
-          { tagClass: "bg-[#1EA35B]/10 text-[#167A44]", dotClass: "bg-[#167A44]" },
-          { tagClass: "bg-[#FEF3E2] text-[#B4690E]", dotClass: "bg-[#F2A93B]" },
-          { tagClass: "bg-[#E8F0FE] text-[#1D4ED8]", dotClass: "bg-[#3B82F6]" },
-          { tagClass: "bg-[#E0F7F4] text-[#0E6E68]", dotClass: "bg-[#0E6E68]" },
-          { tagClass: "bg-[#EAF6FA] text-[#1E5FA8]", dotClass: "bg-[#1E5FA8]" },
-        ];
-
-        // Only take the top 5 from this fresh batch
-        const dynamicNews = data.items.slice(0, 5).map((article, i) => {
-          const dateObj = new Date(article.pubDate);
-          const dateStr = dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-          
-          let sourceName = "Travel News";
-          try {
-              const urlObj = new URL(article.link);
-              sourceName = urlObj.hostname.replace('www.', '');
-          } catch(e) {}
-
-          return {
-            id: article.guid || article.link,
-            tag: sourceName,
-            date: dateStr,
-            headline: article.title,
-            blurb: "Click here to read the full story and stay updated on the latest global travel trends.",
-            url: article.link,
-            ...themes[i % themes.length],
-          };
-        });
-        
-        setNewsUpdates(dynamicNews);
-      } else {
-        setNewsUpdates(FALLBACK_NEWS);
-      }
-    } catch (error) {
-      console.error("Live News Error:", error);
-      setNewsUpdates(FALLBACK_NEWS); 
-    } finally {
-      setNewsLoading(false); // Remove the skeleton loaders
-    }
-  };
-
-  // Run this function once when the page first loads
-  useEffect(() => {
-    fetchTravelNews();
-  }, []);
-
-
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-white text-[#14201A]">
 
         {/* ---------- Hero ---------- */}
         <section className="relative overflow-hidden bg-[#0F1D16]">
+          {/* Ambient glow on the text side — no photo behind this panel at all */}
           <div className="pointer-events-none absolute -left-40 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-[#167A44]/25 blur-3xl" aria-hidden="true" />
 
           <style>{`
@@ -665,6 +750,7 @@ export default function Home() {
           `}</style>
 
           <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:gap-16 lg:px-10 lg:py-24">
+            {/* Text column — solid color, no image behind the copy */}
             <div>
               <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#3DD68C]">
                 <PinIcon className="h-3.5 w-3.5" />
@@ -707,6 +793,8 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Image column — swipe on mobile, arrow buttons on desktop; not a
+                static full-bleed photo */}
             <div className="relative">
               <div
                 className="absolute -right-5 -top-5 hidden h-full w-full rounded-[2rem] border-2 border-[#3DD68C]/30 sm:block lg:-right-7 lg:-top-7"
@@ -738,6 +826,7 @@ export default function Home() {
                 ))}
               </div>
 
+              {/* Desktop-only nudge arrows */}
               <div className="pointer-events-none absolute inset-y-0 left-0 right-0 hidden items-center justify-between px-2 lg:flex">
                 <button
                   type="button"
@@ -757,6 +846,7 @@ export default function Home() {
                 </button>
               </div>
 
+              {/* Swipe dots — the real interactive cue for touch/Android users */}
               <div className="mt-4 flex justify-center gap-1.5 lg:hidden" role="tablist" aria-label="Destination photo selector">
                 {DESTINATIONS.map((dest, i) => (
                   <button
@@ -872,7 +962,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ---------- News & updates (Powered by Google News) ---------- */}
+        {/* ---------- News & updates ---------- */}
         <section className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-24">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -883,29 +973,36 @@ export default function Home() {
                 Updates from tours around the world
               </h2>
             </div>
-            
+
             <button
-              onClick={fetchTravelNews} 
-              disabled={newsLoading}
-              className="group inline-flex items-center gap-1.5 rounded-full border border-[#E5E7E0] bg-white px-5 py-2 text-sm font-semibold text-[#167A44] shadow-sm transition-all hover:bg-[#F5F4EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#167A44] focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              onClick={handleRefreshNews}
+              disabled={isLoadingNews || isRefreshingNews}
+              aria-label="Show different travel news"
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-[#E5E7E0] bg-white px-4 py-2 text-sm font-semibold text-[#3B443E] transition hover:bg-[#F5F4EF] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#167A44] focus-visible:ring-offset-1"
             >
-              <svg 
-                className={`h-4 w-4 transition-transform duration-500 ease-in-out ${newsLoading ? 'animate-spin' : 'group-active:rotate-180'}`} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              {newsLoading ? 'Fetching...' : 'Refresh News'}
+              <RefreshIcon className={`h-4 w-4 ${isRefreshingNews ? "animate-spin" : ""}`} />
+              {isRefreshingNews ? "Refreshing…" : "Refresh news"}
             </button>
           </div>
 
           <div className="mt-8 space-y-4">
-            {newsLoading
-              ? Array.from({ length: 5 }).map((_, i) => <NewsItemSkeleton key={i} />)
-              : newsUpdates.map((item) => <NewsItem key={item.id} item={item} />)}
+            {isLoadingNews ? (
+              Array.from({ length: 5 }).map((_, i) => <NewsItemSkeleton key={i} />)
+            ) : newsError ? (
+              <p className="rounded-2xl border border-dashed border-[#F2A93B]/40 bg-[#FEF3E2] px-6 py-8 text-center text-sm text-[#8A5A0A]">
+                Couldn't load live news right now: {newsError}
+              </p>
+            ) : newsArticles.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-[#E5E7E0] px-6 py-8 text-center text-sm text-[#6B7167]">
+                No travel news to show right now — check back soon.
+              </p>
+            ) : (
+              newsArticles.map((item) => <NewsItem key={item.id} item={item} />)
+            )}
           </div>
+
+          
         </section>
 
         {/* ---------- Featured packages ---------- */}
