@@ -10,13 +10,15 @@ import {
     FaMapMarkedAlt,
 } from "react-icons/fa";
 
+import { motion } from "framer-motion";
+
 
 function BookingForm({
 
     bookingData,
     setBookingData,
     errors
-    
+
 
 }) {
     const toggleService = (service) => {
@@ -35,9 +37,23 @@ function BookingForm({
 
 
     return (
-        <form className="bg-white rounded-3xl shadow-xl p-8">
-
-            <h2 className="text-3xl font-bold text-gray-800 mb-8">
+        <motion.form
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="
+bg-white/55
+backdrop-blur-2xl
+border
+border-white/30
+rounded-[32px]
+shadow-[0_20px_60px_rgba(0,0,0,0.15)]
+p-8
+transition-all
+duration-500
+"
+        >
+            <h2 className="text-3xl font-bold text-emerald-900 mb-8">
                 Traveller Details
             </h2>
 
@@ -50,7 +66,7 @@ function BookingForm({
 
                     <div className="relative">
 
-                        <FaUser className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <FaUser className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-700" />
 
                         <input
                             type="text"
@@ -62,7 +78,25 @@ function BookingForm({
                                     name: e.target.value
                                 })
                             }
-                            className="w-full border rounded-xl pl-14 pr-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="
+w-full
+rounded-2xl
+bg-white/50
+backdrop-blur-md
+border
+border-white/40
+pl-14
+pr-4
+py-4
+outline-none
+transition-all
+duration-300
+focus:ring-2
+focus:ring-emerald-400
+focus:border-emerald-500
+placeholder:text-gray-500
+"
+
                         />
                         {errors.name && (
                             <p className="text-red-500 text-sm mt-1">
@@ -80,7 +114,7 @@ function BookingForm({
 
                     <div className="relative">
 
-                        <FaEnvelope className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <FaEnvelope className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-700" />
 
 
                         <input
@@ -93,7 +127,24 @@ function BookingForm({
                                     email: e.target.value
                                 })
                             }
-                            className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="
+w-full
+rounded-2xl
+bg-white/50
+backdrop-blur-md
+border
+border-white/40
+pl-14
+pr-4
+py-4
+outline-none
+transition-all
+duration-300
+focus:ring-2
+focus:ring-emerald-400
+focus:border-emerald-500
+placeholder:text-gray-500
+"
                         />
                         {errors.email && (
                             <p className="text-red-500 text-sm mt-1">
@@ -111,7 +162,7 @@ function BookingForm({
 
                     <div className="relative">
 
-                        <FaPhone className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <FaPhone className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-700" />
 
 
                         <input
@@ -124,7 +175,24 @@ function BookingForm({
                                     phone: e.target.value
                                 })
                             }
-                            className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="
+w-full
+rounded-2xl
+bg-white/50
+backdrop-blur-md
+border
+border-white/40
+pl-14
+pr-4
+py-4
+outline-none
+transition-all
+duration-300
+focus:ring-2
+focus:ring-emerald-400
+focus:border-emerald-500
+placeholder:text-gray-500
+"
                         />
 
                         {errors.phone && (
@@ -143,7 +211,7 @@ function BookingForm({
 
                     <div className="relative">
 
-                        <FaUsers className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <FaUsers className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-700" />
 
 
                         <input
@@ -159,7 +227,24 @@ function BookingForm({
                             }
 
                             }
-                            className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="
+w-full
+rounded-2xl
+bg-white/50
+backdrop-blur-md
+border
+border-white/40
+pl-14
+pr-4
+py-4
+outline-none
+transition-all
+duration-300
+focus:ring-2
+focus:ring-emerald-400
+focus:border-emerald-500
+placeholder:text-gray-500
+"
                         />
 
                     </div>
@@ -167,9 +252,9 @@ function BookingForm({
 
             </div>
 
-            <div className="bg-white rounded-3xl shadow-xl p-8 mt-8">
+            <div className="bg-white/50 backdrop-blur-xl border border-white/30 rounded-[28px] shadow-xl p-8 mt-8">
 
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                <h2 className="text-2xl font-bold text-emerald-900 mb-6">
                     Travel Details
                 </h2>
 
@@ -181,7 +266,7 @@ function BookingForm({
                         </label>
                         <div className="relative">
 
-                            <FaCalendarAlt className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <FaCalendarAlt className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-700" />
 
                             <input
                                 type="date"
@@ -192,7 +277,24 @@ function BookingForm({
                                         departureDate: e.target.value
                                     })
                                 }
-                                className="w-full border rounded-xl pl-14 py-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="
+w-full
+rounded-2xl
+bg-white/50
+backdrop-blur-md
+border
+border-white/40
+pl-14
+pr-4
+py-4
+outline-none
+transition-all
+duration-300
+focus:ring-2
+focus:ring-emerald-400
+focus:border-emerald-500
+placeholder:text-gray-500
+"
                             />
                             {errors.departureDate && (
                                 <p className="text-red-500 text-sm mt-1">
@@ -207,7 +309,7 @@ function BookingForm({
 
                         <div>
 
-                            <h3 className="font-semibold mb-4">
+                            <h3 className="font-bold text-gray-800 mb-4">
 
                                 Room Type
 
@@ -224,13 +326,13 @@ function BookingForm({
 
     ${bookingData.roomType === "Standard"
 
-                                            ? "border-blue-600 bg-blue-50"
+                                            ? "border-emerald-500 bg-emerald-50 shadow-lg"
 
-                                            : "hover:border-blue-600"
+                                            : "hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
                                         }`}
                                 >
 
-                                    <FaBed className="text-2xl text-blue-600 mb-3" />
+                                    <FaBed className="text-2xl text-emerald-600 mb-3" />
 
                                     <p className="font-semibold">
 
@@ -249,13 +351,14 @@ function BookingForm({
 
     ${bookingData.roomType === "Deluxe"
 
-                                            ? "border-blue-600 bg-blue-50"
+                                            ? "border-emerald-500 bg-emerald-50 shadow-lg"
 
-                                            : "hover:border-blue-600"
+                                            : "hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
+
                                         }`}
                                 >
 
-                                    <FaBed className="text-2xl text-blue-600 mb-3" />
+                                    <FaBed className="text-2xl text-emerald-600 mb-3" />
 
                                     <p className="font-semibold">
 
@@ -274,13 +377,14 @@ function BookingForm({
 
     ${bookingData.roomType === "Suite"
 
-                                            ? "border-blue-600 bg-blue-50"
+                                            ? "border-emerald-500 bg-emerald-50 shadow-lg"
 
-                                            : "hover:border-blue-600"
+                                            : "hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
+
                                         }`}
                                 >
 
-                                    <FaBed className="text-2xl text-blue-600 mb-3" />
+                                    <FaBed className="text-2xl text-emerald-600 mb-3" />
 
                                     <p className="font-semibold">
 
@@ -299,9 +403,9 @@ function BookingForm({
 
             </div>
 
-            <div className="bg-white rounded-3xl shadow-xl p-8 mt-8">
+            <div className="bg-white/50 backdrop-blur-xl border border-white/30 rounded-[28px] shadow-xl p-8 mt-8">
 
-                <h2 className="text-2xl font-bold mb-6">
+                <h2 className="text-2xl font-semibold text-emerald-700 mb-6">
 
                     Additional Services
 
@@ -313,19 +417,19 @@ function BookingForm({
 
                         onClick={() => toggleService("Airport Pickup")}
 
-                        className={`border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition
+                        className={`bg-white/40 backdrop-blur-md border border-white/30 rounded-2xl shadow-sm p-4 flex justify-between items-center cursor-pointer transition
 
 ${bookingData.services.includes("Airport Pickup")
 
-                                ? "border-blue-600 bg-blue-50"
+                                ? "border-emerald-500 bg-emerald-50 shadow-lg"
 
-                                : "hover:border-blue-600"
+                                : "hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
                             }`}
 
                     >
                         <div className="flex items-center gap-3">
 
-                            <FaPlaneArrival className="text-blue-600" />
+                            <FaPlaneArrival className="text-emerald-600" />
 
                             Airport Pickup
 
@@ -339,19 +443,19 @@ ${bookingData.services.includes("Airport Pickup")
 
                         onClick={() => toggleService("Travel Insurance")}
 
-                        className={`border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition
+                        className={`bg-white/40 backdrop-blur-md border border-white/30 rounded-2xl shadow-sm p-4 flex justify-between items-center cursor-pointer transition
 
 ${bookingData.services.includes("Travel Insurance")
 
-                                ? "border-blue-600 bg-blue-50"
+                                ? "border-emerald-500 bg-emerald-50 shadow-lg"
 
-                                : "hover:border-blue-600"
+                                : "hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
                             }`}
 
                     >
                         <div className="flex items-center gap-3">
 
-                            <FaShieldAlt className="text-green-600" />
+                            <FaShieldAlt className="text-emerald-600" />
 
                             Travel Insurance
 
@@ -365,19 +469,19 @@ ${bookingData.services.includes("Travel Insurance")
 
                         onClick={() => toggleService("Guided City Tour")}
 
-                        className={`border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition
+                        className={`bg-white/40 backdrop-blur-md border border-white/30 rounded-2xl shadow-sm p-4 flex justify-between items-center cursor-pointer transition
 
 ${bookingData.services.includes("Guided City Tour")
 
-                                ? "border-blue-600 bg-blue-50"
+                                ? "border-emerald-500 bg-emerald-50 shadow-lg"
 
-                                : "hover:border-blue-600"
+                                : "hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
                             }`}
 
                     >
                         <div className="flex items-center gap-3">
 
-                            <FaMapMarkedAlt className="text-orange-500" />
+                            <FaMapMarkedAlt className="text-emerald-600" />
 
                             Guided City Tour
 
@@ -391,9 +495,9 @@ ${bookingData.services.includes("Guided City Tour")
 
             </div>
 
-            <div className="mt-8">
+            <div className="bg-white/50 backdrop-blur-xl border border-white/30 rounded-[28px] shadow-xl p-8 mt-8">
 
-                <label className="block mb-2 font-medium">
+                <label className="block mb-2 font-semibold text-emerald-700">
 
                     Special Requests
 
@@ -402,12 +506,25 @@ ${bookingData.services.includes("Guided City Tour")
                 <textarea
                     rows="5"
                     placeholder="Tell us about your travel preferences..."
-                    className="w-full border rounded-xl p-4"
+                    className="w-full
+rounded-2xl
+bg-white/50
+backdrop-blur-md
+border
+border-white/30
+p-5
+outline-none
+transition-all
+duration-300
+focus:ring-2
+focus:ring-emerald-400
+focus:border-emerald-500
+placeholder:text-gray-500"
                 />
 
             </div>
 
-        </form>
+        </motion.form>
     );
 }
 

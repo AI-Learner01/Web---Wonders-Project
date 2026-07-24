@@ -39,21 +39,32 @@ function SummaryCard({
         roomPrice +
         servicesPrice;
 
-    
+
     const handlePayment = () => {
 
         alert(
 
-        "🎉 Payment Gateway will be integrated in the backend phase.\n\nYour booking details have been successfully reviewed."
+            "🎉 Payment Gateway will be integrated in the backend phase.\n\nYour booking details have been successfully reviewed."
 
-    );
+        );
 
     };
 
     return (
 
 
-        <div className="bg-white rounded-3xl shadow-xl p-6 sticky top-6">
+        <div className="
+            sticky top-6
+            rounded-[32px]
+            p-7
+            bg-white/70
+            backdrop-blur-2xl
+            border border-white/40
+            shadow-[0_25px_50px_rgba(0,0,0,0.12)]
+            transition-all
+            duration-500
+            hover:-translate-y-1
+            ">
 
             <h2 className="text-2xl font-bold">
 
@@ -61,7 +72,7 @@ function SummaryCard({
 
             </h2>
 
-            <hr className="my-5" />
+            <div className="h-px bg-gradient-to-r from-transparent via-green-300 to-transparent my-6" />
 
             <div className="flex justify-between items-center mb-4">
 
@@ -71,7 +82,7 @@ function SummaryCard({
 
                 </span>
 
-                <span className="font-bold text-blue-600">
+                <span className="font-bold text-green-700 font-extrabold tracking-wider">
 
                     WW-{Math.floor(100000 + Math.random() * 900000)}
 
@@ -101,7 +112,7 @@ function SummaryCard({
 
             </p>
 
-            <p className="text-3xl font-bold text-blue-700 mt-4">
+            <p className="text-3xl font-bold text-green-700 mt-4">
 
                 ₹{selectedPackage.price.toLocaleString()}
 
@@ -113,7 +124,7 @@ function SummaryCard({
 
             </p>
 
-            <hr className="my-6" />
+            <div className="h-px bg-gradient-to-r from-transparent via-green-300 to-transparent my-6" />
 
             <div className="space-y-4 mt-6">
 
@@ -162,15 +173,27 @@ function SummaryCard({
 
                 ))}
 
-                <hr />
+                <div className="h-px bg-gradient-to-r from-transparent via-green-300 to-transparent my-6" />
 
-                <div className="flex justify-between text-2xl font-bold">
-
+                <div className="
+                    flex
+                    justify-between
+                    items-center
+                    rounded-2xl
+                    bg-gradient-to-r
+                    from-green-50
+                    to-emerald-100
+                    border
+                    border-green-200
+                    p-5
+                    text-2xl
+                    font-bold
+                    ">
                     <span>
                         Grand Total
                     </span>
 
-                    <span className="text-blue-600">
+                    <span className="text-green-700">
                         ₹{grandTotal.toLocaleString()}
                     </span>
 
@@ -178,7 +201,7 @@ function SummaryCard({
 
             </div>
 
-            <hr className="my-6" />
+            <div className="h-px bg-gradient-to-r from-transparent via-green-300 to-transparent my-6" />
 
             <div className="space-y-3 mb-6">
 
@@ -210,8 +233,24 @@ function SummaryCard({
 
                     onClick={handlePayment}
 
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-[1.02] shadow-lg"
-
+                    className="
+                        w-full
+                        rounded-2xl
+                        bg-gradient-to-r
+                        from-green-700
+                        via-green-600
+                        to-emerald-500
+                        py-4
+                        font-bold
+                        text-lg
+                        text-white
+                        shadow-xl
+                        transition-all
+                        duration-300
+                        hover:scale-[1.02]
+                        hover:shadow-2xl
+                        active:scale-95
+                        "
                 >
 
                     💳 Proceed to Payment
@@ -228,25 +267,53 @@ function SummaryCard({
 
                     <div className="flex justify-center gap-3">
 
-                        <div className="border rounded-lg px-3 py-2">
+                        <div className="bg-white/60
+                                        backdrop-blur-lg
+                                        border border-green-100
+                                        rounded-xl
+                                        shadow-md
+                                        px-4
+                                        py-2
+                                        font-semibold">
 
                             VISA
 
                         </div>
 
-                        <div className="border rounded-lg px-3 py-2">
+                        <div className="bg-white/60
+                                        backdrop-blur-lg
+                                        border border-green-100
+                                        rounded-xl
+                                        shadow-md
+                                        px-4
+                                        py-2
+                                        font-semibold">
 
                             Mastercard
 
                         </div>
 
-                        <div className="border rounded-lg px-3 py-2">
+                        <div className="bg-white/60
+                                        backdrop-blur-lg
+                                        border border-green-100
+                                        rounded-xl
+                                        shadow-md
+                                        px-4
+                                        py-2
+                                        font-semibold">
 
                             UPI
 
                         </div>
 
-                        <div className="border rounded-lg px-3 py-2">
+                        <div className="bg-white/60
+                                        backdrop-blur-lg
+                                        border border-green-100
+                                        rounded-xl
+                                        shadow-md
+                                        px-4
+                                        py-2
+                                        font-semibold">
 
                             Paytm
 
@@ -260,7 +327,7 @@ function SummaryCard({
 
         </div>
 
-        
+
     );
 
 

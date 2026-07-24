@@ -36,7 +36,16 @@ function TravellerCard({
 
     return (
 
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-white/70
+                        backdrop-blur-2xl
+                        border
+                        border-white/40
+                        rounded-[32px]
+                        shadow-[0_25px_50px_rgba(0,0,0,0.12)]
+                        p-8
+                        transition-all
+                        duration-500
+                        hover:-translate-y-1">
 
             <h2 className="text-3xl font-bold mb-8">
 
@@ -48,7 +57,7 @@ function TravellerCard({
 
                 <p>
 
-                    <FaUser className="inline mr-3 text-blue-600" />
+                    <FaUser className="inline mr-3 text-green-700" />
 
                     {bookingData.name}
 
@@ -56,7 +65,7 @@ function TravellerCard({
 
                 <p>
 
-                    <FaEnvelope className="inline mr-3 text-blue-600" />
+                    <FaEnvelope className="inline mr-3 text-green-700" />
 
                     {bookingData.email}
 
@@ -64,7 +73,7 @@ function TravellerCard({
 
                 <p>
 
-                    <FaPhone className="inline mr-3 text-blue-600" />
+                    <FaPhone className="inline mr-3 text-green-700" />
 
                     {bookingData.phone}
 
@@ -72,7 +81,7 @@ function TravellerCard({
 
                 <p>
 
-                    <FaUsers className="inline mr-3 text-blue-600" />
+                    <FaUsers className="inline mr-3 text-green-700" />
 
                     {bookingData.travellers} Travellers
 
@@ -88,7 +97,7 @@ function TravellerCard({
 
                 <p>
 
-                    <FaCalendarAlt className="inline mr-3 text-blue-600" />
+                    <FaCalendarAlt className="inline mr-3 text-green-700" />
 
                     {bookingData.departureDate}
 
@@ -96,7 +105,7 @@ function TravellerCard({
 
                 <p>
 
-                    <FaBed className="inline mr-3 text-blue-600" />
+                    <FaBed className="inline mr-3 text-green-700" />
 
                     {bookingData.roomType}
 
