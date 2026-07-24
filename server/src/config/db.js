@@ -16,6 +16,8 @@ const dbDest = client.db("DestinationsNameForSearch");
 const collectionUserData = dbAuth.collection("UserData");
 const collectionOtps = dbAuth.collection("Otps");
 const collectionDestinations = dbDest.collection("Destinations");
+const collectionPackages = dbAuth.collection("Packages");
+const collectionBookings = dbAuth.collection("Bookings");
 const collectionQuries = dbAuth.collection("Queries"); 
 
 /**
@@ -35,10 +37,12 @@ async function connectDB() {
 
 module.exports = {
     connectDB,
-    db: dbDest,              // Default 'db' export targeting cities for autocomplete
-    dbAuth,                  // Exported for direct authentication db manipulation
+    db: dbDest, // Keeps a default 'db' export targeting your cities for the autocomplete controller
+    dbAuth,     // Exported in case you need direct db manipulation later
     collectionUserData,
     collectionOtps,
-    collectionDestinations,   // Exported so controllers can explicitly query the dataset
+    collectionDestinations, // Exported so controllers can explicitly query the dataset
+    collectionPackages,
+    collectionBookings,
     collectionQuries          // Exported for logging user queries
 };

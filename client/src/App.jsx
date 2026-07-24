@@ -9,7 +9,7 @@ import Navbar from './homepage/Navbar';
 import PackagesApp from './packages-booking/PackagesApp';
 import Footer from './homepage/Footer';
 import ForgotPassword from './authentication/ForgetPassword';
-
+import ItineraryBuilder from './pages/Destination-pages/ItineraryBuilder';
 
 import AdminLayout from "./adminPanel/AdminLayout";
 import AdminVerify from "./adminPanel/adminVeryfy";
@@ -56,6 +56,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/destinations/*" element={<DestApp />} />
           <Route path="/packages/*" element={<PackagesApp />} />
+          <Route path="/itinerary" element={<ItineraryBuilder />} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
