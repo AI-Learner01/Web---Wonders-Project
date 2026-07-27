@@ -866,7 +866,7 @@ export default function Home() {
               <div className="absolute -bottom-6 left-4 hidden rounded-2xl border border-[#E5E7E0] bg-white px-5 py-4 shadow-xl sm:-left-8 sm:block">
                 <div className="flex items-center gap-2">
                   <PinIcon className="h-4 w-4 text-[#167A44]" />
-                  <span className="text-sm font-bold text-[#14201A]">40+ destinations</span>
+                  <span className="text-sm font-bold text-[#14201A]">1000+ destinations</span>
                 </div>
                 <p className="mt-0.5 text-xs text-[#6B7167]">across 6 continents</p>
               </div>

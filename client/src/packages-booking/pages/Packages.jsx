@@ -6,19 +6,22 @@ import { images } from "../data/imageUrls";
 import Navbar from "../../homepage/Navbar";
 
 function Packages({ packages, loading, error, onRetry, onBookNow }) {
-    // --- States ---
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [searchInput, setSearchInput] = useState("");
-    const [appliedSearch, setAppliedSearch] = useState("");
-    const [filters, setFilters] = useState({
-        destination: "",
-        budget: "",
-        duration: "",
-        category: ""
+    // --- 1. STATE INITIALIZATION (Persisted via sessionStorage) ---
+    // Lazily load states from sessionStorage so filters survive page navigation
+    const [selectedCategory, setSelectedCategory] = useState(() => sessionStorage.getItem("pkg_category") || null);
+    const [searchInput, setSearchInput] = useState(() => sessionStorage.getItem("pkg_searchInput") || "");
+    const [appliedSearch, setAppliedSearch] = useState(() => sessionStorage.getItem("pkg_appliedSearch") || "");
+    const [filters, setFilters] = useState(() => {
+        const savedFilters = sessionStorage.getItem("pkg_filters");
+        return savedFilters ? JSON.parse(savedFilters) : {
+            destination: "",
+            budget: "",
+            duration: "",
+            category: ""
+        };
     });
 
     const packagesSectionRef = useRef(null);
-
 
     const categories = [
         "🏖 Beach",
@@ -29,7 +32,17 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
         "✨ Luxury"
     ];
 
-    // --- Helpers ---
+    // --- 2. STATE PERSISTENCE ---
+    // Save to sessionStorage automatically whenever any filter state changes
+    useEffect(() => {
+        sessionStorage.setItem("pkg_category", selectedCategory || "");
+        sessionStorage.setItem("pkg_searchInput", searchInput);
+        sessionStorage.setItem("pkg_appliedSearch", appliedSearch);
+        sessionStorage.setItem("pkg_filters", JSON.stringify(filters));
+    }, [selectedCategory, searchInput, appliedSearch, filters]);
+
+    // --- 3. HELPER FUNCTIONS ---
+    // Strips emojis and spaces to perfectly match the backend category strings
     const getCategoryText = (catStr) => catStr.replace(/[^a-zA-Z]/g, '').trim();
 
     const scrollToPackages = () => {
@@ -39,15 +52,16 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
         });
     };
 
-    // --- Handlers (Working Individually) ---
+    // --- 4. EVENT HANDLERS ---
 
-    // 1. When a Category Button is clicked
+    // A. When a Quick Category Pill is clicked
     const handleCategoryClick = (category) => {
         if (selectedCategory === category) {
+            // If already selected, toggle it off
             setSelectedCategory(null);
         } else {
+            // Select new category and clear other search/dropdown filters
             setSelectedCategory(category);
-            // Reset Search and Dropdown Filters
             setAppliedSearch("");
             setSearchInput("");
             setFilters({ destination: "", budget: "", duration: "", category: "" });
@@ -55,31 +69,29 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
         }
     };
 
-    // 2. When the Search Bar is used
+    // B. When the Search Bar is submitted
     const handleSearchClick = () => {
         if (!searchInput.trim()) return;
+        
+        // Apply the search term and clear dropdowns/categories
         setAppliedSearch(searchInput);
-        // Reset Category Buttons and Dropdown Filters
         setSelectedCategory(null);
         setFilters({ destination: "", budget: "", duration: "", category: "" });
         scrollToPackages();
     };
 
-    // 3. When a Dropdown Filter is changed
+    // C. When a Dropdown Filter is changed
     const handleFilterChange = (filterName, value) => {
         setFilters((prev) => ({ ...prev, [filterName]: value }));
-        // Reset Category Buttons and Search
+        
+        // Reset Category Buttons and Text Search
         setSelectedCategory(null);
         setAppliedSearch("");
         setSearchInput("");
         scrollToPackages();
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
     };
 
+    // D. Clear All Filters (Triggered by the new Clear button)
     const clearAllFilters = () => {
         setSelectedCategory(null);
         setAppliedSearch("");
@@ -87,7 +99,7 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
         setFilters({ destination: "", budget: "", duration: "", category: "" });
     };
 
-    // --- Safe Filtering Logic ---
+    // --- 5. FILTERING LOGIC ---
     const isFilteringActive =
         selectedCategory ||
         appliedSearch ||
@@ -98,7 +110,7 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
 
     const filteredPackages = isFilteringActive
         ? packages.filter((pkg) => {
-            // Safely cast to string to prevent crashes if data is an array or undefined
+            // Safely cast to string to prevent crashes if data is malformed
             const pkgTitle = String(pkg.title || "").toLowerCase();
             const pkgLocation = String(pkg.location || "").toLowerCase();
             const pkgPrice = Number(pkg.price) || 0;
@@ -112,22 +124,20 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
                 (pkg.type || "")
             ).toLowerCase();
 
-            // 1. Quick Categories Pill
+            // 1. Match Quick Categories Pill
             if (selectedCategory) {
                 const catText = getCategoryText(selectedCategory).toLowerCase();
                 if (!categorySearchArea.includes(catText)) return false;
             }
 
-            // 2. Search Bar
+            // 2. Match Search Bar
             if (appliedSearch) {
                 const query = appliedSearch.toLowerCase();
                 if (!pkgTitle.includes(query) && !pkgLocation.includes(query)) return false;
             }
 
-            // 3. Dropdown Filters
+            // 3. Match Dropdown Filters
             if (filters.destination && !pkgLocation.includes(filters.destination.toLowerCase())) return false;
-
-            // Match Dropdown Category against our combined category string
             if (filters.category && !categorySearchArea.includes(filters.category.toLowerCase())) return false;
 
             if (filters.budget) {
@@ -146,14 +156,13 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
         })
         : [];
 
-    // --- Default Arrays ---
+    // --- 6. DEFAULT CATEGORIZED ARRAYS ---
     const popularPackages = packages.filter((pkg) => pkg.badge === "Bestseller" || pkg.badge === "Popular" || pkg.badge === "Trending");
     const indiaPackages = packages.filter((pkg) => pkg.category === "India");
     const asiaPackages = packages.filter((pkg) => pkg.continent === "Asia" && pkg.category === "International");
     const worldPackages = packages.filter((pkg) => pkg.continent !== "Asia");
 
-
-    // --- Skeleton Loader Component ---
+    // --- 7. SKELETON LOADER COMPONENT ---
     const SkeletonLoader = () => (
         <section className="max-w-7xl mx-auto px-6 py-16">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -177,7 +186,7 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
 
     return (
         <div className="min-h-screen bg-slate-50 relative pb-20">
-            {/* Hero */}
+            {/* Hero Section */}
             <section
                 className="relative min-h-[500px] md:h-[650px] bg-cover bg-center"
                 style={{ backgroundImage: `url(${images.hero.destinations})` }}
@@ -209,6 +218,7 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
                     handleSearchClick={handleSearchClick}
                     filters={filters}
                     onFilterChange={handleFilterChange}
+                    onClearFilters={clearAllFilters}
                 />
             </div>
 
@@ -221,10 +231,11 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
                             whileTap={{ scale: 0.95 }}
                             key={item}
                             onClick={() => handleCategoryClick(item)}
-                            className={`rounded-full px-6 py-2.5 font-medium shadow-sm transition-all duration-300 ${selectedCategory === item
+                            className={`cursor-pointer rounded-full px-6 py-2.5 font-medium shadow-sm transition-all duration-300 ${
+                                selectedCategory === item
                                     ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md border-transparent"
                                     : "bg-white border border-gray-200 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
-                                }`}
+                            }`}
                         >
                             {item}
                         </motion.button>
@@ -245,7 +256,7 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
                         <p className="text-gray-600 mt-2">{error}</p>
                         <button
                             onClick={onRetry}
-                            className="mt-6 px-6 py-3 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 hover:underline font-medium"
+                            className="mt-6 px-6 py-3 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 hover:underline font-medium cursor-pointer"
                         >
                             Retry
                         </button>
@@ -272,7 +283,7 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
                                 <p className="text-gray-500 mt-2">Try adjusting your filters or destination name.</p>
                                 <button
                                     onClick={clearAllFilters}
-                                    className="mt-6 px-6 py-2 rounded-full bg-emerald-100 text-emerald-700 font-semibold hover:bg-emerald-200 transition"
+                                    className="mt-6 px-6 py-2 rounded-full bg-emerald-100 text-emerald-700 font-semibold hover:bg-emerald-200 transition cursor-pointer"
                                 >
                                     Clear all filters
                                 </button>

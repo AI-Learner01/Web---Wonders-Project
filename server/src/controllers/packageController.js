@@ -1,5 +1,7 @@
 const { collectionPackages } = require("../config/db");
 const { fetchImageFromPexels } = require("../services/pexelsService");
+const { fetchAttractionsFromGeoapify } = require("../services/geoapifyService");
+const { ObjectId } = require("mongodb");
 
 // GET /api/packages
 const getAllPackages = async (req, res) => {
@@ -50,6 +52,49 @@ const getAllPackages = async (req, res) => {
     }
 };
 
+// GET /api/packages/:id/attractions
+const getPackageAttractions = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Ensure ID is valid
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: "Invalid Package ID" });
+        }
+
+        const pkg = await collectionPackages.findOne({ _id: new ObjectId(id) });
+
+        if (!pkg) {
+            return res.status(404).json({ success: false, message: "Package not found" });
+        }
+
+        // --- CACHE HIT: Attractions already exist in MongoDB ---
+        if (pkg.attractions && pkg.attractions.length > 0) {
+            console.log(`[Cache Hit] Served attractions for: ${pkg.title}`);
+            return res.status(200).json({ success: true, source: 'cache', data: pkg.attractions });
+        }
+
+        // --- CACHE MISS: Fetch from Geoapify ---
+        console.log(`[Cache Miss] Fetching Geoapify attractions for: ${pkg.title}`);
+        const queryLocation = pkg.location || pkg.title;
+        const attractions = await fetchAttractionsFromGeoapify(queryLocation);
+
+        // --- SAVE TO MONGODB ---
+        if (attractions && attractions.length > 0) {
+            await collectionPackages.updateOne(
+                { _id: pkg._id },
+                { $set: { attractions: attractions } }
+            );
+        }
+
+        return res.status(200).json({ success: true, source: 'api', data: attractions || [] });
+    } catch (error) {
+        console.error("Error fetching attractions:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch attractions" });
+    }
+};
+
 module.exports = {
-    getAllPackages
+    getAllPackages,
+    getPackageAttractions
 };
