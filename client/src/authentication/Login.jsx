@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 
 /**
  * 
- * this component provides a login form for users to authenticate themselves. It includes fields for email or phone input and password input, along with validation checks. Upon submission, it sends the data to the backend and handles success or error responses, displaying appropriate messages or modals.
+ * this component provides a login form for users to authenticate themselves. It includes fields for email input and password input, along with validation checks. Upon submission, it sends the data to the backend and handles success or error responses, displaying appropriate messages or modals.
  * @returns JSX Element representing the login form and its functionalities
  */
-
 
 // 📥 Reusable Cards Import
 import ErrorModal from '../ReusableCards/ErrorModal.jsx';
@@ -17,7 +16,7 @@ function Login() {
         "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 placeholder:text-[#9a9a9a] focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
 
     // Form states
-    const [emailOrPhone, setEmailOrPhone] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPass, setShowPass] = useState(false);
 
@@ -38,7 +37,7 @@ function Login() {
 
     // 1st Layer: Form input fill percentage (0%, 50%, 100%)
     const totalFields = 2;
-    const filledFields = [emailOrPhone, password].filter((val) => val.trim() !== "").length;
+    const filledFields = [email, password].filter((val) => val.trim() !== "").length;
     const inputFillPercent = (filledFields / totalFields) * 100;
 
     // Login Handler
@@ -48,24 +47,16 @@ function Login() {
         if (isSubmitting) return;
 
         // Validation 1: Empty fields
-        if (!emailOrPhone.trim() || !password) {
+        if (!email.trim() || !password) {
             triggerError("Please fill in all fields!");
             return;
         }
 
-        // Validation 2: Email or Phone syntax
-        const isEmail = emailOrPhone.includes("@");
-        if (isEmail) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(emailOrPhone)) {
-                triggerError("Please enter a valid email address!");
-                return;
-            }
-        } else {
-            if (!/^\d{10}$/.test(emailOrPhone)) {
-                triggerError("Please enter a valid 10-digit phone number!");
-                return;
-            }
+        // Validation 2: Email syntax check
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            triggerError("Please enter a valid email address!");
+            return;
         }
 
         // Validation 3: Password length
@@ -85,7 +76,7 @@ function Login() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ emailOrPhone, password })
+                body: JSON.stringify({ email: email.trim(), password })
             });
 
             const data = await response.json();
@@ -144,16 +135,16 @@ function Login() {
                     </a>
                 </div>
 
-                {/* Email or Phone */}
+                {/* Email Input */}
                 <p className="text-[0.9rem] font-semibold text-[#444] mt-[18px] mb-2">
-                    Email or Phone
+                    Email Address
                 </p>
                 <input
-                    type="text"
-                    placeholder="Enter your email or phone"
-                    value={emailOrPhone}
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
                     disabled={isSubmitting}
-                    onChange={(e) => setEmailOrPhone(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                     className={inputClass}
                 />
 

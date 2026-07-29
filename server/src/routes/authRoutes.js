@@ -28,7 +28,14 @@ const {
 
     verifyToken,
 
-    logout
+    logout,
+
+    getUserData,
+
+    changePassword,
+
+    updateProfile
+
 
 } = require("../controllers/authController");
 const { verify } = require("../config/mail");
@@ -48,5 +55,11 @@ router.post("/reset-password", resetPassword);
 router.post("/contact-us",contactUs);
 
 router.post("/verify-token", verifyToken);
+
+router.post("/get-user-data",getUserData);
+
+router.post("/change-password",changePassword)
+
+router.post("/update-profile",updateProfile)
 
 module.exports = router;
