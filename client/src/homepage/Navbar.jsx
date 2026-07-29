@@ -88,25 +88,44 @@ export default function Navbar() {
     }
   };
 
-  const navRight = () => {
+    const navRight = () => {
     if (currentUser?.email) {
       return (
         <div className="relative" ref={dropdownRef}>
-          {/* Profile Icon / First Letter Button */}
+          {/* Professional Profile Pill Button */}
           <button
             onClick={() => setProfileDropdownOpen((prev) => !prev)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#167A44] font-bold text-white shadow-md hover:bg-[#125E36] transition focus:outline-none"
+            className="flex items-center gap-2 rounded-full border border-gray-200 bg-white p-1 pr-3 shadow-sm transition-all duration-200 hover:border-emerald-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
             aria-label="User Profile"
+            aria-expanded={profileDropdownOpen}
           >
-            {getInitial()}
+            {/* Avatar Circle - shrink-0 prevents it from getting squished */}
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#167A44] to-emerald-600 text-sm font-bold text-white shadow-inner">
+              {getInitial()}
+            </div>
+            
+            {/* User First Name - truncate prevents layout breaking on long names */}
+            <span className="hidden max-w-[100px] truncate text-sm font-bold text-gray-700 sm:block">
+              {currentUser.name ? currentUser.name.split(' ')[0] : 'User'}
+            </span>
+
+            {/* Dropdown Chevron Arrow - Rotates when menu is open */}
+            <svg 
+              className={`hidden sm:block h-4 w-4 text-gray-400 transition-transform duration-200 ${profileDropdownOpen ? 'rotate-180' : ''}`} 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
 
           {/* Profile Dropdown Menu */}
           {profileDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 bg-white p-2 shadow-xl z-50">
+            <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 bg-white p-2 shadow-xl z-50 animate-in fade-in zoom-in duration-200">
               {/* User Info Header */}
-              <div className="border-b border-gray-100 px-3 py-2.5">
-                <p className="text-sm font-semibold text-gray-800 truncate">
+              <div className="border-b border-gray-100 px-3 py-2.5 mb-1 bg-gray-50/50 rounded-t-lg">
+                <p className="text-sm font-bold text-gray-800 truncate">
                   {currentUser.name || "User"}
                 </p>
                 <p className="text-xs text-gray-500 truncate mt-0.5">
@@ -119,29 +138,29 @@ export default function Navbar() {
                 <Link
                   to="/profile"
                   onClick={() => setProfileDropdownOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-emerald-50 hover:text-[#167A44] rounded-lg transition"
+                  className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-[#167A44] rounded-lg transition"
                 >
-                  <span>👤</span> My Profile
+                  <span className="text-lg">👤</span> My Profile
                 </Link>
-
+                
                 {currentUser.role === 'admin' && (
                   <Link
                     to="/admin"
                     onClick={() => setProfileDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-emerald-50 hover:text-[#167A44] rounded-lg transition"
+                    className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-emerald-50 hover:text-[#167A44] rounded-lg transition"
                   >
-                    <span>🛡️</span> Admin Panel
+                    <span className="text-lg">⚙️</span> Admin Panel
                   </Link>
                 )}
               </div>
 
               {/* Logout Option */}
-              <div className="border-t border-gray-100 pt-1">
+              <div className="border-t border-gray-100 pt-1 mt-1">
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition"
+                  className="w-full text-left flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-lg transition"
                 >
-                  <span>🚪</span> Logout
+                  <span className="text-lg">🚪</span> Logout
                 </button>
               </div>
             </div>
@@ -149,7 +168,8 @@ export default function Navbar() {
         </div>
       );
     }
-
+    
+    // ... keep the existing Log in / Sign up return block ...
     return (
       <>
         <Link

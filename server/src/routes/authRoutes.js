@@ -34,7 +34,13 @@ const {
 
     changePassword,
 
-    updateProfile
+    updateProfile,
+
+    toggleFavorite,
+
+    saveItinerary,
+
+    deleteItinerary
 
 
 } = require("../controllers/authController");
@@ -58,8 +64,11 @@ router.post("/verify-token", verifyToken);
 
 router.post("/get-user-data",getUserData);
 
-router.post("/change-password",changePassword)
+router.post("/change-password",changePassword);
 
-router.post("/update-profile",updateProfile)
+router.post("/update-profile",updateProfile);
 
+router.post("/toggle-favorite", toggleFavorite);
+router.post("/save-itinerary", saveItinerary);
+router.delete("/delete-itinerary/:id", deleteItinerary);
 module.exports = router;

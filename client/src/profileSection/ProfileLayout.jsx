@@ -3,9 +3,12 @@ import ProfileSidebar from "./ProfileSidebar";
 import EditProfile from "./EditProfile";
 import ProfileOverview from "./ProfileOverview";
 import ChangePassword from "./ChangePassword";
-
+import MyBookings from "./MyBookings.jsx";
+import SavedItineraries from "./SavedItineraries.jsx";
+import FavoritePackages from "./FavoritePackages.jsx";
 import ErrorModal from "../ReusableCards/ErrorModal.jsx";
 import SuccessModal from "../ReusableCards/SuccessModal.jsx";
+import ScrollToTop from "../components/DestinationDetailPageComponents/ScrollToTop.jsx";
 
 // =======================================================
 // MAIN PROFILE LAYOUT COMPONENT
@@ -154,7 +157,13 @@ const ProfileLayout = () => {
     switch (activeTab) {
       case "overview":
         return <ProfileOverview userData={userData} setActiveTab={setActiveTab} />;
-
+      case "bookings":
+            return <MyBookings userData={userData} />;
+      // Find renderTabContent and update these two cases:
+case "itineraries":
+    return <SavedItineraries userData={userData} refreshProfile={fetchUserProfile} />;
+case "favorites":
+    return <FavoritePackages userData={userData} refreshProfile={fetchUserProfile} />;
       case "edit":
         return (
           <EditProfile
@@ -184,6 +193,7 @@ const ProfileLayout = () => {
 
   return (
     <div className="flex flex-col md:flex-row bg-gray-100 min-h-[calc(100vh-64px)] w-full">
+    <ScrollToTop/>
       <ProfileSidebar activeTab={activeTab} setActiveTab={setActiveTab} userData={userData} />
       <main className="flex-1 p-4 md:p-8 w-full overflow-y-auto">
         {renderTabContent()}

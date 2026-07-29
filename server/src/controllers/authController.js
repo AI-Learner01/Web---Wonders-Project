@@ -347,38 +347,6 @@ const logout = (req, res) => {
 /**
  * 9. Get User Profile Data
  */
-const getUserData = async (req, res) => {
-    try {
-        const email = req.body.email || req.user?.email;
-
-        if (!email) {
-            return res.status(400).json({ success: false, message: "Email is required" });
-        }
-
-        const normalizedEmail = email.trim().toLowerCase();
-
-        const userData = await collectionUserData.findOne(
-            { email: normalizedEmail },
-            { projection: { password: 0 } }
-        );
-
-        if (!userData) {
-            return res.status(404).json({ success: false, message: "User not found" });
-        }
-
-        return res.status(200).json({
-            success: true,
-            user: userData
-        });
-
-    } catch (err) {
-        console.error("Get User Data Error:", err);
-        return res.status(500).json({ 
-            success: false, 
-            message: "Internal server error while fetching user data" 
-        });
-    }
-};
 
 /**
  * 10. Update Profile Controller
@@ -467,6 +435,128 @@ const changePassword = async (req, res) => {
     }
 };
 
+// --- NEW HELPER: Extract Email securely from cookie token ---
+const getEmailFromToken = (req) => {
+    const token = req.cookies.token;
+    if (!token) return null;
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded.email;
+    } catch (err) {
+        return null;
+    }
+};
+
+// --- NEW CONTROLLER: Toggle Favorite Package ---
+const toggleFavorite = async (req, res) => {
+    try {
+        const email = getEmailFromToken(req);
+        if (!email) return res.status(401).json({ success: false, message: "Please log in to save favorites" });
+
+        const { packageData } = req.body;
+        const user = await collectionUserData.findOne({ email });
+
+        const favorites = user.favorites || [];
+        // Check if package is already in the favorites array
+        const exists = favorites.some(fav => 
+            (packageData._id && fav._id === packageData._id) || 
+            (packageData.id && fav.id === packageData.id)
+        );
+        if (exists) {
+
+        let pullQuery = {};
+            if (packageData._id) pullQuery = { _id: packageData._id };
+            else if (packageData.id) pullQuery = { id: packageData.id };
+
+            // Remove it
+            await collectionUserData.updateOne(
+                { email },
+                { $pull: { favorites: { $or: [{ id: packageData.id }, { _id: packageData._id }] } } }
+            );
+            return res.status(200).json({ success: true, isLiked: false, message: "Removed from favorites" });
+        } else {
+            // Add it
+            await collectionUserData.updateOne(
+                { email },
+                { $push: { favorites: packageData } }
+            );
+            return res.status(200).json({ success: true, isLiked: true, message: "Added to favorites" });
+        }
+    } catch (err) {
+        console.error("Toggle Favorite Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+// --- NEW CONTROLLER: Save Itinerary ---
+const saveItinerary = async (req, res) => {
+    try {
+        const email = getEmailFromToken(req);
+        if (!email) return res.status(401).json({ success: false, message: "Please log in to save itinerary" });
+
+        const { itinerary } = req.body;
+        await collectionUserData.updateOne(
+            { email },
+            { $push: { itineraries: itinerary } }
+        );
+        return res.status(200).json({ success: true, message: "Itinerary saved successfully!" });
+    } catch (err) {
+        console.error("Save Itinerary Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+// --- NEW CONTROLLER: Delete Itinerary ---
+const deleteItinerary = async (req, res) => {
+    try {
+        const email = getEmailFromToken(req);
+        if (!email) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+        const { id } = req.params;
+        await collectionUserData.updateOne(
+            { email },
+            { $pull: { itineraries: { id: parseInt(id) } } }
+        );
+        return res.status(200).json({ success: true, message: "Itinerary deleted" });
+    } catch (err) {
+        console.error("Delete Itinerary Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+// IMPORTANT UPDATE: Update the existing getUserData function to use the cookie helper too!
+const getUserData = async (req, res) => {
+    try {
+        // Updated to use the secure cookie helper
+        const email = req.body.email || getEmailFromToken(req);
+        
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const userData = await collectionUserData.findOne(
+            { email: normalizedEmail },
+            { projection: { password: 0 } }
+        );
+
+        if (!userData) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user: userData
+        });
+    } catch (err) {
+        console.error("Get User Data Error:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while fetching user data"
+        });
+    }
+};
+
 module.exports = {
     login,
     signup,
@@ -478,5 +568,8 @@ module.exports = {
     logout,
     getUserData,
     updateProfile,
-    changePassword
+    changePassword,
+    toggleFavorite,
+    saveItinerary,
+    deleteItinerary
 };

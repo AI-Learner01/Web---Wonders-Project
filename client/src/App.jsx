@@ -21,7 +21,7 @@ function ConditionalFooter() {
   const path = location.pathname.toLowerCase();
 
   // Hide footer on specific pages (added '/profile' here so footer doesn't mess up profile sidebar)
-  const hiddenPaths = ['/login', '/signup', '/contact', '/reset-password', '/forgotpassword', '/profile'];
+  const hiddenPaths = ['/login', '/signup', '/contact', '/reset-password', '/forgotpassword'];
 
   const hideFooter = hiddenPaths.some(p => path.startsWith(p)) || path.includes('/booking');
 
