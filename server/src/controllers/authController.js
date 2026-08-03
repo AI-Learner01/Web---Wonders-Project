@@ -1,8 +1,12 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { OAuth2Client } = require("google-auth-library");
 const { collectionUserData, collectionOtps, collectionQuries } = require("../config/db");
 const { sendOtp } = require("../services/otpService");
 const transporter = require("../config/mail");
+
+// Google OAuth Client Initialization
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 /**
  * 1. Send OTP Controller
@@ -166,6 +170,26 @@ const signup = async (req, res) => {
             createdAt: new Date()
         });
 
+        // Generate JWT and set HttpOnly Cookie directly after signup
+        const isAdmin = /^admin(\d+)?@aura\.com$/.test(normalizedEmail);
+
+        const token = jwt.sign(
+            {
+                email: normalizedEmail,
+                name: fullName.trim(),
+                role: isAdmin ? "admin" : "user"
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 3600000
+        });
+
         return res.status(200).json({ success: true, message: "Account created successfully" });
 
     } catch (err) {
@@ -233,7 +257,78 @@ const login = async (req, res) => {
 };
 
 /**
- * 6. Contact Us Controller
+ * 6. Google Login Controller
+ */
+const googleLogin = async (req, res) => {
+    try {
+        const { token, email: reqEmail, name: reqName } = req.body;
+
+        let email = reqEmail;
+        let name = reqName;
+
+        if (token) {
+            const ticket = await client.verifyIdToken({
+                idToken: token,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            email = payload.email;
+            name = payload.name;
+        }
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required for Google login" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        let user = await collectionUserData.findOne({ email: normalizedEmail });
+
+        if (!user) {
+            const newUser = {
+                name: name || "Google User",
+                email: normalizedEmail,
+                isGoogleUser: true,
+                createdAt: new Date()
+            };
+            await collectionUserData.insertOne(newUser);
+            user = newUser;
+        }
+
+        const isAdmin = /^admin(\d+)?@aura\.com$/.test(user.email);
+
+        const jwtToken = jwt.sign(
+            {
+                email: user.email,
+                name: user.name || "",
+                role: isAdmin ? "admin" : "user"
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("token", jwtToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 3600000
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Google login successful",
+            email: user.email,
+            name: user.name || "",
+            role: isAdmin ? "admin" : "user"
+        });
+
+    } catch (err) {
+        console.error("Google Login Error:", err);
+        return res.status(500).json({ success: false, message: "Google authentication failed" });
+    }
+};
+
+/**
+ * 7. Contact Us Controller
  */
 const contactUs = async (req, res) => {
     try {
@@ -297,7 +392,7 @@ const contactUs = async (req, res) => {
 };
 
 /**
- * 7. Token Verification Handler
+ * 8. Token Verification Handler
  */
 const verifyToken = async (req, res) => {
     const token = req.cookies.token;
@@ -333,7 +428,7 @@ const verifyToken = async (req, res) => {
 };
 
 /**
- * 8. Logout Controller
+ * 9. Logout Controller
  */
 const logout = (req, res) => {
     res.clearCookie("token", {
@@ -343,10 +438,6 @@ const logout = (req, res) => {
     });
     return res.status(200).json({ success: true, message: "Logout successful" });
 };
-
-/**
- * 9. Get User Profile Data
- */
 
 /**
  * 10. Update Profile Controller
@@ -435,7 +526,7 @@ const changePassword = async (req, res) => {
     }
 };
 
-// --- NEW HELPER: Extract Email securely from cookie token ---
+// --- HELPER: Extract Email securely from cookie token ---
 const getEmailFromToken = (req) => {
     const token = req.cookies.token;
     if (!token) return null;
@@ -447,7 +538,7 @@ const getEmailFromToken = (req) => {
     }
 };
 
-// --- NEW CONTROLLER: Toggle Favorite Package ---
+// --- CONTROLLER: Toggle Favorite Package ---
 const toggleFavorite = async (req, res) => {
     try {
         const email = getEmailFromToken(req);
@@ -457,25 +548,18 @@ const toggleFavorite = async (req, res) => {
         const user = await collectionUserData.findOne({ email });
 
         const favorites = user.favorites || [];
-        // Check if package is already in the favorites array
         const exists = favorites.some(fav => 
             (packageData._id && fav._id === packageData._id) || 
             (packageData.id && fav.id === packageData.id)
         );
+
         if (exists) {
-
-        let pullQuery = {};
-            if (packageData._id) pullQuery = { _id: packageData._id };
-            else if (packageData.id) pullQuery = { id: packageData.id };
-
-            // Remove it
             await collectionUserData.updateOne(
                 { email },
                 { $pull: { favorites: { $or: [{ id: packageData.id }, { _id: packageData._id }] } } }
             );
             return res.status(200).json({ success: true, isLiked: false, message: "Removed from favorites" });
         } else {
-            // Add it
             await collectionUserData.updateOne(
                 { email },
                 { $push: { favorites: packageData } }
@@ -488,7 +572,7 @@ const toggleFavorite = async (req, res) => {
     }
 };
 
-// --- NEW CONTROLLER: Save Itinerary ---
+// --- CONTROLLER: Save Itinerary ---
 const saveItinerary = async (req, res) => {
     try {
         const email = getEmailFromToken(req);
@@ -506,7 +590,7 @@ const saveItinerary = async (req, res) => {
     }
 };
 
-// --- NEW CONTROLLER: Delete Itinerary ---
+// --- CONTROLLER: Delete Itinerary ---
 const deleteItinerary = async (req, res) => {
     try {
         const email = getEmailFromToken(req);
@@ -524,10 +608,9 @@ const deleteItinerary = async (req, res) => {
     }
 };
 
-// IMPORTANT UPDATE: Update the existing getUserData function to use the cookie helper too!
+// --- CONTROLLER: Get User Profile Data ---
 const getUserData = async (req, res) => {
     try {
-        // Updated to use the secure cookie helper
         const email = req.body.email || getEmailFromToken(req);
         
         if (!email) {
@@ -557,10 +640,136 @@ const getUserData = async (req, res) => {
     }
 };
 
+/**
+ * 12. Verify Google Token (Step 1)
+ */
+const verifyGoogleToken = async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ success: false, message: "Token is required" });
+        }
+
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const { name, email, sub: googleId } = ticket.getPayload();
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const existingUser = await collectionUserData.findOne({ email: normalizedEmail });
+
+        if (existingUser) {
+            const isAdmin = /^admin(\d+)?@aura\.com$/.test(existingUser.email);
+
+            const jwtToken = jwt.sign(
+                {
+                    email: existingUser.email,
+                    name: existingUser.name || "",
+                    role: isAdmin ? "admin" : "user"
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: "1h" }
+            );
+
+            res.cookie("token", jwtToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                maxAge: 3600000
+            });
+
+            return res.status(200).json({
+                success: true,
+                isExistingUser: true,
+                message: "Logged in successfully",
+                email: existingUser.email,
+                name: existingUser.name || "",
+                role: isAdmin ? "admin" : "user"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            isExistingUser: false,
+            name,
+            email: normalizedEmail,
+            googleId
+        });
+
+    } catch (error) {
+        console.error("Verify Google Token Error:", error);
+        return res.status(400).json({ success: false, message: "Invalid Google Token" });
+    }
+};
+
+/**
+ * 13. Google Registration Completion (Step 2)
+ */
+const googleSignup = async (req, res) => {
+    try {
+        const { fullName, email, googleId, password } = req.body;
+
+        if (!fullName || !email || !password) {
+            return res.status(400).json({ success: false, message: "Missing required fields" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const existingUser = await collectionUserData.findOne({ email: normalizedEmail });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: "User already exists with this email" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = {
+            name: fullName.trim(),
+            email: normalizedEmail,
+            googleId,
+            password: hashedPassword,
+            isGoogleUser: true,
+            createdAt: new Date()
+        };
+
+        await collectionUserData.insertOne(newUser);
+
+        const isAdmin = /^admin(\d+)?@aura\.com$/.test(normalizedEmail);
+
+        const token = jwt.sign(
+            {
+                email: normalizedEmail,
+                name: fullName.trim(),
+                role: isAdmin ? "admin" : "user"
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 3600000
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Account created successfully"
+        });
+
+    } catch (error) {
+        console.error("Google Signup Error:", error);
+        return res.status(500).json({ success: false, message: "Server error during registration" });
+    }
+};
+
 module.exports = {
     login,
     signup,
     sendOtpController,
+    googleLogin,
     verifyOtp,
     resetPassword,
     contactUs,
@@ -571,5 +780,7 @@ module.exports = {
     changePassword,
     toggleFavorite,
     saveItinerary,
-    deleteItinerary
+    deleteItinerary,
+    verifyGoogleToken,
+    googleSignup
 };
