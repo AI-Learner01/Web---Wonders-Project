@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { FaMapMarkerAlt, FaClock, FaStar, FaArrowLeft, FaCheckCircle, FaMap } from "react-icons/fa";
 import PackageSection from "../components/PackageSection";
+import PackageMap from "../components/PackageMap";
 import { useState, useEffect } from "react";
 
 const createSlug = (title) => {
@@ -29,32 +30,45 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
     }
 
     // Filter similar packages based on the category/type of the current one
-    const similarPackages = packages
-        .filter((p) => p.type === selectedPackage.type && p.id !== selectedPackage.id)
-        .slice(0, 5); // Take up to 5 similar packages
+    let similarPackages = packages
+        .filter((p) => p._id !== selectedPackage._id &&
+            p.type === selectedPackage.type &&
+            (p.location === selectedPackage.location || p.country === selectedPackage.country)
+        )
+
+    if (similarPackages.length === 0) {
+        similarPackages = packages.filter(
+            (p) => p._id !== selectedPackage._id && p.type === selectedPackage.type
+        );
+    }
+    similarPackages = similarPackages.slice(0, 7); // Take up to 5 similar packages
 
 
-    // Fetch Attractions when the package loads
-    useEffect(() => {
-        if (!selectedPackage || !selectedPackage._id) return;
+    // Helper function to beautify the text: splits long strings into short paragraphs and adds a drop cap
+    const formatAboutText = (text) => {
+        if (!text) return null;
 
-        const fetchAttractions = async () => {
-            setLoadingAttractions(true);
-            try {
-                const response = await fetch(`http://localhost:5000/api/packages/${selectedPackage._id}/attractions`);
-                const result = await response.json();
-                if (result.success) {
-                    setAttractions(result.data);
-                }
-            } catch (err) {
-                console.error("Failed to fetch attractions:", err);
-            } finally {
-                setLoadingAttractions(false);
-            }
-        };
+        // 1. Split the text into an array of sentences
+        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
 
-        fetchAttractions();
-    }, [selectedPackage]);
+        // 2. Group every 2 sentences together to form light, airy paragraphs
+        const paragraphs = [];
+        for (let i = 0; i < sentences.length; i += 2) {
+            paragraphs.push(sentences.slice(i, i + 2).join(' ').trim());
+        }
+
+        // 3. Map them into beautifully styled HTML paragraphs
+        return paragraphs.map((para, index) => (
+            <p key={index} className="mb-5 leading-relaxed text-gray-600 text-lg">
+                {index === 0 ? (
+                    <span className="float-left mr-3 mt-1.5 text-5xl font-extrabold text-emerald-500 leading-none drop-shadow-sm">
+                        {para.charAt(0)}
+                    </span>
+                ) : null}
+                {index === 0 ? para.slice(1) : para}
+            </p>
+        ));
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
@@ -99,42 +113,19 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
                     {/* LEFT COLUMN: Attractions & About */}
                     <div className="lg:col-span-2 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-8">
 
-                        {/* --- NEW ATTRACTIONS SECTION --- */}
-                        <div className="mb-10">
-                            <h2 className="text-3xl font-bold text-gray-800 mb-5">Top Attractions</h2>
-                            {loadingAttractions ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <div key={i} className="h-[90px] bg-slate-200 animate-pulse rounded-2xl"></div>
-                                    ))}
-                                </div>
-                            ) : attractions.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {attractions.map((place, idx) => (
-                                        <div key={idx} className="bg-emerald-50/50 border border-emerald-100 p-4 rounded-2xl flex items-start gap-3 hover:bg-emerald-50 transition-colors">
-                                            <FaMapMarkerAlt className="text-emerald-500 mt-1 flex-shrink-0 text-xl" />
-                                            <div>
-                                                <h4 className="font-bold text-gray-800">{place.name}</h4>
-                                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{place.formattedAddress}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-gray-500 italic bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                    No specific attractions found for this location.
-                                </p>
-                            )}
-                        </div>
-                        <hr className="border-gray-200 mb-10" />
-                        {/* --- END ATTRACTIONS SECTION --- */}
-
                         {/* ABOUT SECTION */}
                         <h2 className="text-3xl font-bold text-gray-800 mb-5">About</h2>
                         <p className="text-gray-600 leading-relaxed text-lg mb-8">
-                            Experience the trip of a lifetime with our meticulously crafted {selectedPackage.title} package.
-                            Immerse yourself in the beauty of {selectedPackage.location} over {selectedPackage.duration}.
-                            Whether you're looking for adventure, relaxation, or cultural exploration, this package includes premium accommodations, expert guides, and unforgettable memories tailored just for you.
+                            {/* Dynamically render the Gemini API 'about' text, with a safe fallback */}
+                            {selectedPackage.about ? (
+                                formatAboutText(selectedPackage.about)
+                            ) : (
+                                <p className="text-gray-600 leading-relaxed text-lg mb-8">
+                                    Experience the trip of a lifetime with our meticulously crafted {selectedPackage.title} package.
+                                    Immerse yourself in the beauty of {selectedPackage.location} over {selectedPackage.duration}.
+                                    Whether you're looking for adventure, relaxation, or cultural exploration, this package includes premium accommodations, expert guides, and unforgettable memories tailored just for you.
+                                </p>
+                            )}
                         </p>
 
                         <h3 className="text-2xl font-bold text-gray-800 mb-5">What's Included</h3>
@@ -172,7 +163,6 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
 
                 {/* ROW 2: ITINERARY & MAP*/}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* ... Keep your existing Itinerary & Map sections ... */}
                     {/* ITINERARY SECTION */}
                     <div className="lg:col-span-1 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-8">
                         <h2 className="text-3xl font-bold text-gray-800 mb-8">Itinerary</h2>
@@ -187,14 +177,16 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
                         </div>
                     </div>
                     {/* MAP SECTION */}
-                    <div className="lg:col-span-2 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-8 flex flex-col items-center justify-center min-h-[400px]">
-                        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                            <FaMap className="text-4xl text-gray-300" />
+                    {/* MAP SECTION */}
+                    <div className="lg:col-span-2 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-8 flex flex-col">
+                        <h2 className="text-3xl font-bold text-gray-800 mb-6">Locations Covered</h2>
+
+                        <div className="flex-1 w-full relative">
+                            <PackageMap
+                                locationString={selectedPackage.location}
+                                country={selectedPackage.country}
+                            />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-400 mb-3">Map Coming Soon</h2>
-                        <p className="text-gray-500 text-center max-w-md text-lg">
-                            We are currently updating our interactive routing maps for {selectedPackage.location}. Check back shortly!
-                        </p>
                     </div>
                 </div>
 

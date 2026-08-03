@@ -7,8 +7,14 @@ const {
     getAutocompleteSuggestions, 
     getDestinationWeather, 
     getDestinationCardInfo,
-    getPaginatedDestinations 
+    getPaginatedDestinations,
+    getDestinationAttractions,
+    getRecommendedDestinations
 } = require('../controllers/destinationController');
+
+
+// Route to get destination tourist attractions
+router.get("/attractions", getDestinationAttractions);
 
 // Route to get destination overview details
 router.get("/info", getDestinationInfo);
@@ -24,5 +30,8 @@ router.get("/card-info", getDestinationCardInfo);
 
 // Route to get paginated destinations (10,000+ optimized)
 router.get("/all", getPaginatedDestinations);
+
+// Route to get personalized recommendations based on view history
+router.post("/recommended", getRecommendedDestinations);
 
 module.exports = router;
