@@ -22,8 +22,10 @@ async function fetchImageFromUnsplash(locationName) {
         const response = await axios.get(url);
 
         if (response.data.results && response.data.results.length > 0) {
-            // Change from urls.regular to urls.full for higher quality hero backgrounds
-            return response.data.results[0].urls.full; 
+            // Using 'raw' allows us to define exact optimized dimensions for the Hero section
+            const rawUrl = response.data.results[0].urls.raw;
+            // Force 1920x1080 landscape, 80% quality, webp format for zero lag
+            return `${rawUrl}&w=1920&h=1080&fit=crop&q=80&auto=format`; 
         }
         
         return null;

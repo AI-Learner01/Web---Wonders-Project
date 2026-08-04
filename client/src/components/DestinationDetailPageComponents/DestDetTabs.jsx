@@ -42,7 +42,7 @@ const DestDetTabs = ({ aboutText, locationName, caption }) => {
 
                 {/* Tab content */}
                 <div className='mx-auto max-w-7xl px-6 py-10'>
-                    {activeTab === "about" && <DestDetAbout aboutText={aboutText} />}
+                    {activeTab === "about" && <DestDetAbout aboutText={aboutText} locationName={locationName} />}
                     {activeTab === "map" && <DestDetMap locationName={locationName} caption={caption} />}
                     {activeTab === "weather" && <DestDetWeather locationName={locationName} />}
                 </div>
