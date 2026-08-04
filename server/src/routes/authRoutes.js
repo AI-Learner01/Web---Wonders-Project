@@ -1,39 +1,41 @@
 const express = require("express");
 
 /**
- * 
- * this module defines the authentication routes for the application, including login, signup, OTP sending and verification, password reset, contact form submission, token verification, and logout. It imports the necessary controller functions from authController.js and sets up the corresponding routes using Express Router.
  * @module authRoutes
  * @requires express
  * @requires ../controllers/authController
  * @returns {Object} router - Express Router object with defined authentication routes
  */
 
-
 const router = express.Router();
 
 const {
-
     login,
-
     signup,
-
+    googleLogin,
     sendOtpController,
-
     verifyOtp,
-
     resetPassword,
-
     contactUs,
-
     verifyToken,
-
-    logout
-
+    logout,
+    getUserData,
+    changePassword,
+    updateProfile,
+    toggleFavorite,
+    saveItinerary,
+    deleteItinerary,
+    verifyGoogleToken, // New Controller
+    googleSignup        // New Controller
 } = require("../controllers/authController");
-const { verify } = require("../config/mail");
 
-router.post("/login", login);//if server want to send req on /auth/login than come here
+router.post("/login", login);
+
+router.post("/google", googleLogin); 
+
+// Google Multi-step Signup Routes
+router.post("/verify-google-token", verifyGoogleToken);
+router.post("/googleSignup", googleSignup);
 
 router.post("/logout", logout);
 
@@ -45,8 +47,20 @@ router.post("/verify-otp", verifyOtp);
 
 router.post("/reset-password", resetPassword);
 
-router.post("/contact-us",contactUs);
+router.post("/contact-us", contactUs);
 
 router.post("/verify-token", verifyToken);
+
+router.post("/get-user-data", getUserData);
+
+router.post("/change-password", changePassword);
+
+router.post("/update-profile", updateProfile);
+
+router.post("/toggle-favorite", toggleFavorite);
+
+router.post("/save-itinerary", saveItinerary);
+
+router.delete("/delete-itinerary/:id", deleteItinerary);
 
 module.exports = router;
