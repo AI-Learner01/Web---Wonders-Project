@@ -13,30 +13,29 @@ import ItineraryBuilder from './pages/Destination-pages/ItineraryBuilder';
 
 import AdminLayout from "./adminPanel/AdminLayout";
 import AdminVerify from "./adminPanel/adminVeryfy";
+import ProfileLayout from "./profileSection/ProfileLayout";
 
-// 2. Create a helper component that reads the current URL
+// Helper component that reads the current URL
 function ConditionalFooter() {
   const location = useLocation();
   const path = location.pathname.toLowerCase();
 
-  // Exact routes where the footer should NOT appear
-  // Added '/forgotpassword' to the list so footer hides there too
+  // Hide footer on specific pages (added '/profile' here so footer doesn't mess up profile sidebar)
   const hiddenPaths = ['/login', '/signup', '/contact', '/reset-password', '/forgotpassword'];
 
-  // Hide on exact routes OR if the URL contains "/booking" 
-  const hideFooter = hiddenPaths.includes(path) || path.includes('/booking');
+  const hideFooter = hiddenPaths.some(p => path.startsWith(p)) || path.includes('/booking');
 
   if (hideFooter) {
-    return null; // Render nothing
+    return null;
   }
 
-  return <Footer />; // Render the Footer everywhere else
+  return <Footer />;
 }
 
 function App() {
   return (
     <BrowserRouter>
-      {/* Global Navbar */}
+      {/* Main Navbar Always On Top */}
       <Navbar />
 
       {/* Main Content */}
@@ -52,6 +51,8 @@ function App() {
             }
           />
 
+          {/* Profile Route */}
+          <Route path="/profile/*" element={<ProfileLayout />} />
 
           <Route path="/" element={<Home />} />
           <Route path="/destinations/*" element={<DestApp />} />
@@ -68,7 +69,7 @@ function App() {
         </Routes>
       </main>
 
-      {/* Place the conditional footer at the very bottom */}
+      {/* Conditional Footer */}
       <ConditionalFooter />
     </BrowserRouter>
   );

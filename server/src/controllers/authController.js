@@ -1,8 +1,12 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { OAuth2Client } = require("google-auth-library");
 const { collectionUserData, collectionOtps, collectionQuries } = require("../config/db");
 const { sendOtp } = require("../services/otpService");
 const transporter = require("../config/mail");
+
+// Google OAuth Client Initialization
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 /**
  * 1. Send OTP Controller
@@ -62,7 +66,6 @@ const verifyOtp = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid OTP code" });
         }
 
-        // Clean up verified OTP
         await collectionOtps.deleteOne({ _id: otpData._id });
 
         return res.status(200).json({
@@ -150,12 +153,11 @@ const signup = async (req, res) => {
         const normalizedPhone = phone.trim();
 
         const existingUserEmail = await collectionUserData.findOne({ email: normalizedEmail });
-        const existingUserPhone = await collectionUserData.findOne({ phone: normalizedPhone });
 
-        if (existingUserEmail || existingUserPhone) {
+        if (existingUserEmail) {
             return res.status(409).json({ 
                 success: false, 
-                message: "An account already exists with this email or phone number" 
+                message: "An account already exists with this email" 
             });
         }
 
@@ -166,6 +168,26 @@ const signup = async (req, res) => {
             phone: normalizedPhone,
             password: hashedPassword,
             createdAt: new Date()
+        });
+
+        // Generate JWT and set HttpOnly Cookie directly after signup
+        const isAdmin = /^admin(\d+)?@aura\.com$/.test(normalizedEmail);
+
+        const token = jwt.sign(
+            {
+                email: normalizedEmail,
+                name: fullName.trim(),
+                role: isAdmin ? "admin" : "user"
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 3600000
         });
 
         return res.status(200).json({ success: true, message: "Account created successfully" });
@@ -181,17 +203,15 @@ const signup = async (req, res) => {
  */
 const login = async (req, res) => {
     try {
-        const { emailOrPhone, password } = req.body;
+        const { email, password } = req.body;
 
-        if (!emailOrPhone || !password) {
+        if (!email || !password) {
             return res.status(400).json({ success: false, message: "Credentials are required" });
         }
 
-        const inputIdentifier = emailOrPhone.trim().toLowerCase();
+        const normalizedEmail = email.trim().toLowerCase();
 
-        const user = await collectionUserData.findOne({ 
-            $or: [{ email: inputIdentifier }, { phone: emailOrPhone.trim() }] 
-        });
+        const user = await collectionUserData.findOne({ email: normalizedEmail });
 
         if (!user) {
             return res.status(401).json({ success: false, message: "Account not found" });
@@ -203,12 +223,12 @@ const login = async (req, res) => {
             return res.status(401).json({ success: false, message: "Invalid password" });
         }
 
-        // Role Resolution (Matches: admin@aura.com or admin123@aura.com)
         const isAdmin = /^admin(\d+)?@aura\.com$/.test(user.email);
 
         const token = jwt.sign(
             {
                 email: user.email,
+                name: user.name || "",
                 role: isAdmin ? "admin" : "user"
             },
             process.env.JWT_SECRET,
@@ -217,7 +237,7 @@ const login = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Secure in production
+            secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             maxAge: 3600000
         });
@@ -225,6 +245,8 @@ const login = async (req, res) => {
         return res.status(200).json({ 
             success: true, 
             message: "Login successful",
+            email: user.email,
+            name: user.name || "",
             role: isAdmin ? "admin" : "user"
         });
 
@@ -235,7 +257,78 @@ const login = async (req, res) => {
 };
 
 /**
- * 6. Contact Us / Support Query Controller
+ * 6. Google Login Controller
+ */
+const googleLogin = async (req, res) => {
+    try {
+        const { token, email: reqEmail, name: reqName } = req.body;
+
+        let email = reqEmail;
+        let name = reqName;
+
+        if (token) {
+            const ticket = await client.verifyIdToken({
+                idToken: token,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            email = payload.email;
+            name = payload.name;
+        }
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required for Google login" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        let user = await collectionUserData.findOne({ email: normalizedEmail });
+
+        if (!user) {
+            const newUser = {
+                name: name || "Google User",
+                email: normalizedEmail,
+                isGoogleUser: true,
+                createdAt: new Date()
+            };
+            await collectionUserData.insertOne(newUser);
+            user = newUser;
+        }
+
+        const isAdmin = /^admin(\d+)?@aura\.com$/.test(user.email);
+
+        const jwtToken = jwt.sign(
+            {
+                email: user.email,
+                name: user.name || "",
+                role: isAdmin ? "admin" : "user"
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("token", jwtToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 3600000
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Google login successful",
+            email: user.email,
+            name: user.name || "",
+            role: isAdmin ? "admin" : "user"
+        });
+
+    } catch (err) {
+        console.error("Google Login Error:", err);
+        return res.status(500).json({ success: false, message: "Google authentication failed" });
+    }
+};
+
+/**
+ * 7. Contact Us Controller
  */
 const contactUs = async (req, res) => {
     try {
@@ -275,49 +368,8 @@ const contactUs = async (req, res) => {
                             <div style="padding: 24px;">
                                 <p style="margin-top: 0; font-size: 15px; color: #475569;">Dear Valued Customer,</p>
                                 <p style="font-size: 14px; color: #475569; line-height: 1.5;">
-                                    Thank you for contacting us. Your query has been successfully registered in our system. Here are your submission details:
+                                    Thank you for contacting us. Your query has been successfully registered in our system.
                                 </p>
-
-                                <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 16px; margin: 20px 0;">
-                                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                                        <tr>
-                                            <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Receipt No / Reference ID:</td>
-                                            <td style="padding: 6px 0; text-align: right; font-weight: bold; color: #0f172a; font-family: monospace; font-size: 13px;">${receiptNo}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Topic:</td>
-                                            <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #0f172a; text-transform: capitalize;">${topic}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Status:</td>
-                                            <td style="padding: 6px 0; text-align: right; font-weight: bold; color: #d97706;">Pending Review</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Date:</td>
-                                            <td style="padding: 6px 0; text-align: right; color: #0f172a;">${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                                        </tr>
-                                    </table>
-
-                                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 12px 0;" />
-
-                                    <div>
-                                        <span style="font-size: 13px; color: #64748b; font-weight: 600; display: block; margin-bottom: 4px;">Your Message:</span>
-                                        <p style="margin: 0; font-size: 13px; color: #334155; font-style: italic; background-color: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #f1f5f9;">
-                                            "${message}"
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 20px;">
-                                    Our support team is actively reviewing your request and will get back to you shortly.
-                                </p>
-
-                                <p style="margin: 0; font-size: 14px; font-weight: bold; color: #1e293b;">Best regards,</p>
-                                <p style="margin: 2px 0 0; font-size: 14px; font-weight: bold; color: #14c38e;">AuraAvenue Support Team</p>
-                            </div>
-
-                            <div style="background-color: #f1f5f9; padding: 12px; text-align: center; font-size: 11px; color: #94a3b8;">
-                                This is an automated notification. Please do not reply directly to this email.
                             </div>
                         </div>
                     `
@@ -340,31 +392,43 @@ const contactUs = async (req, res) => {
 };
 
 /**
- * 7. Token Verification Middleware/Handler
+ * 8. Token Verification Handler
  */
-const verifyToken = (req, res) => {
+const verifyToken = async (req, res) => {
     const token = req.cookies.token;
 
     if (!token) {
-        return res.status(401).json({ success: false, message: "Token not found" });
+        return res.status(401).json({ success: false, message: "Token not found. Please log in again." });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
         if (err) {
-            return res.status(401).json({ success: false, message: "Invalid or expired token" });
+            return res.status(401).json({ success: false, message: "Invalid or expired token. Please log in again." });
         }
 
-        return res.status(200).json({
-            success: true,
-            message: "Token is valid",
-            email: decoded.email,
-            role: decoded.role
-        });
+        try {
+            let name = decoded.name;
+            if (!name) {
+                const user = await collectionUserData.findOne({ email: decoded.email });
+                name = user ? user.name : "";
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Token is valid",
+                email: decoded.email,
+                name: name,
+                role: decoded.role
+            });
+        } catch (dbErr) {
+            console.error("VerifyToken DB Error:", dbErr);
+            return res.status(500).json({ success: false, message: "Internal server error" });
+        }
     });
 };
 
 /**
- * 8. Logout Controller
+ * 9. Logout Controller
  */
 const logout = (req, res) => {
     res.clearCookie("token", {
@@ -375,13 +439,348 @@ const logout = (req, res) => {
     return res.status(200).json({ success: true, message: "Logout successful" });
 };
 
+/**
+ * 10. Update Profile Controller
+ */
+const updateProfile = async (req, res) => {
+    try {
+        const { email, name, phone, country, city, postalCode } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required to update profile" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const updateData = {};
+        if (name !== undefined) updateData.name = name.trim();
+        if (phone !== undefined) updateData.phone = phone.trim();
+        if (country !== undefined) updateData.country = country.trim();
+        if (city !== undefined) updateData.city = city.trim();
+        if (postalCode !== undefined) updateData.postalCode = postalCode.trim();
+
+        const result = await collectionUserData.updateOne(
+            { email: normalizedEmail },
+            { $set: updateData }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile updated successfully!"
+        });
+
+    } catch (err) {
+        console.error("Update Profile Error:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while updating profile"
+        });
+    }
+};
+
+/**
+ * 11. Change Password Controller
+ */
+const changePassword = async (req, res) => {
+    try {
+        const { email, currentPassword, newPassword } = req.body;
+
+        if (!email || !currentPassword || !newPassword) {
+            return res.status(400).json({ success: false, message: "All password fields are required" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const user = await collectionUserData.findOne({ email: normalizedEmail });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User account not found" });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: "Incorrect current password" });
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        await collectionUserData.updateOne(
+            { email: normalizedEmail },
+            { $set: { password: hashedNewPassword } }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully!"
+        });
+
+    } catch (err) {
+        console.error("Change Password Error:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while changing password"
+        });
+    }
+};
+
+// --- HELPER: Extract Email securely from cookie token ---
+const getEmailFromToken = (req) => {
+    const token = req.cookies.token;
+    if (!token) return null;
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded.email;
+    } catch (err) {
+        return null;
+    }
+};
+
+// --- CONTROLLER: Toggle Favorite Package ---
+const toggleFavorite = async (req, res) => {
+    try {
+        const email = getEmailFromToken(req);
+        if (!email) return res.status(401).json({ success: false, message: "Please log in to save favorites" });
+
+        const { packageData } = req.body;
+        const user = await collectionUserData.findOne({ email });
+
+        const favorites = user.favorites || [];
+        const exists = favorites.some(fav => 
+            (packageData._id && fav._id === packageData._id) || 
+            (packageData.id && fav.id === packageData.id)
+        );
+
+        if (exists) {
+            await collectionUserData.updateOne(
+                { email },
+                { $pull: { favorites: { $or: [{ id: packageData.id }, { _id: packageData._id }] } } }
+            );
+            return res.status(200).json({ success: true, isLiked: false, message: "Removed from favorites" });
+        } else {
+            await collectionUserData.updateOne(
+                { email },
+                { $push: { favorites: packageData } }
+            );
+            return res.status(200).json({ success: true, isLiked: true, message: "Added to favorites" });
+        }
+    } catch (err) {
+        console.error("Toggle Favorite Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+// --- CONTROLLER: Save Itinerary ---
+const saveItinerary = async (req, res) => {
+    try {
+        const email = getEmailFromToken(req);
+        if (!email) return res.status(401).json({ success: false, message: "Please log in to save itinerary" });
+
+        const { itinerary } = req.body;
+        await collectionUserData.updateOne(
+            { email },
+            { $push: { itineraries: itinerary } }
+        );
+        return res.status(200).json({ success: true, message: "Itinerary saved successfully!" });
+    } catch (err) {
+        console.error("Save Itinerary Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+// --- CONTROLLER: Delete Itinerary ---
+const deleteItinerary = async (req, res) => {
+    try {
+        const email = getEmailFromToken(req);
+        if (!email) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+        const { id } = req.params;
+        await collectionUserData.updateOne(
+            { email },
+            { $pull: { itineraries: { id: parseInt(id) } } }
+        );
+        return res.status(200).json({ success: true, message: "Itinerary deleted" });
+    } catch (err) {
+        console.error("Delete Itinerary Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+// --- CONTROLLER: Get User Profile Data ---
+const getUserData = async (req, res) => {
+    try {
+        const email = req.body.email || getEmailFromToken(req);
+        
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const userData = await collectionUserData.findOne(
+            { email: normalizedEmail },
+            { projection: { password: 0 } }
+        );
+
+        if (!userData) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user: userData
+        });
+    } catch (err) {
+        console.error("Get User Data Error:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while fetching user data"
+        });
+    }
+};
+
+/**
+ * 12. Verify Google Token (Step 1)
+ */
+const verifyGoogleToken = async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ success: false, message: "Token is required" });
+        }
+
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const { name, email, sub: googleId } = ticket.getPayload();
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const existingUser = await collectionUserData.findOne({ email: normalizedEmail });
+
+        if (existingUser) {
+            const isAdmin = /^admin(\d+)?@aura\.com$/.test(existingUser.email);
+
+            const jwtToken = jwt.sign(
+                {
+                    email: existingUser.email,
+                    name: existingUser.name || "",
+                    role: isAdmin ? "admin" : "user"
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: "1h" }
+            );
+
+            res.cookie("token", jwtToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                maxAge: 3600000
+            });
+
+            return res.status(200).json({
+                success: true,
+                isExistingUser: true,
+                message: "Logged in successfully",
+                email: existingUser.email,
+                name: existingUser.name || "",
+                role: isAdmin ? "admin" : "user"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            isExistingUser: false,
+            name,
+            email: normalizedEmail,
+            googleId
+        });
+
+    } catch (error) {
+        console.error("Verify Google Token Error:", error);
+        return res.status(400).json({ success: false, message: "Invalid Google Token" });
+    }
+};
+
+/**
+ * 13. Google Registration Completion (Step 2)
+ */
+const googleSignup = async (req, res) => {
+    try {
+        const { fullName, email, googleId, password } = req.body;
+
+        if (!fullName || !email || !password) {
+            return res.status(400).json({ success: false, message: "Missing required fields" });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const existingUser = await collectionUserData.findOne({ email: normalizedEmail });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: "User already exists with this email" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = {
+            name: fullName.trim(),
+            email: normalizedEmail,
+            googleId,
+            password: hashedPassword,
+            isGoogleUser: true,
+            createdAt: new Date()
+        };
+
+        await collectionUserData.insertOne(newUser);
+
+        const isAdmin = /^admin(\d+)?@aura\.com$/.test(normalizedEmail);
+
+        const token = jwt.sign(
+            {
+                email: normalizedEmail,
+                name: fullName.trim(),
+                role: isAdmin ? "admin" : "user"
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 3600000
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Account created successfully"
+        });
+
+    } catch (error) {
+        console.error("Google Signup Error:", error);
+        return res.status(500).json({ success: false, message: "Server error during registration" });
+    }
+};
+
 module.exports = {
     login,
     signup,
     sendOtpController,
+    googleLogin,
     verifyOtp,
     resetPassword,
     contactUs,
     verifyToken,
-    logout
+    logout,
+    getUserData,
+    updateProfile,
+    changePassword,
+    toggleFavorite,
+    saveItinerary,
+    deleteItinerary,
+    verifyGoogleToken,
+    googleSignup
 };

@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { FaMapMarkerAlt, FaClock, FaStar, FaArrowLeft, FaCheckCircle, FaMap } from "react-icons/fa";
 import PackageSection from "../components/PackageSection";
+import PackageMap from "../components/PackageMap";
+import { useState, useEffect } from "react";
 
 const createSlug = (title) => {
     if (!title) return "";
@@ -11,9 +13,13 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
     const { packageId } = useParams();
     const navigate = useNavigate();
 
+    const [attractions, setAttractions] = useState([]);
+    const [loadingAttractions, setLoadingAttractions] = useState(true);
+
     const selectedPackage = packages.find(
         (p) => createSlug(p.title) === packageId
     );
+
 
     if (!selectedPackage) {
         return (
@@ -24,22 +30,59 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
     }
 
     // Filter similar packages based on the category/type of the current one
-    const similarPackages = packages
-        .filter((p) => p.type === selectedPackage.type && p.id !== selectedPackage.id)
-        .slice(0, 5); // Take up to 5 similar packages
+    let similarPackages = packages
+        .filter((p) => p._id !== selectedPackage._id &&
+            p.type === selectedPackage.type &&
+            (p.location === selectedPackage.location || p.country === selectedPackage.country)
+        )
+
+    if (similarPackages.length === 0) {
+        similarPackages = packages.filter(
+            (p) => p._id !== selectedPackage._id && p.type === selectedPackage.type
+        );
+    }
+    similarPackages = similarPackages.slice(0, 7); // Take up to 5 similar packages
+
+
+    // Helper function to beautify the text: splits long strings into short paragraphs and adds a drop cap
+    const formatAboutText = (text) => {
+        if (!text) return null;
+
+        // 1. Split the text into an array of sentences
+        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+
+        // 2. Group every 2 sentences together to form light, airy paragraphs
+        const paragraphs = [];
+        for (let i = 0; i < sentences.length; i += 2) {
+            paragraphs.push(sentences.slice(i, i + 2).join(' ').trim());
+        }
+
+        // 3. Map them into beautifully styled HTML paragraphs
+        return paragraphs.map((para, index) => (
+            <p key={index} className="mb-5 leading-relaxed text-gray-600 text-lg">
+                {index === 0 ? (
+                    <span className="float-left mr-3 mt-1.5 text-5xl font-extrabold text-emerald-500 leading-none drop-shadow-sm">
+                        {para.charAt(0)}
+                    </span>
+                ) : null}
+                {index === 0 ? para.slice(1) : para}
+            </p>
+        ));
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
-            {/* 1. HERO SECTION */}
+            {/* 1. HERO SECTION (Keep Exactly as is) */}
             <section
                 className="relative h-[450px] lg:h-[550px] bg-cover bg-center flex items-end pb-12"
                 style={{ backgroundImage: `url(${selectedPackage.image})` }}
             >
+                {/* ... Keep your existing Hero content ... */}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
                 <div className="relative max-w-7xl mx-auto px-6 w-full text-white">
                     <button
-                        onClick={() => navigate("/packages")}
-                        className="mb-6 bg-white/20 backdrop-blur-md border border-white/30 px-5 py-2 rounded-full flex items-center gap-2 hover:bg-white/30 transition-all duration-300"
+                        onClick={() => navigate(-1)} // Fix applied from previous step
+                        className="mb-6 bg-white/20 backdrop-blur-md border border-white/30 px-5 py-2 rounded-full flex items-center gap-2 hover:bg-white/30 transition-all duration-300 cursor-pointer"
                     >
                         <FaArrowLeft /> Back
                     </button>
@@ -67,14 +110,24 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
                 {/* ROW 1: ABOUT (Left) & PRICE (Right) */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* ABOUT SECTION */}
+                    {/* LEFT COLUMN: Attractions & About */}
                     <div className="lg:col-span-2 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-8">
+
+                        {/* ABOUT SECTION */}
                         <h2 className="text-3xl font-bold text-gray-800 mb-5">About</h2>
                         <p className="text-gray-600 leading-relaxed text-lg mb-8">
-                            Experience the trip of a lifetime with our meticulously crafted {selectedPackage.title} package.
-                            Immerse yourself in the beauty of {selectedPackage.location} over {selectedPackage.duration}.
-                            Whether you're looking for adventure, relaxation, or cultural exploration, this package includes premium accommodations, expert guides, and unforgettable memories tailored just for you.
+                            {/* Dynamically render the Gemini API 'about' text, with a safe fallback */}
+                            {selectedPackage.about ? (
+                                formatAboutText(selectedPackage.about)
+                            ) : (
+                                <p className="text-gray-600 leading-relaxed text-lg mb-8">
+                                    Experience the trip of a lifetime with our meticulously crafted {selectedPackage.title} package.
+                                    Immerse yourself in the beauty of {selectedPackage.location} over {selectedPackage.duration}.
+                                    Whether you're looking for adventure, relaxation, or cultural exploration, this package includes premium accommodations, expert guides, and unforgettable memories tailored just for you.
+                                </p>
+                            )}
                         </p>
+
                         <h3 className="text-2xl font-bold text-gray-800 mb-5">What's Included</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {selectedPackage.features.map((feature, idx) => (
@@ -85,11 +138,10 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
                         </div>
                     </div>
 
-                    {/* PRICE SECTION (With Book Now Button) */}
+                    {/* PRICE SECTION  */}
                     <div className="lg:col-span-1 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-8 sticky top-6 self-start">
                         <h2 className="text-2xl font-bold text-gray-800 mb-2">Book Your Trip</h2>
                         <p className="text-gray-500 mb-6">Secure your spot today!</p>
-
                         <div className="flex items-end gap-3 mb-1">
                             <span className="text-4xl font-extrabold text-emerald-600 drop-shadow-sm">
                                 ₹{selectedPackage.price.toLocaleString()}
@@ -99,27 +151,24 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
                         <p className="text-gray-400 line-through text-lg mb-8">
                             ₹{selectedPackage.originalPrice.toLocaleString()}
                         </p>
-
                         {/* BOOKING BUTTON */}
                         <button
                             onClick={() => onBookNow(selectedPackage)}
-                            className="w-full rounded-2xl py-4 font-bold text-lg text-white flex justify-center items-center gap-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                            className="cursor-pointer w-full rounded-2xl py-4 font-bold text-lg text-white flex justify-center items-center gap-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
                         >
                             Book Now
                         </button>
                     </div>
                 </div>
 
-                {/* ROW 2: ITINERARY (Left) & MAP (Right) */}
+                {/* ROW 2: ITINERARY & MAP*/}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
                     {/* ITINERARY SECTION */}
                     <div className="lg:col-span-1 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-8">
                         <h2 className="text-3xl font-bold text-gray-800 mb-8">Itinerary</h2>
                         <div className="relative border-l-2 border-emerald-200 ml-4 space-y-8">
                             {selectedPackage.itinerary.map((item, idx) => (
                                 <div key={idx} className="relative pl-8">
-                                    {/* Timeline Node */}
                                     <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-emerald-500 border-4 border-white shadow-sm"></div>
                                     <h3 className="font-bold text-gray-800 text-lg">Day {idx + 1}</h3>
                                     <p className="text-gray-600 mt-2">{item}</p>
@@ -127,23 +176,23 @@ function PackageDetails({ packages, onBookNow, onViewDetails }) {
                             ))}
                         </div>
                     </div>
-
                     {/* MAP SECTION */}
-                    <div className="lg:col-span-2 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-8 flex flex-col items-center justify-center min-h-[400px]">
-                        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                            <FaMap className="text-4xl text-gray-300" />
+                    {/* MAP SECTION */}
+                    <div className="lg:col-span-2 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-8 flex flex-col">
+                        <h2 className="text-3xl font-bold text-gray-800 mb-6">Locations Covered</h2>
+
+                        <div className="flex-1 w-full relative">
+                            <PackageMap
+                                locationString={selectedPackage.location}
+                                country={selectedPackage.country}
+                            />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-400 mb-3">Map Coming Soon</h2>
-                        <p className="text-gray-500 text-center max-w-md text-lg">
-                            We are currently updating our interactive routing maps for {selectedPackage.location}. Check back shortly!
-                        </p>
                     </div>
                 </div>
 
-                {/* ROW 3: SIMILAR PACKAGES SLIDER */}
+                {/* ROW 3: SIMILAR PACKAGES SLIDER*/}
                 {similarPackages.length > 0 && (
                     <div className="pt-8">
-                        {/* We reuse your PackageSection here, mapping clicks back to the details page handler */}
                         <PackageSection
                             title="Similar Packages"
                             packages={similarPackages}

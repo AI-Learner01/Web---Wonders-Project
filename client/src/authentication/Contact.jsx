@@ -153,13 +153,13 @@ function Contact() {
                                 href="mailto:travelmate.supports@gmail.com"
                                 className="text-[#007bff] no-underline font-medium break-words hover:underline max-[480px]:text-sm max-[480px]:text-center"
                             >
-                                travelmate.supports@gmail.com
+                                auraavenue.travel@gmail.com
                             </a>
 
                             <button
                                 type="button"
                                 onClick={() => {
-                                    navigator.clipboard.writeText("travelmate.supports@gmail.com");
+                                    navigator.clipboard.writeText("auraavenue.travel@gmail.com");
                                     // Error card / simple message trigger kar sakte hain agar chahein
                                 }}
                                 className="bg-[#f3f4f6] text-[#333] border border-[#d1d5db] rounded-lg px-[14px] py-[7px] cursor-pointer text-sm font-semibold transition duration-[250ms] hover:bg-[#e5e7eb] hover:border-[#14c38e] hover:text-[#14c38e] max-[480px]:w-full max-[480px]:max-w-[180px]"

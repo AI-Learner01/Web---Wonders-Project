@@ -8,13 +8,35 @@ import {
     FaArrowRight,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function PackageCard({ packageData, onBookNow, isSlider }) {
     // 1. DYNAMIC WRAPPER: If it's a slider, completely bypass Framer Motion overhead using a native div.
     const CardContainer = isSlider ? "div" : motion.div;
 
     const [isLiked, setIsLiked] = useState(false);
+    useEffect(() => {
+        const checkLikedStatus = async () => {
+            try {
+                const res = await fetch("http://localhost:5000/api/auth/get-user-data", {
+                    method: "POST",
+                    credentials: "include", // Sends the JWT cookie
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await res.json();
+                if (data.success && data.user.favorites) {
+                    const exists = data.user.favorites.some(fav =>
+                        (packageData._id && fav._id === packageData._id) ||
+                        (packageData.id && fav.id === packageData.id)
+                    );
+                    setIsLiked(exists);
+                }
+            } catch (err) {
+                // User likely not logged in, ignore silently
+            }
+        };
+        checkLikedStatus();
+    }, [packageData.id, packageData._id]);
 
     // 2. Only apply motion props if it's in the grid view
     const motionProps = isSlider
@@ -41,11 +63,27 @@ function PackageCard({ packageData, onBookNow, isSlider }) {
 
                 <div className="absolute top-4 right-4 flex items-center gap-3">
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation(); // Prevents the click from triggering the card link
-                            setIsLiked(!isLiked);
+                        onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                                // Update MongoDB
+                                const res = await fetch("http://localhost:5000/api/auth/toggle-favorite", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    credentials: "include",
+                                    body: JSON.stringify({ packageData })
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    setIsLiked(data.isLiked); // UI instantly updates to match database
+                                } else {
+                                    alert(data.message); // Alerts "Please log in to save favorites"
+                                }
+                            } catch (err) {
+                                console.error(err);
+                            }
                         }}
-                        className="bg-white/80 backdrop-blur-md border border-white transition-all duration-300 rounded-full p-2.5 shadow-sm hover:scale-110 z-10"
+                        className="bg-white/80 backdrop-blur-md border border-white transition-all duration-300 rounded-full p-2.5 shadow-sm hover:scale-110 z-10 text-red-500"
                     >
                         {isLiked ? "❤️" : "🤍"}
                     </button>
