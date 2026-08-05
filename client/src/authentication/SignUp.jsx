@@ -38,7 +38,10 @@ function SignUp() {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
+    
+    // Actions on modal close
     const [onSuccessCloseAction, setOnSuccessCloseAction] = useState(() => () => {});
+    const [onErrorCloseAction, setOnErrorCloseAction] = useState(() => () => {});
 
     const showSuccess = (msg, callback) => {
         setModalMessage(msg);
@@ -46,8 +49,9 @@ function SignUp() {
         setIsSuccessModalOpen(true);
     };
 
-    const showError = (msg) => {
+    const showError = (msg, callback) => {
         setModalMessage(msg);
+        setOnErrorCloseAction(() => callback || (() => {}));
         setIsErrorModalOpen(true);
     };
 
@@ -63,8 +67,9 @@ function SignUp() {
 
             if (data.success) {
                 if (data.isExistingUser) {
-                    showSuccess("Login successful!", () => {
-                        window.location.href = "/";
+                    // Existing User error flow & Redirect to /login
+                    showError("You already have an account, please try to login.", () => {
+                        window.location.href = "/login";
                     });
                 } else {
                     setGoogleUserData({
@@ -471,7 +476,10 @@ function SignUp() {
             <ErrorModal
                 isOpen={isErrorModalOpen}
                 message={modalMessage}
-                onClose={() => setIsErrorModalOpen(false)}
+                onClose={() => {
+                    setIsErrorModalOpen(false);
+                    onErrorCloseAction();
+                }}
             />
         </div>
     );

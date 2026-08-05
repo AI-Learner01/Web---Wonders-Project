@@ -48,6 +48,17 @@ function AdminSidebar({ activePage, setActivePage }) {
         </svg>
       ),
     },
+
+    // Add this item object into your navItems array in AdminSidebar.jsx:
+    {
+      id: "packages",
+      label: "Manage Packages",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      ),
+    },
   ];
 
   return (
@@ -63,11 +74,10 @@ function AdminSidebar({ activePage, setActivePage }) {
               <button
                 key={item.id}
                 onClick={() => setActivePage(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
-                  isActive
-                    ? "bg-emerald-50 text-emerald-700 font-semibold shadow-sm border border-emerald-100"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${isActive
+                  ? "bg-emerald-50 text-emerald-700 font-semibold shadow-sm border border-emerald-100"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
               >
                 <span className={isActive ? "text-emerald-600" : "text-gray-400"}>
                   {item.icon}
@@ -83,6 +93,8 @@ function AdminSidebar({ activePage, setActivePage }) {
         <p className="font-semibold text-gray-700 mb-1">AuraAvenue Portal</p>
         <p>Admin Operations v1.0</p>
       </div>
+
+
     </aside>
   );
 }

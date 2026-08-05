@@ -19,6 +19,7 @@ const collectionDestinations = dbDest.collection("Destinations");
 const collectionPackages = dbAuth.collection("Packages");
 const collectionBookings = dbAuth.collection("Bookings");
 const collectionQuries = dbAuth.collection("Queries");
+const collectionNotifications = dbAuth.collection("Notification");
 
 /**
  * Connects to MongoDB Atlas Cluster and ensures indexes are created
@@ -44,5 +45,6 @@ module.exports = {
     collectionDestinations, // Exported so controllers can explicitly query the dataset
     collectionPackages,
     collectionBookings,
-    collectionQuries          // Exported for logging user queries
+    collectionQuries,          // Exported for logging user queries
+    collectionNotifications    // Exported for handling notifications
 };

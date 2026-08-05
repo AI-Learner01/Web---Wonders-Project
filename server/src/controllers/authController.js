@@ -1,12 +1,46 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { ObjectId } = require("mongodb"); // FIX 1: Added ObjectId import
 const { OAuth2Client } = require("google-auth-library");
-const { collectionUserData, collectionOtps, collectionQuries } = require("../config/db");
+const { 
+    collectionUserData, 
+    collectionOtps, 
+    collectionQuries,
+    collectionNotifications // FIX 2: Added collectionNotifications import
+} = require("../config/db");
 const { sendOtp } = require("../services/otpService");
 const transporter = require("../config/mail");
 
 // Google OAuth Client Initialization
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// --- HELPER FUNCTIONS ---
+const determineRole = (email) => {
+    return /^admin(\d+)?@aura\.com$/i.test(email) ? "admin" : "user";
+};
+
+const sendAuthCookie = (res, userPayload) => {
+    const token = jwt.sign(userPayload, process.env.JWT_SECRET, { expiresIn: "1h" });
+    
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 3600000 // 1 hour
+    });
+    return token;
+};
+
+const getEmailFromToken = (req) => {
+    const token = req.cookies.token;
+    if (!token) return null;
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded.email;
+    } catch (err) {
+        return null;
+    }
+};
 
 /**
  * 1. Send OTP Controller
@@ -65,8 +99,6 @@ const verifyOtp = async (req, res) => {
         if (otpData.otp.toString() !== otp1.toString().trim()) {
             return res.status(400).json({ success: false, message: "Invalid OTP code" });
         }
-
-        await collectionOtps.deleteOne({ _id: otpData._id });
 
         return res.status(200).json({
             success: true,
@@ -152,9 +184,9 @@ const signup = async (req, res) => {
         const normalizedEmail = email.trim().toLowerCase();
         const normalizedPhone = phone.trim();
 
-        const existingUserEmail = await collectionUserData.findOne({ email: normalizedEmail });
+        const existingUser = await collectionUserData.findOne({ email: normalizedEmail });
 
-        if (existingUserEmail) {
+        if (existingUser) {
             return res.status(409).json({ 
                 success: false, 
                 message: "An account already exists with this email" 
@@ -170,24 +202,11 @@ const signup = async (req, res) => {
             createdAt: new Date()
         });
 
-        // Generate JWT and set HttpOnly Cookie directly after signup
-        const isAdmin = /^admin(\d+)?@aura\.com$/.test(normalizedEmail);
-
-        const token = jwt.sign(
-            {
-                email: normalizedEmail,
-                name: fullName.trim(),
-                role: isAdmin ? "admin" : "user"
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
-        );
-
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 3600000
+        const role = determineRole(normalizedEmail);
+        sendAuthCookie(res, {
+            email: normalizedEmail,
+            name: fullName.trim(),
+            role
         });
 
         return res.status(200).json({ success: true, message: "Account created successfully" });
@@ -210,11 +229,17 @@ const login = async (req, res) => {
         }
 
         const normalizedEmail = email.trim().toLowerCase();
-
         const user = await collectionUserData.findOne({ email: normalizedEmail });
 
         if (!user) {
             return res.status(401).json({ success: false, message: "Account not found" });
+        }
+
+        if (!user.password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "This account was registered using Google. Please log in with Google." 
+            });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -223,23 +248,11 @@ const login = async (req, res) => {
             return res.status(401).json({ success: false, message: "Invalid password" });
         }
 
-        const isAdmin = /^admin(\d+)?@aura\.com$/.test(user.email);
-
-        const token = jwt.sign(
-            {
-                email: user.email,
-                name: user.name || "",
-                role: isAdmin ? "admin" : "user"
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
-        );
-
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 3600000
+        const role = determineRole(user.email);
+        sendAuthCookie(res, {
+            email: user.email,
+            name: user.name || "",
+            role
         });
 
         return res.status(200).json({ 
@@ -247,7 +260,7 @@ const login = async (req, res) => {
             message: "Login successful",
             email: user.email,
             name: user.name || "",
-            role: isAdmin ? "admin" : "user"
+            role
         });
 
     } catch (err) {
@@ -257,36 +270,36 @@ const login = async (req, res) => {
 };
 
 /**
- * 6. Google Login Controller
+ * 6. Direct Google Login Controller (Single-Step Authentication)
  */
 const googleLogin = async (req, res) => {
     try {
-        const { token, email: reqEmail, name: reqName } = req.body;
+        const { token } = req.body;
 
-        let email = reqEmail;
-        let name = reqName;
-
-        if (token) {
-            const ticket = await client.verifyIdToken({
-                idToken: token,
-                audience: process.env.GOOGLE_CLIENT_ID,
-            });
-            const payload = ticket.getPayload();
-            email = payload.email;
-            name = payload.name;
+        if (!token) {
+            return res.status(400).json({ success: false, message: "Google ID Token is required" });
         }
 
-        if (!email) {
-            return res.status(400).json({ success: false, message: "Email is required for Google login" });
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload || !payload.email) {
+            return res.status(400).json({ success: false, message: "Invalid Google Token payload" });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
+        const normalizedEmail = payload.email.trim().toLowerCase();
+        const name = payload.name || "Google User";
+
         let user = await collectionUserData.findOne({ email: normalizedEmail });
 
         if (!user) {
             const newUser = {
-                name: name || "Google User",
+                name,
                 email: normalizedEmail,
+                googleId: payload.sub,
                 isGoogleUser: true,
                 createdAt: new Date()
             };
@@ -294,23 +307,11 @@ const googleLogin = async (req, res) => {
             user = newUser;
         }
 
-        const isAdmin = /^admin(\d+)?@aura\.com$/.test(user.email);
-
-        const jwtToken = jwt.sign(
-            {
-                email: user.email,
-                name: user.name || "",
-                role: isAdmin ? "admin" : "user"
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
-        );
-
-        res.cookie("token", jwtToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 3600000
+        const role = determineRole(user.email);
+        sendAuthCookie(res, {
+            email: user.email,
+            name: user.name || "",
+            role
         });
 
         return res.status(200).json({
@@ -318,17 +319,124 @@ const googleLogin = async (req, res) => {
             message: "Google login successful",
             email: user.email,
             name: user.name || "",
-            role: isAdmin ? "admin" : "user"
+            role
         });
 
     } catch (err) {
         console.error("Google Login Error:", err);
-        return res.status(500).json({ success: false, message: "Google authentication failed" });
+        return res.status(401).json({ success: false, message: "Google authentication failed or expired token" });
     }
 };
 
 /**
- * 7. Contact Us Controller
+ * 7. Verify Google Token (Step 1 for Multi-Step Google Setup)
+ */
+const verifyGoogleToken = async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ success: false, message: "Token is required" });
+        }
+
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        const normalizedEmail = payload.email.trim().toLowerCase();
+        const existingUser = await collectionUserData.findOne({ email: normalizedEmail });
+
+        if (existingUser) {
+            const role = determineRole(existingUser.email);
+            sendAuthCookie(res, {
+                email: existingUser.email,
+                name: existingUser.name || "",
+                role
+            });
+
+            return res.status(200).json({
+                success: true,
+                isExistingUser: true,
+                message: "Logged in successfully",
+                email: existingUser.email,
+                name: existingUser.name || "",
+                role
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            isExistingUser: false,
+            name: payload.name,
+            email: normalizedEmail,
+            googleId: payload.sub
+        });
+
+    } catch (error) {
+        console.error("Verify Google Token Error:", error);
+        return res.status(400).json({ success: false, message: "Invalid Google Token" });
+    }
+};
+
+/**
+ * 8. Google Registration Completion (Step 2 for Multi-Step Google Setup)
+ */
+const googleSignup = async (req, res) => {
+    try {
+        const { token, password, fullName } = req.body;
+
+        if (!token) {
+            return res.status(400).json({ success: false, message: "Google token is required for completion" });
+        }
+
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        const normalizedEmail = payload.email.trim().toLowerCase();
+
+        const existingUser = await collectionUserData.findOne({ email: normalizedEmail });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: "User already exists with this email" });
+        }
+
+        const userObj = {
+            name: (fullName || payload.name).trim(),
+            email: normalizedEmail,
+            googleId: payload.sub,
+            isGoogleUser: true,
+            createdAt: new Date()
+        };
+
+        if (password) {
+            userObj.password = await bcrypt.hash(password, 10);
+        }
+
+        await collectionUserData.insertOne(userObj);
+
+        const role = determineRole(normalizedEmail);
+        sendAuthCookie(res, {
+            email: normalizedEmail,
+            name: userObj.name,
+            role
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Account completed successfully"
+        });
+
+    } catch (error) {
+        console.error("Google Signup Error:", error);
+        return res.status(500).json({ success: false, message: "Server error during registration" });
+    }
+};
+
+/**
+ * 9. Contact Us Controller
  */
 const contactUs = async (req, res) => {
     try {
@@ -392,7 +500,7 @@ const contactUs = async (req, res) => {
 };
 
 /**
- * 8. Token Verification Handler
+ * 10. Token Verification Handler
  */
 const verifyToken = async (req, res) => {
     const token = req.cookies.token;
@@ -428,7 +536,7 @@ const verifyToken = async (req, res) => {
 };
 
 /**
- * 9. Logout Controller
+ * 11. Logout Controller
  */
 const logout = (req, res) => {
     res.clearCookie("token", {
@@ -440,17 +548,18 @@ const logout = (req, res) => {
 };
 
 /**
- * 10. Update Profile Controller
+ * 12. Update Profile Controller
  */
 const updateProfile = async (req, res) => {
     try {
-        const { email, name, phone, country, city, postalCode } = req.body;
+        const email = getEmailFromToken(req) || req.body.email;
 
         if (!email) {
             return res.status(400).json({ success: false, message: "Email is required to update profile" });
         }
 
         const normalizedEmail = email.trim().toLowerCase();
+        const { name, phone, country, city, postalCode } = req.body;
 
         const updateData = {};
         if (name !== undefined) updateData.name = name.trim();
@@ -483,21 +592,26 @@ const updateProfile = async (req, res) => {
 };
 
 /**
- * 11. Change Password Controller
+ * 13. Change Password Controller
  */
 const changePassword = async (req, res) => {
     try {
-        const { email, currentPassword, newPassword } = req.body;
+        const email = getEmailFromToken(req) || req.body.email;
+        const { currentPassword, newPassword } = req.body;
 
         if (!email || !currentPassword || !newPassword) {
             return res.status(400).json({ success: false, message: "All password fields are required" });
         }
 
         const normalizedEmail = email.trim().toLowerCase();
-
         const user = await collectionUserData.findOne({ email: normalizedEmail });
+        
         if (!user) {
             return res.status(404).json({ success: false, message: "User account not found" });
+        }
+
+        if (!user.password) {
+            return res.status(400).json({ success: false, message: "Google signed-in users cannot change password directly" });
         }
 
         const isMatch = await bcrypt.compare(currentPassword, user.password);
@@ -523,18 +637,6 @@ const changePassword = async (req, res) => {
             success: false,
             message: "Internal server error while changing password"
         });
-    }
-};
-
-// --- HELPER: Extract Email securely from cookie token ---
-const getEmailFromToken = (req) => {
-    const token = req.cookies.token;
-    if (!token) return null;
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        return decoded.email;
-    } catch (err) {
-        return null;
     }
 };
 
@@ -640,128 +742,64 @@ const getUserData = async (req, res) => {
     }
 };
 
+
 /**
- * 12. Verify Google Token (Step 1)
+ * Fetch Unread Notifications for Currently Logged-in User
  */
-const verifyGoogleToken = async (req, res) => {
+const getNotifications = async (req, res) => {
     try {
-        const { token } = req.body;
-        if (!token) {
-            return res.status(400).json({ success: false, message: "Token is required" });
+        const email = getEmailFromToken(req); // Make sure this returns "admin@aura.com"
+        if (!email) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
         }
 
-        const ticket = await client.verifyIdToken({
-            idToken: token,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-
-        const { name, email, sub: googleId } = ticket.getPayload();
-        const normalizedEmail = email.trim().toLowerCase();
-
-        const existingUser = await collectionUserData.findOne({ email: normalizedEmail });
-
-        if (existingUser) {
-            const isAdmin = /^admin(\d+)?@aura\.com$/.test(existingUser.email);
-
-            const jwtToken = jwt.sign(
-                {
-                    email: existingUser.email,
-                    name: existingUser.name || "",
-                    role: isAdmin ? "admin" : "user"
-                },
-                process.env.JWT_SECRET,
-                { expiresIn: "1h" }
-            );
-
-            res.cookie("token", jwtToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
-                maxAge: 3600000
-            });
-
-            return res.status(200).json({
-                success: true,
-                isExistingUser: true,
-                message: "Logged in successfully",
-                email: existingUser.email,
-                name: existingUser.name || "",
-                role: isAdmin ? "admin" : "user"
-            });
+        const user = await collectionUserData.findOne({ email });
+        
+        if (!user || !user.unreadNotifications || user.unreadNotifications.length === 0) {
+            return res.status(200).json({ success: true, notifications: [] });
         }
+
+        // Direct query, kyunki array me pehle se ObjectIds hain
+        const notifications = await collectionNotifications
+            .find({ _id: { $in: user.unreadNotifications } })
+            .toArray();
 
         return res.status(200).json({
             success: true,
-            isExistingUser: false,
-            name,
-            email: normalizedEmail,
-            googleId
+            notifications: notifications
         });
-
-    } catch (error) {
-        console.error("Verify Google Token Error:", error);
-        return res.status(400).json({ success: false, message: "Invalid Google Token" });
+    } catch (err) {
+        console.error("Get Notifications Error:", err);
+        return res.status(500).json({ success: false, message: "Server error", error: err.message });
     }
 };
-
 /**
- * 13. Google Registration Completion (Step 2)
+ * Clear Notification from User's unread list
  */
-const googleSignup = async (req, res) => {
+const clearNotifications = async (req, res) => {
     try {
-        const { fullName, email, googleId, password } = req.body;
-
-        if (!fullName || !email || !password) {
-            return res.status(400).json({ success: false, message: "Missing required fields" });
+        const email = getEmailFromToken(req);
+        if (!email) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
-
-        const existingUser = await collectionUserData.findOne({ email: normalizedEmail });
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: "User already exists with this email" });
+        const { notificationIds } = req.body; // Array of notification IDs sent from frontend
+        if (!notificationIds || !Array.isArray(notificationIds)) {
+            return res.status(400).json({ success: false, message: "Invalid notification IDs" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const objectIdsToRemove = notificationIds.map(id => new ObjectId(id));
 
-        const newUser = {
-            name: fullName.trim(),
-            email: normalizedEmail,
-            googleId,
-            password: hashedPassword,
-            isGoogleUser: true,
-            createdAt: new Date()
-        };
-
-        await collectionUserData.insertOne(newUser);
-
-        const isAdmin = /^admin(\d+)?@aura\.com$/.test(normalizedEmail);
-
-        const token = jwt.sign(
-            {
-                email: normalizedEmail,
-                name: fullName.trim(),
-                role: isAdmin ? "admin" : "user"
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
+        // User profile se ye Notification IDs remove (pull) kar do
+        await collectionUserData.updateOne(
+            { email },
+            { $pull: { unreadNotifications: { $in: objectIdsToRemove } } }
         );
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 3600000
-        });
-
-        return res.status(201).json({
-            success: true,
-            message: "Account created successfully"
-        });
-
-    } catch (error) {
-        console.error("Google Signup Error:", error);
-        return res.status(500).json({ success: false, message: "Server error during registration" });
+        return res.status(200).json({ success: true, message: "Notification cleared" });
+    } catch (err) {
+        console.error("Clear Notification Error:", err);
+        return res.status(500).json({ success: false, message: "Failed to clear notification" });
     }
 };
 
@@ -782,5 +820,7 @@ module.exports = {
     saveItinerary,
     deleteItinerary,
     verifyGoogleToken,
-    googleSignup
+    googleSignup,
+    getNotifications,
+    clearNotifications
 };
