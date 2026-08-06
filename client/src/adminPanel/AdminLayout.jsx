@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
  * 
  * This component serves as the main layout for the admin panel, providing navigation and rendering different sections based on the active page.
  * @returns JSX Element representing the admin layout
- * 
  */
 
 import AdminSidebar from "./AdminSidebar";
@@ -13,7 +12,8 @@ import AdminDashboard from "./AdminDashboard";
 import PendingQueries from "./PendingQueries";
 import ResolvedQueries from "./ResolvedQueries";
 import AdminOtpLogs from "./AdminOtpLogs";
-import ManagePackages from "./ManagePackages"; // 🔹 Imported ManagePackages
+import ManagePackages from "./ManagePackages";
+import SendNotification from "./SendNotification"; // 🔹 Imported SendNotification
 
 // 📥 Reusable Cards Import
 import ErrorModal from "../ReusableCards/ErrorModal.jsx";
@@ -24,7 +24,7 @@ function AdminLayout() {
   const [pendingQueries, setPendingQueries] = useState([]);
   const [resolvedQueries, setResolvedQueries] = useState([]);
   const [otpLogs, setOtpLogs] = useState([]);
-  const [packages, setPackages] = useState([]); // 🔹 Added packages state
+  const [packages, setPackages] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
   // 🔴 🟢 Modals State
@@ -48,7 +48,7 @@ function AdminLayout() {
     fetchResolvedQueries();
     checkCurrentUser();
     fetchAdminOtpLogs();
-    fetchPackages(); // 🔹 Fetch packages on load
+    fetchPackages();
   }, []);
 
   async function checkCurrentUser() {
@@ -117,7 +117,6 @@ function AdminLayout() {
     }
   }
 
-  // 🔹 Fetch All Packages API Request
   async function fetchPackages() {
     try {
       const response = await fetch("http://localhost:5000/admin/get-all-packages", {
@@ -196,11 +195,18 @@ function AdminLayout() {
             <AdminOtpLogs logs={otpLogs} refreshLogs={fetchAdminOtpLogs} />
           )}
 
-          {/* 🔹 Render ManagePackages View */}
           {activePage === "packages" && (
             <ManagePackages
               packages={packages}
               onRefresh={fetchPackages}
+              triggerSuccess={triggerSuccess}
+              triggerError={triggerError}
+            />
+          )}
+
+          {/* 🔹 Render Send Notification View */}
+          {activePage === "notifications" && (
+            <SendNotification
               triggerSuccess={triggerSuccess}
               triggerError={triggerError}
             />
