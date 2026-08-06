@@ -743,65 +743,7 @@ const getUserData = async (req, res) => {
 };
 
 
-/**
- * Fetch Unread Notifications for Currently Logged-in User
- */
-const getNotifications = async (req, res) => {
-    try {
-        const email = getEmailFromToken(req); // Make sure this returns "admin@aura.com"
-        if (!email) {
-            return res.status(401).json({ success: false, message: "Unauthorized" });
-        }
 
-        const user = await collectionUserData.findOne({ email });
-        
-        if (!user || !user.unreadNotifications || user.unreadNotifications.length === 0) {
-            return res.status(200).json({ success: true, notifications: [] });
-        }
-
-        // Direct query, kyunki array me pehle se ObjectIds hain
-        const notifications = await collectionNotifications
-            .find({ _id: { $in: user.unreadNotifications } })
-            .toArray();
-
-        return res.status(200).json({
-            success: true,
-            notifications: notifications
-        });
-    } catch (err) {
-        console.error("Get Notifications Error:", err);
-        return res.status(500).json({ success: false, message: "Server error", error: err.message });
-    }
-};
-/**
- * Clear Notification from User's unread list
- */
-const clearNotifications = async (req, res) => {
-    try {
-        const email = getEmailFromToken(req);
-        if (!email) {
-            return res.status(401).json({ success: false, message: "Unauthorized" });
-        }
-
-        const { notificationIds } = req.body; // Array of notification IDs sent from frontend
-        if (!notificationIds || !Array.isArray(notificationIds)) {
-            return res.status(400).json({ success: false, message: "Invalid notification IDs" });
-        }
-
-        const objectIdsToRemove = notificationIds.map(id => new ObjectId(id));
-
-        // User profile se ye Notification IDs remove (pull) kar do
-        await collectionUserData.updateOne(
-            { email },
-            { $pull: { unreadNotifications: { $in: objectIdsToRemove } } }
-        );
-
-        return res.status(200).json({ success: true, message: "Notification cleared" });
-    } catch (err) {
-        console.error("Clear Notification Error:", err);
-        return res.status(500).json({ success: false, message: "Failed to clear notification" });
-    }
-};
 
 module.exports = {
     login,
@@ -820,7 +762,5 @@ module.exports = {
     saveItinerary,
     deleteItinerary,
     verifyGoogleToken,
-    googleSignup,
-    getNotifications,
-    clearNotifications
+    googleSignup
 };

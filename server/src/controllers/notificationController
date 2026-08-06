@@ -1,0 +1,110 @@
+const { ObjectId } = require("mongodb");
+const { collectionNotifications, collectionUserData } = require("../config/db");
+
+/**
+ * 1. Fetch ALL Notifications direct from collection
+ */
+const getAllNotifications = async (req, res) => {
+  try {
+    const notifications = await collectionNotifications
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    return res.status(200).json({
+      success: true,
+      notifications: notifications || []
+    });
+  } catch (err) {
+    console.error("Get All Notifications Error:", err);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Failed to fetch notifications" 
+    });
+  }
+};
+
+/**
+ * 2. Mark Notification as Read (Empty unreadNotifications array)
+ */
+const markAsRead = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    // Clear unreadNotifications array for the user
+    const result = await collectionUserData.updateOne(
+      { email: email },
+      { $set: { unreadNotifications: [] } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Notifications cleared successfully",
+    });
+  } catch (err) {
+    console.error("Mark As Read Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to clear unread notifications",
+    });
+  }
+};
+
+
+
+const getAllUnreadNotifications = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    const user = await collectionUserData.findOne({ email });
+    
+    if (!user || !user.unreadNotifications || user.unreadNotifications.length === 0) {
+      return res.status(200).json({ success: true, notifications: [] });
+    }
+
+    // 💡 FIX: Safely convert all string IDs to MongoDB ObjectId instances
+    const formattedIds = user.unreadNotifications.map((id) => {
+      try {
+        return typeof id === "string" ? new ObjectId(id) : id;
+      } catch (e) {
+        return id;
+      }
+    });
+
+    const notifications = await collectionNotifications
+      .find({ _id: { $in: formattedIds } })
+      .toArray();
+
+    return res.status(200).json({
+      success: true,
+      notifications: notifications
+    });
+  } catch (err) {
+    console.error("Get Notifications Error:", err);
+    return res.status(500).json({ success: false, message: "Server error", error: err.message });
+  }
+};  
+
+module.exports = {
+  getAllNotifications,
+  markAsRead,
+  getAllUnreadNotifications
+};

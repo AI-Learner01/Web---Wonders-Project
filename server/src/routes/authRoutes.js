@@ -65,8 +65,6 @@ router.post("/save-itinerary", saveItinerary);
 
 router.delete("/delete-itinerary/:id", deleteItinerary);
 
-router.get("/notifications", getNotifications); // New Route
 
-router.post("/clear-notifications", clearNotifications); // New Route
 
 module.exports = router;

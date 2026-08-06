@@ -34,5 +34,6 @@ app.use("/api/bookings", bookingRoutes);
 // app.use("/api/auth", authRoutes);//means at fatching /api/auth/send-otp
 app.use("/auth",authRoutes);
 app.use("/admin",adminRoutes);
+app.use("/notifications", require("./routes/notificationRoutes"));
 
 module.exports = app;
