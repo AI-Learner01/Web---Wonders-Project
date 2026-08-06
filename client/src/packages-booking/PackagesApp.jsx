@@ -17,6 +17,7 @@ function PackagesWrapper() {
     const [packages, setPackages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [userData, setUserData] = useState(null);
 
     const fetchPackages = async () => {
         setLoading(true);
@@ -49,8 +50,26 @@ function PackagesWrapper() {
         fetchPackages();
     }, []);
 
+    useEffect(() => {
+        const checkUser = async () => {
+            try {
+                const res = await fetch("http://localhost:5000/auth/verify-token", {
+                    method: "POST",
+                    credentials: "include",
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setUserData({ name: data.name, email: data.email });
+                }
+            } catch (err) {
+                console.error("Failed to fetch user in PackagesApp", err);
+            }
+        };
+        checkUser();
+    }, []);
 
-    return <PackagesRoutes packages={packages} loading={loading} error={error} onRetry={fetchPackages} />;
+
+    return <PackagesRoutes packages={packages} loading={loading} error={error} onRetry={fetchPackages} userData={userData} />;
 }
 
 function PackagesRoute({ packages, loading, error, onRetry }) {
@@ -68,7 +87,7 @@ function PackagesRoute({ packages, loading, error, onRetry }) {
     );
 }
 
-function PackageDetailsRoute({ packages }) {
+function PackageDetailsRoute({ packages,userData }) {
     const navigate = useNavigate();
     return (
         <PackageDetails
@@ -77,6 +96,7 @@ function PackageDetailsRoute({ packages }) {
             onBookNow={(tourPackage) => navigate(`/packages/booking/${createSlug(tourPackage.title)}`)}
             // For the similar packages slider to also open details pages
             onViewDetails={(tourPackage) => navigate(`/packages/details/${createSlug(tourPackage.title)}`)}
+            userData={userData}
         />
     );
 }
@@ -136,7 +156,7 @@ function BookingSummaryRoute({ packages }) {
     );
 }
 
-function PackagesRoutes({ packages, loading, error, onRetry }) {
+function PackagesRoutes({ packages, loading, error, onRetry ,userData}) {
     return (
         <>
             <ScrollToTop />
@@ -147,7 +167,7 @@ function PackagesRoutes({ packages, loading, error, onRetry }) {
                     onRetry={onRetry} />} />
 
                 {/*  Relative child routes */}
-                <Route path="details/:packageId" element={<PackageDetailsRoute packages={packages} />} />
+                <Route path="details/:packageId" element={<PackageDetailsRoute packages={packages} userData={userData}/>} />
                 <Route path="booking/:packageId" element={<BookingRoute packages={packages} />} />
                 <Route path="booking/:packageId/summary" element={<BookingSummaryRoute packages={packages} />} />
 
