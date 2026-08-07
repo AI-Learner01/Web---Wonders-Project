@@ -482,7 +482,17 @@ function formatINR(usd) {
 /*  Page                                                        */
 /* ---------------------------------------------------------- */
 
-
+// Large, rotating pool of travel & tourism search phrases used to build
+// the Currents API query. Currents has no dedicated "travel" category —
+// a plain "travel" keyword match matched time-travel movie news, "space
+// travel" science pieces, unrelated "business travel" HR pieces, etc.
+// So precision comes from a boolean query against genuinely tourism-
+// shaped phrases instead. There are 150 of them here, spanning trip
+// styles, transport, lodging, planning/documents, destinations, the
+// tourism industry itself, and traveler concerns. fetchNews samples a
+// random subset on every single call (see NEWS_CATEGORY_TERMS_PER_QUERY
+// below), so different sub-topics of travel surface on each refresh
+// instead of the same handful of "tourism OR vacation" stories forever.
 const TRAVEL_CATEGORY_TERMS = [
     "tourism", "vacation", "travel destination", "backpacking",
     "road trip", "solo travel", "family travel", "luxury travel",
@@ -533,15 +543,32 @@ export default function Home() {
     const [isRefreshingNews, setIsRefreshingNews] = useState(false);
     const [newsError, setNewsError] = useState("");
     const newsRequestIdRef = useRef(0);
-    
+    // Every article fetched this session (id -> article), kept around so
+    // a refresh always has the full freshest-known set to pick from, not
+    // just whatever one API call happened to return. See fetchNews below.
     const newsKnownRef = useRef(new Map());
-
+    // Ids of articles already shown this session, so a refresh actually
+    // feels new instead of possibly repeating a headline.
     const newsShownIdsRef = useRef(new Set());
     const recommendedScrollerRef = useRef(null);
     const heroScrollerRef = useRef(null);
     const [activeShowcase, setActiveShowcase] = useState(0);
 
-
+    // Live travel news via Currents API (currentsapi.services) — free,
+    // 1,000 requests/day, no credit card. The initial page load can use a
+    // short localStorage cache for speed, but every explicit "Refresh news"
+    // click always makes a real network call for page 1 with a freshly
+    // randomized set of category terms (see TRAVEL_CATEGORY_TERMS above).
+    //
+    // Why: the previous approach fetched one batch of articles and then
+    // served it out a slice at a time on each refresh. Since the API
+    // returns results newest-first, article #9 in that batch is always
+    // older than article #1, #17 always older than #9, and so on — so
+    // "Refresh news" was guaranteed to walk backwards in time, batch by
+    // batch, no matter how big the batch was. The fix is to never slice
+    // through a stale, already-fetched list: always ask the API for
+    // what's newest *right now*, sort by publishedAt to be sure, and
+    // prefer whatever we haven't shown yet.
     const NEWS_DISPLAY_SIZE = 8;
     const NEWS_FETCH_SIZE = 20;
     const NEWS_CATEGORY_TERMS_PER_QUERY = 10;
@@ -559,7 +586,9 @@ export default function Home() {
         return picked;
     }
 
-  
+    // Adds freshly fetched articles into the session-long known pool
+    // (newest wins if we somehow refetch the same id), then trims it
+    // down to the freshest NEWS_KNOWN_CAP so it never grows unbounded.
     function mergeIntoKnown(articles) {
         const map = newsKnownRef.current;
         articles.forEach((a) => map.set(a.id, a));
@@ -572,7 +601,10 @@ export default function Home() {
         }
     }
 
-   
+    // The actual batch shown to the user: the freshest articles in the
+    // whole known pool, preferring ones we haven't shown yet. Recomputed
+    // from the full pool every time — never from just the latest API
+    // response — so it can't regress to something older than before.
     function computeDisplayBatch() {
         const all = [...newsKnownRef.current.values()].sort(
             (a, b) => parseNewsDate(b.publishedAt) - parseNewsDate(a.publishedAt)
@@ -583,7 +615,9 @@ export default function Home() {
     }
 
     async function fetchNews({ isInitial = false, useCache = false } = {}) {
-       
+        // Guards against a stale response landing after a newer request was
+        // already kicked off (e.g. double-clicking refresh) — only the most
+        // recent request is allowed to update state.
         const requestId = ++newsRequestIdRef.current;
         const isCurrent = () => newsRequestIdRef.current === requestId;
 
@@ -609,7 +643,7 @@ export default function Home() {
                     return;
                 }
             } catch {
-                
+                // Corrupt or unreadable cache entry — fall through and fetch fresh.
             }
         }
 
@@ -624,7 +658,13 @@ export default function Home() {
         }
 
         try {
-           
+            // Currents' v2/search endpoint supports boolean queries (AND / OR /
+            // NOT / quotes / parentheses). Sampling a random subset of
+            // TRAVEL_CATEGORY_TERMS on every call means each refresh searches
+            // a different slice of travel/tourism sub-topics — destinations
+            // one time, airlines or visas the next — instead of hammering the
+            // API with the same fixed query and getting back the same handful
+            // of stories.
             const terms = pickRandomTerms(TRAVEL_CATEGORY_TERMS, NEWS_CATEGORY_TERMS_PER_QUERY);
             const query =
                 `(${terms.map((t) => `"${t}"`).join(" OR ")}) ` +
@@ -657,7 +697,7 @@ export default function Home() {
                     try {
                         source = new URL(item.url).hostname.replace(/^www\./, "");
                     } catch {
-                        
+                        // Malformed URL from the provider — leave source blank.
                     }
                     const rawCategory = item.category?.[0];
                     const category = rawCategory
@@ -678,11 +718,17 @@ export default function Home() {
                         publishedAt: item.published,
                     };
                 })
-                
+                // Newest first, guaranteed — don't just trust API ordering.
                 .sort((a, b) => parseNewsDate(b.publishedAt) - parseNewsDate(a.publishedAt));
 
             if (isCurrent()) {
-            
+                // Merge into the whole-session pool and pick the batch from
+                // THAT — not from just this one response. That's what makes
+                // it impossible for a refresh to regress to older news: even
+                // if this particular random category sample happens to have
+                // a slow news day, whatever fresher articles we already knew
+                // about from earlier fetches are still in the pool and still
+                // win the freshest-first sort.
                 mergeIntoKnown(articles);
                 const batch = computeDisplayBatch();
 
@@ -698,7 +744,7 @@ export default function Home() {
                         })
                     );
                 } catch {
-                    
+                    // Storage full/disabled — the fetch still succeeded, just won't cache.
                 }
             }
         } catch (err) {
@@ -714,9 +760,13 @@ export default function Home() {
 
     useEffect(() => {
         fetchNews({ isInitial: true, useCache: true });
-        // 
+        // Mount-only — fetchNews is stable enough for this single initial call.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Serves the next unseen slice of already-fetched articles (instant),
+    // and only hits the API again once that pool is used up — always
+    // page 1, so it's a fresh "now", never an older page.
     const handleRefreshNews = () => {
         if (isRefreshingNews) return;
         fetchNews({ isInitial: false, useCache: false });
