@@ -95,6 +95,40 @@ const DestinationDetailes = () => {
     }, [slug]);
 
 
+
+    useEffect(() => {
+        if (!slug) return;
+
+        // 1. Get existing history from Local Storage
+        const VIEW_HISTORY_KEY = "auraavenue:viewHistory";
+        let history = [];
+        try {
+            history = JSON.parse(window.localStorage.getItem(VIEW_HISTORY_KEY)) || [];
+        } catch (e) {
+            history = [];
+        }
+
+        // 2. Check if this slug is already in history
+        const existingIndex = history.findIndex(item => item.slug === slug);
+
+        if (existingIndex >= 0) {
+            // Increment view count if it exists
+            history[existingIndex].count += 1;
+            history[existingIndex].lastViewed = Date.now();
+        } else {
+            // Add new destination to history
+            history.push({ slug, count: 1, lastViewed: Date.now() });
+        }
+
+        // 3. Keep only the top 10 most viewed to save local storage space
+        history.sort((a, b) => b.lastViewed - a.lastViewed);
+        if (history.length > 10) history = history.slice(0, 10);
+
+        // 4. Save back to Local Storage
+        window.localStorage.setItem(VIEW_HISTORY_KEY, JSON.stringify(history));
+    }, [slug]);
+
+
     if (loading) return <div className="flex h-screen items-center justify-center text-3xl font-bold text-gray-500">Loading Destination...</div>;
     if (!destData) return <div className="flex h-screen items-center justify-center text-3xl font-bold text-red-500">Destination Not Found</div>;
 

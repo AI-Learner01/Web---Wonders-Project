@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 
-
-
 /**
  * Admin Layout Component
  * 
  * This component serves as the main layout for the admin panel, providing navigation and rendering different sections based on the active page.
  * @returns JSX Element representing the admin layout
- * 
  */
 
 import AdminSidebar from "./AdminSidebar";
@@ -15,6 +12,8 @@ import AdminDashboard from "./AdminDashboard";
 import PendingQueries from "./PendingQueries";
 import ResolvedQueries from "./ResolvedQueries";
 import AdminOtpLogs from "./AdminOtpLogs";
+import ManagePackages from "./ManagePackages";
+import SendNotification from "./SendNotification"; // 🔹 Imported SendNotification
 
 // 📥 Reusable Cards Import
 import ErrorModal from "../ReusableCards/ErrorModal.jsx";
@@ -25,6 +24,7 @@ function AdminLayout() {
   const [pendingQueries, setPendingQueries] = useState([]);
   const [resolvedQueries, setResolvedQueries] = useState([]);
   const [otpLogs, setOtpLogs] = useState([]);
+  const [packages, setPackages] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
   // 🔴 🟢 Modals State
@@ -48,6 +48,7 @@ function AdminLayout() {
     fetchResolvedQueries();
     checkCurrentUser();
     fetchAdminOtpLogs();
+    fetchPackages();
   }, []);
 
   async function checkCurrentUser() {
@@ -116,6 +117,23 @@ function AdminLayout() {
     }
   }
 
+  async function fetchPackages() {
+    try {
+      const response = await fetch("http://localhost:5000/admin/get-all-packages", {
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (data.success) {
+        setPackages(data.packages ?? []);
+      } else {
+        triggerError(data.message || "Failed to fetch packages.");
+      }
+    } catch (err) {
+      console.error("Error fetching packages:", err);
+      triggerError("Server error while fetching packages.");
+    }
+  }
+
   async function handleQueryResolved(queryId, message) {
     try {
       const response = await fetch("http://localhost:5000/admin/resolve-query", {
@@ -135,10 +153,8 @@ function AdminLayout() {
         await fetchPendingQueries();
         await fetchResolvedQueries();
         setActivePage("dashboard");
-        // 📩 Server ka exact success response render hoga
         triggerSuccess(data.message || "Query resolved successfully!");
       } else {
-        // 📩 Server ka exact error message card me render hoga
         triggerError(data.message || "Failed to resolve query.");
         setActivePage("dashboard");
       }
@@ -151,27 +167,6 @@ function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-gray-800">
-      {/* Top Header Bar */}
-      <header className="bg-white border-b border-gray-200 px-8 py-3.5 flex items-center justify-between sticky top-0 z-10 shadow-xs">
-        <div className="flex items-center gap-2">
-          <span className="font-extrabold text-xl tracking-tight text-gray-900">
-            Aura<span className="text-emerald-600">Avenue</span>
-          </span>
-          <span className="text-xs bg-emerald-100 text-emerald-800 font-medium px-2 py-0.5 rounded-md">
-            Admin
-          </span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500 font-medium">
-            {currentUser?.email || "admin@aura.com"}
-          </span>
-          <button className="bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-semibold px-4 py-2 rounded-xl transition duration-200">
-            Logout
-          </button>
-        </div>
-      </header>
-
       {/* Main Content Layout */}
       <div className="flex flex-1">
         <AdminSidebar activePage={activePage} setActivePage={setActivePage} />
@@ -198,6 +193,23 @@ function AdminLayout() {
 
           {activePage === "admin-otps" && (
             <AdminOtpLogs logs={otpLogs} refreshLogs={fetchAdminOtpLogs} />
+          )}
+
+          {activePage === "packages" && (
+            <ManagePackages
+              packages={packages}
+              onRefresh={fetchPackages}
+              triggerSuccess={triggerSuccess}
+              triggerError={triggerError}
+            />
+          )}
+
+          {/* 🔹 Render Send Notification View */}
+          {activePage === "notifications" && (
+            <SendNotification
+              triggerSuccess={triggerSuccess}
+              triggerError={triggerError}
+            />
           )}
         </main>
       </div>

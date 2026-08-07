@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-
-/**
- * 
- * this component provides a login form for users to authenticate themselves. It includes fields for email or phone input and password input, along with validation checks. Upon submission, it sends the data to the backend and handles success or error responses, displaying appropriate messages or modals.
- * @returns JSX Element representing the login form and its functionalities
- */
-
-
-// 📥 Reusable Cards Import
+import { GoogleLogin } from '@react-oauth/google';
 import ErrorModal from '../ReusableCards/ErrorModal.jsx';
 
 const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,w_1920/v1784311631/login-bg_our3np.jpg";
@@ -16,18 +8,15 @@ function Login() {
     const inputClass =
         "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 placeholder:text-[#9a9a9a] focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
 
-    // Form states
-    const [emailOrPhone, setEmailOrPhone] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPass, setShowPass] = useState(false);
 
-    // Dynamic Button States
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingPercent, setLoadingPercent] = useState(0); 
     const [btnMessage, setBtnMessage] = useState('');
-    const [btnStatus, setBtnStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
+    const [btnStatus, setBtnStatus] = useState('idle');
 
-    // 🔴 Error Modal State
     const [errorMsg, setErrorMsg] = useState('');
     const [isErrorOpen, setIsErrorOpen] = useState(false);
 
@@ -36,45 +25,37 @@ function Login() {
         setIsErrorOpen(true);
     };
 
-    // 1st Layer: Form input fill percentage (0%, 50%, 100%)
     const totalFields = 2;
-    const filledFields = [emailOrPhone, password].filter((val) => val.trim() !== "").length;
+    const filledFields = [email, password].filter((val) => val.trim() !== "").length;
     const inputFillPercent = (filledFields / totalFields) * 100;
 
-    // Login Handler
+    const resetBtnState = () => {
+        setBtnStatus('idle');
+        setBtnMessage('');
+        setIsSubmitting(false);
+        setLoadingPercent(0);
+    };
+
     const handleLogin = async (e) => {
         e.preventDefault();
-
         if (isSubmitting) return;
 
-        // Validation 1: Empty fields
-        if (!emailOrPhone.trim() || !password) {
+        if (!email.trim() || !password) {
             triggerError("Please fill in all fields!");
             return;
         }
 
-        // Validation 2: Email or Phone syntax
-        const isEmail = emailOrPhone.includes("@");
-        if (isEmail) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(emailOrPhone)) {
-                triggerError("Please enter a valid email address!");
-                return;
-            }
-        } else {
-            if (!/^\d{10}$/.test(emailOrPhone)) {
-                triggerError("Please enter a valid 10-digit phone number!");
-                return;
-            }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            triggerError("Please enter a valid email address!");
+            return;
         }
 
-        // Validation 3: Password length
         if (password.length < 8) {
             triggerError("Password must be at least 8 characters long!");
             return;
         }
 
-        // --- Start 2nd Layer Loading (Up to 90%) ---
         setIsSubmitting(true);
         setBtnStatus('loading');
         setBtnMessage("Logging in...");
@@ -85,25 +66,18 @@ function Login() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ emailOrPhone, password })
+                body: JSON.stringify({ email: email.trim(), password })
             });
 
             const data = await response.json();
-
-            // Smooth delay to complete the bar
             await new Promise((resolve) => setTimeout(resolve, 400));
 
             if (data.success) {
-                // Complete 2nd Fill to 100%
                 setLoadingPercent(100);
                 setBtnStatus('success');
                 setBtnMessage("Login Successful! Redirecting...");
-
-                setTimeout(() => {
-                    window.location.href = "/";
-                }, 1000);
+                setTimeout(() => { window.location.href = "/"; }, 1000);
             } else {
-                // Reset button state & trigger error card
                 resetBtnState();
                 triggerError(data.message || "Invalid credentials!");
             }
@@ -114,11 +88,30 @@ function Login() {
         }
     };
 
-    const resetBtnState = () => {
-        setBtnStatus('idle');
-        setBtnMessage('');
-        setIsSubmitting(false);
-        setLoadingPercent(0);
+    // Google Login Response Handler
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setIsSubmitting(true);
+        try {
+            const response = await fetch("http://localhost:5000/auth/google", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ token: credentialResponse.credential })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.href = "/";
+            } else {
+                setIsSubmitting(false);
+                triggerError(data.message || "Google authentication failed!");
+            }
+        } catch (error) {
+            console.error("Google Auth Error:", error);
+            setIsSubmitting(false);
+            triggerError("Server Connection Error during Google Login!");
+        }
     };
 
     return (
@@ -132,10 +125,7 @@ function Login() {
             >
                 {/* Header */}
                 <div className="flex justify-between items-center mb-7">
-                    <p className="text-[2rem] font-bold text-[#222]">
-                        Login
-                    </p>
-
+                    <p className="text-[2rem] font-bold text-[#222]">Login</p>
                     <a
                         href="/contact"
                         className="no-underline text-[#2f6b1f] bg-[#eef8eb] border border-[#d8ead2] rounded-full px-[18px] py-2 text-[0.9rem] font-semibold transition duration-300 hover:bg-[#14c38e] hover:text-white hover:border-[#14c38e] hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(20,195,142,0.25)]"
@@ -144,27 +134,21 @@ function Login() {
                     </a>
                 </div>
 
-                {/* Email or Phone */}
-                <p className="text-[0.9rem] font-semibold text-[#444] mt-[18px] mb-2">
-                    Email or Phone
-                </p>
+                {/* Email Input */}
+                <p className="text-[0.9rem] font-semibold text-[#444] mt-[18px] mb-2">Email Address</p>
                 <input
-                    type="text"
-                    placeholder="Enter your email or phone"
-                    value={emailOrPhone}
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
                     disabled={isSubmitting}
-                    onChange={(e) => setEmailOrPhone(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                     className={inputClass}
                 />
 
                 {/* Password Label */}
                 <div className="flex items-center mt-[18px] mb-2">
-                    <p className="text-[0.9rem] font-semibold text-[#444]">
-                        Password
-                    </p>
-                    <p className="ml-auto mr-[10px] text-[#666] text-[0.85rem]">
-                        View Password
-                    </p>
+                    <p className="text-[0.9rem] font-semibold text-[#444]">Password</p>
+                    <p className="ml-auto mr-[10px] text-[#666] text-[0.85rem]">View Password</p>
                     <input
                         type="checkbox"
                         checked={showPass}
@@ -183,7 +167,7 @@ function Login() {
                     className={inputClass}
                 />
 
-                {/* Dual-Fill Interactive Button */}
+                {/* Submit Button */}
                 <button
                     type="submit"
                     disabled={isSubmitting}
@@ -192,13 +176,10 @@ function Login() {
                         ${isSubmitting ? "cursor-not-allowed" : "cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(20,195,142,0.28)]"}
                     `}
                 >
-                    {/* FILL 1: Form Input Fill Bar */}
                     <span
                         className="absolute top-0 left-0 h-full bg-[#1fd694] transition-[width] duration-300 ease-out -z-20"
                         style={{ width: `${inputFillPercent}%` }}
                     />
-
-                    {/* FILL 2: Submit Loading Progress Bar */}
                     <span
                         className={`absolute top-0 left-0 h-full transition-[width] duration-500 ease-in-out -z-10
                             ${btnStatus === 'error' ? 'bg-[#ff4d4d]' : ''}
@@ -207,13 +188,30 @@ function Login() {
                         `}
                         style={{ width: `${loadingPercent}%` }}
                     />
-
-                    {/* Button Text */}
                     <span className="relative z-10 drop-shadow-sm flex items-center justify-center gap-2">
                         {btnStatus === 'idle' && "Login"}
                         {btnStatus !== 'idle' && btnMessage}
                     </span>
                 </button>
+
+                {/* OR Divider */}
+                <div className="flex items-center my-5">
+                    <div className="flex-1 border-t border-[#ececec]"></div>
+                    <span className="px-3 text-sm text-[#888]">OR</span>
+                    <div className="flex-1 border-t border-[#ececec]"></div>
+                </div>
+
+                {/* Google Login Wrapper */}
+                <div className="flex justify-center w-full min-h-[44px]">
+                    <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={() => triggerError("Google Login Failed!")}
+                        useOneTap
+                        theme="outline"
+                        shape="rectangular"
+                        size="large"
+                    />
+                </div>
 
                 {/* Forgot Password */}
                 <a
@@ -232,7 +230,6 @@ function Login() {
                 </a>
             </form>
 
-            {/* 🔴 ERROR MODAL CARD */}
             <ErrorModal
                 isOpen={isErrorOpen}
                 message={errorMsg}

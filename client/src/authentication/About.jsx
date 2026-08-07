@@ -21,14 +21,6 @@ function About() {
                     <h1 className="text-3xl sm:text-4xl font-bold text-blue-700">
                         About AuraAvenue
                     </h1>
-
-                    {/* Admin Navigation Button */}
-                    <a
-                        href="/admin"
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition duration-300 hover:-translate-y-0.5"
-                    >
-                        <span>⚙️ Admin Panel</span>
-                    </a>
                 </div>
 
                 <p className="text-gray-700 text-lg leading-8 text-center mb-10 max-w-3xl mx-auto">
