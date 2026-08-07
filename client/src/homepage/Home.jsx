@@ -166,9 +166,22 @@ function getNewsPalette(category = "") {
     return NEWS_TAG_PALETTES[hash % NEWS_TAG_PALETTES.length];
 }
 
+// Currents gives dates like "2024-05-01 12:34:56 +0000" — space-separated,
+// no "T". That shape parses inconsistently across engines, so normalize
+// to ISO first. Used for both the "3h ago" labels and, importantly, for
+// sorting news by actual recency.
+function parseNewsDate(dateString) {
+    if (!dateString) return 0;
+    const iso = dateString.includes("T")
+        ? dateString
+        : dateString.trim().replace(" ", "T").replace(/\+00:?00$/, "Z");
+    const t = new Date(iso).getTime();
+    return Number.isNaN(t) ? 0 : t;
+}
+
 function timeAgo(dateString) {
-    const then = new Date(dateString).getTime();
-    if (Number.isNaN(then)) return "";
+    const then = parseNewsDate(dateString);
+    if (!then) return "";
     const minutes = Math.floor((Date.now() - then) / 60000);
     if (minutes < 1) return "just now";
     if (minutes < 60) return `${minutes}m ago`;
@@ -469,6 +482,48 @@ function formatINR(usd) {
 /*  Page                                                        */
 /* ---------------------------------------------------------- */
 
+
+const TRAVEL_CATEGORY_TERMS = [
+    "tourism", "vacation", "travel destination", "backpacking",
+    "road trip", "solo travel", "family travel", "luxury travel",
+    "budget travel", "adventure travel", "eco tourism", "sustainable tourism",
+    "slow travel", "honeymoon travel", "group tour", "staycation",
+    "day trip", "weekend getaway", "gap year travel", "digital nomad",
+    "wellness retreat", "medical tourism", "culinary tourism", "food tourism",
+    "wine tourism", "cultural tourism", "heritage tourism", "religious pilgrimage",
+    "dark tourism", "voluntourism", "space tourism", "flight route",
+    "airline", "airport", "budget airline", "low cost carrier",
+    "cruise ship", "cruise line", "train travel", "rail pass",
+    "high speed rail", "ferry route", "rental car", "campervan",
+    "motorhome", "bike touring", "cycling holiday", "sailing trip",
+    "river cruise", "hotel booking", "resort", "boutique hotel",
+    "hostel", "vacation rental", "all inclusive resort", "glamping",
+    "campsite", "bed and breakfast", "eco lodge", "homestay",
+    "timeshare", "short term rental", "travel advisory", "tourist visa",
+    "travel guide", "travel itinerary", "passport rules", "travel insurance",
+    "visa free travel", "e-visa", "immigration policy travel", "border reopening",
+    "travel restrictions", "travel ban", "customs regulations", "duty free shopping",
+    "airport security", "national park", "island getaway", "beach destination",
+    "mountain resort", "safari tour", "desert tourism", "ski resort",
+    "hiking trail tourism", "world heritage site", "tourist attraction", "theme park",
+    "amusement park", "cruise destination", "coastal tourism", "wildlife tourism",
+    "eco tourism destination", "volcano tourism", "polar expedition", "diving destination",
+    "snorkeling trip", "wildlife safari", "tourism industry", "hospitality industry",
+    "tourism board", "travel startup", "airline industry news", "hotel industry news",
+    "tourism revenue", "overtourism", "tourism recovery", "travel demand",
+    "airfare prices", "hotel prices", "summer travel", "winter travel",
+    "holiday travel", "festival tourism", "peak travel season", "travel trends",
+    "jet lag", "travel scam", "flight delay", "lost luggage",
+    "travel deal", "flight sale", "cheap flights", "travel booking app",
+    "tour operator", "travel agency", "expedition cruise", "backpackers hostel",
+    "road trip route", "scenic drive", "national tourism campaign", "UNESCO heritage site",
+    "tourist arrivals", "cross border travel", "domestic tourism", "international tourism",
+    "rural tourism", "agritourism", "city break", "weekend trip",
+    "luxury cruise", "adventure tourism", "extreme tourism", "volunteer tourism",
+    "responsible travel", "pet friendly travel", "accessible travel", "senior travel",
+    "solo female travel", "romantic getaway",
+];
+
 export default function Home() {
     const [weather, setWeather] = useState({});
     const [contentReady, setContentReady] = useState(false);
@@ -476,28 +531,63 @@ export default function Home() {
     const [newsArticles, setNewsArticles] = useState([]);
     const [isLoadingNews, setIsLoadingNews] = useState(true);
     const [isRefreshingNews, setIsRefreshingNews] = useState(false);
-    const [newsPage, setNewsPage] = useState(1);
     const [newsError, setNewsError] = useState("");
     const newsRequestIdRef = useRef(0);
+    
+    const newsKnownRef = useRef(new Map());
+
+    const newsShownIdsRef = useRef(new Set());
     const recommendedScrollerRef = useRef(null);
     const heroScrollerRef = useRef(null);
     const [activeShowcase, setActiveShowcase] = useState(0);
 
-    // Live travel news via Currents API (currentsapi.services) — free,
-    // 1,000 requests/day, no credit card. Cached in localStorage for 20
-    // minutes so repeat visits are instant and don't burn the free quota.
-    // Pulled into a standalone function (not just inline in the effect)
-    // so the refresh button can call it too, on a different result page.
-    async function fetchNews(pageNumber, { useCache }) {
-        // Guards against a stale response landing after a newer request was
-        // already kicked off (e.g. double-clicking refresh) — only the most
-        // recent request is allowed to update state.
+
+    const NEWS_DISPLAY_SIZE = 8;
+    const NEWS_FETCH_SIZE = 20;
+    const NEWS_CATEGORY_TERMS_PER_QUERY = 10;
+    const NEWS_KNOWN_CAP = 300;
+    const NEWS_CACHE_KEY = "auraavenue:newsCache";
+    const NEWS_CACHE_TTL_MS = 10 * 60 * 1000;
+
+    function pickRandomTerms(pool, count) {
+        const copy = [...pool];
+        const picked = [];
+        for (let i = 0; i < count && copy.length > 0; i++) {
+            const idx = Math.floor(Math.random() * copy.length);
+            picked.push(copy.splice(idx, 1)[0]);
+        }
+        return picked;
+    }
+
+  
+    function mergeIntoKnown(articles) {
+        const map = newsKnownRef.current;
+        articles.forEach((a) => map.set(a.id, a));
+        if (map.size > NEWS_KNOWN_CAP) {
+            const freshest = [...map.values()]
+                .sort((a, b) => parseNewsDate(b.publishedAt) - parseNewsDate(a.publishedAt))
+                .slice(0, NEWS_KNOWN_CAP);
+            map.clear();
+            freshest.forEach((a) => map.set(a.id, a));
+        }
+    }
+
+   
+    function computeDisplayBatch() {
+        const all = [...newsKnownRef.current.values()].sort(
+            (a, b) => parseNewsDate(b.publishedAt) - parseNewsDate(a.publishedAt)
+        );
+        const unseen = all.filter((a) => !newsShownIdsRef.current.has(a.id));
+        const seenButFresh = all.filter((a) => newsShownIdsRef.current.has(a.id));
+        return [...unseen, ...seenButFresh].slice(0, NEWS_DISPLAY_SIZE);
+    }
+
+    async function fetchNews({ isInitial = false, useCache = false } = {}) {
+       
         const requestId = ++newsRequestIdRef.current;
-        const NEWS_CACHE_KEY = "auraavenue:newsCache";
-        const NEWS_CACHE_TTL_MS = 20 * 60 * 1000;
         const isCurrent = () => newsRequestIdRef.current === requestId;
 
-        if (pageNumber === 1 && useCache) {
+        if (isInitial) {
             setIsLoadingNews(true);
         } else {
             setIsRefreshingNews(true);
@@ -509,14 +599,17 @@ export default function Home() {
                 const cached = JSON.parse(window.localStorage.getItem(NEWS_CACHE_KEY) || "null");
                 if (cached && Date.now() - cached.fetchedAt < NEWS_CACHE_TTL_MS) {
                     if (isCurrent()) {
-                        setNewsArticles(cached.articles);
+                        mergeIntoKnown(cached.articles || []);
+                        const batch = computeDisplayBatch();
+                        setNewsArticles(batch);
+                        batch.forEach((a) => newsShownIdsRef.current.add(a.id));
                         setIsLoadingNews(false);
                         setIsRefreshingNews(false);
                     }
                     return;
                 }
             } catch {
-                // Corrupt or unreadable cache entry — fall through and fetch fresh.
+                
             }
         }
 
@@ -531,21 +624,14 @@ export default function Home() {
         }
 
         try {
-            // "keywords=travel" matched anything containing the word "travel" —
-            // time-travel movie news, "space travel" science pieces, unrelated
-            // "business travel" HR articles, etc. Currents has no dedicated
-            // travel/tourism category (closest is the broad "lifestyle_leisure"),
-            // so precision comes from a boolean query instead: match genuinely
-            // tourism-shaped phrases, explicitly exclude the common false
-            // positives. v2's /search endpoint is what documents this boolean
-            // query syntax (AND / OR / NOT / quotes / parentheses).
-            const TRAVEL_QUERY =
-                '("tourism" OR "travel destination" OR "vacation" OR "travel advisory" OR ' +
-                '"tourist visa" OR "travel guide" OR "hotel booking" OR "flight route") ' +
+           
+            const terms = pickRandomTerms(TRAVEL_CATEGORY_TERMS, NEWS_CATEGORY_TERMS_PER_QUERY);
+            const query =
+                `(${terms.map((t) => `"${t}"`).join(" OR ")}) ` +
                 'AND NOT ("time travel" OR "space travel")';
             const url =
-                `https://api.currentsapi.services/v2/search?query=${encodeURIComponent(TRAVEL_QUERY)}` +
-                `&language=en&page_size=8&page_number=${pageNumber}&apiKey=${encodeURIComponent(apiKey)}`;
+                `https://api.currentsapi.services/v2/search?query=${encodeURIComponent(query)}` +
+                `&language=en&page_size=${NEWS_FETCH_SIZE}&page_number=1&apiKey=${encodeURIComponent(apiKey)}`;
             const res = await fetch(url);
 
             if (!res.ok) {
@@ -559,51 +645,60 @@ export default function Home() {
             }
 
             const data = await res.json();
-            const articles = (data.news || []).slice(0, 8).map((item) => {
-                let source = "";
-                try {
-                    source = new URL(item.url).hostname.replace(/^www\./, "");
-                } catch {
-                    // Malformed URL from the provider — leave source blank.
-                }
-                const rawCategory = item.category?.[0];
-                const category = rawCategory
-                    ? rawCategory.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-                    : "Travel";
-                const blurb =
-                    item.description && item.description.length > 160
-                        ? `${item.description.slice(0, 160).trim()}…`
-                        : item.description || "";
+            const dedupeIds = new Set();
+            const articles = (data.news || [])
+                .filter((item) => {
+                    if (!item.id || dedupeIds.has(item.id)) return false;
+                    dedupeIds.add(item.id);
+                    return true;
+                })
+                .map((item) => {
+                    let source = "";
+                    try {
+                        source = new URL(item.url).hostname.replace(/^www\./, "");
+                    } catch {
+                        
+                    }
+                    const rawCategory = item.category?.[0];
+                    const category = rawCategory
+                        ? rawCategory.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+                        : "Travel";
+                    const blurb =
+                        item.description && item.description.length > 160
+                            ? `${item.description.slice(0, 160).trim()}…`
+                            : item.description || "";
 
-                return {
-                    id: item.id,
-                    headline: item.title,
-                    blurb,
-                    url: item.url,
-                    source,
-                    category,
-                    publishedAt: item.published,
-                };
-            });
+                    return {
+                        id: item.id,
+                        headline: item.title,
+                        blurb,
+                        url: item.url,
+                        source,
+                        category,
+                        publishedAt: item.published,
+                    };
+                })
+                
+                .sort((a, b) => parseNewsDate(b.publishedAt) - parseNewsDate(a.publishedAt));
 
             if (isCurrent()) {
-                if (articles.length === 0 && pageNumber !== 1) {
-                    // Ran past the last page of results for this query — wrap back
-                    // to page 1 instead of showing an empty refresh. This recursive
-                    // call claims its own fresh requestId, so it safely supersedes
-                    // the one we're finishing here.
-                    setNewsPage(1);
-                    fetchNews(1, { useCache: false });
-                    return;
-                }
-                setNewsArticles(articles);
+            
+                mergeIntoKnown(articles);
+                const batch = computeDisplayBatch();
+
+                setNewsArticles(batch);
+                batch.forEach((a) => newsShownIdsRef.current.add(a.id));
+
                 try {
                     window.localStorage.setItem(
                         NEWS_CACHE_KEY,
-                        JSON.stringify({ articles, fetchedAt: Date.now() })
+                        JSON.stringify({
+                            articles: [...newsKnownRef.current.values()],
+                            fetchedAt: Date.now(),
+                        })
                     );
                 } catch {
-                    // Storage full/disabled — the fetch still succeeded, just won't cache.
+                    
                 }
             }
         } catch (err) {
@@ -616,20 +711,15 @@ export default function Home() {
         }
     }
 
+
     useEffect(() => {
-        fetchNews(1, { useCache: true });
-        // Mount-only — fetchNews is stable enough for this single initial call.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchNews({ isInitial: true, useCache: true });
+        // 
     }, []);
 
-    // Cycles through a handful of result pages so each click surfaces a
-    // different set of real articles instead of refetching the same top
-    // results. Always bypasses the cache — refreshing should mean fresh.
     const handleRefreshNews = () => {
         if (isRefreshingNews) return;
-        const nextPage = (newsPage % 5) + 1;
-        setNewsPage(nextPage);
-        fetchNews(nextPage, { useCache: false });
+        fetchNews({ isInitial: false, useCache: false });
     };
 
 
