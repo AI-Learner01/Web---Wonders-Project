@@ -56,11 +56,23 @@ export default function Navbar() {
     }
   };
 
+  // --- UPDATED NOTIFICATION CLICK HANDLER ---
   const handleNotificationClick = (link) => {
     setNotifDropdownOpen(false);
-    if (link && link.trim() !== "") {
-      navigate(link);
+
+    // Check if link exists and has a length greater than 0
+    if (typeof link === "string" && link.trim().length > 0) {
+      const targetLink = link.trim();
+      
+      // If external URL (starts with http:// or https://)
+      if (targetLink.startsWith("http://") || targetLink.startsWith("https://")) {
+        window.location.href = targetLink;
+      } else {
+        // Internal route navigation
+        navigate(targetLink);
+      }
     } else {
+      // If link size is 0 (or null/undefined), navigate to /profile
       navigate("/profile");
     }
   };
