@@ -9,7 +9,8 @@ const {
     getDestinationCardInfo,
     getPaginatedDestinations,
     getDestinationAttractions,
-    getRecommendedDestinations
+    getRecommendedDestinations,
+    getSimilarDestinations
 } = require('../controllers/destinationController');
 
 
@@ -33,5 +34,7 @@ router.get("/all", getPaginatedDestinations);
 
 // Route to get personalized recommendations based on view history
 router.post("/recommended", getRecommendedDestinations);
+
+router.get("/similar", getSimilarDestinations);
 
 module.exports = router;

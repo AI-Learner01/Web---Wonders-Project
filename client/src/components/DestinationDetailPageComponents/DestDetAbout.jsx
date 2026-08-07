@@ -1,11 +1,8 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import DestDetHowToGetThere from "./DestDetHowToGetThere";
-import DestDetWhereToStay from "./DestDetWhereToStay";
+import React, { useState, useEffect } from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
+import DestDetSimilar from "./DestDetSimilar"; // <-- 1. Imported your new component here!
 
 const DestDetAbout = ({aboutText, locationName}) => {
-
     // States for Attractions
     const [attractions, setAttractions] = useState([]);
     const [loadingAttractions, setLoadingAttractions] = useState(true);
@@ -13,7 +10,6 @@ const DestDetAbout = ({aboutText, locationName}) => {
     // Fetch Attractions
     useEffect(() => {
         if (!locationName) return;
-
         const fetchAttractions = async () => {
             setLoadingAttractions(true);
             try {
@@ -28,7 +24,6 @@ const DestDetAbout = ({aboutText, locationName}) => {
                 setLoadingAttractions(false);
             }
         };
-
         fetchAttractions();
     }, [locationName]);
 
@@ -49,22 +44,30 @@ const DestDetAbout = ({aboutText, locationName}) => {
         }
 
         // 4. Map them into beautiful HTML paragraphs
-        return paragraphs.map((para, index) => (
-            <p key={index} className="mb-5 leading-relaxed text-slate-800 text-[20px] text-left">
-                {index === 0 ? (
-                    // Add a beautiful "Drop Cap" to the first letter of the first paragraph
-                    <span className="float-left mr-2 mt-1 text-4xl font-extrabold text-emerald-700 leading-none">
-                        {para.charAt(0)}
-                    </span>
-                ) : null}
-                {index === 0 ? para.slice(1) : para}
-            </p>
-        ));
+        return paragraphs.map((para, index) => {
+            // Check if it's the first paragraph AND it's long enough for a drop cap
+            const isLongEnoughForDropCap = index === 0 && para.length > 80;
+
+            return (
+                <p key={index} className="mb-5 leading-relaxed text-slate-800 text-[20px] text-left">
+                    {isLongEnoughForDropCap ? (
+                        <>
+                            {/* Add a beautiful "Drop Cap" only if text is long */}
+                            <span className="float-left mr-2 mt-1 text-4xl font-extrabold text-emerald-700 leading-none">
+                                {para.charAt(0)}
+                            </span>
+                            {para.slice(1)}
+                        </>
+                    ) : (
+                        /* Just render the text normally if it's a short fallback */
+                        para
+                    )}
+                </p>
+            );
+        });
     };
 
-
     return (
-
         <>
             <div className="rounded-2xl bg-white p-8 shadow">
                 
@@ -105,68 +108,8 @@ const DestDetAbout = ({aboutText, locationName}) => {
                 </div>
             </div>
 
-
-
-            {/* Temp how to get there ... later replaced by api */}
-            <DestDetHowToGetThere
-                transport={[
-                    {
-                        type: "air",
-                        title: "By Air",
-                        description:
-                            "The nearest international airport connects the destination with major cities worldwide."
-                    },
-                    {
-                        type: "train",
-                        title: "By Train",
-                        description:
-                            "Regular rail services are available from nearby metropolitan cities."
-                    },
-                    {
-                        type: "road",
-                        title: "By Road",
-                        description:
-                            "Well-connected highways make road trips comfortable and scenic."
-                    }
-                ]}
-            />
-
-            {/* Temp where to stay ... later replaced by api */}
-            <DestDetWhereToStay
-                stayOptions={[
-                    {
-                        type: "luxury",
-                        title: "Luxury Resorts",
-                        description: "Experience premium beachfront resorts with world-class amenities.",
-                    },
-                    {
-                        type: "hotel",
-                        title: "Hotels",
-                        description: "Comfortable hotels offering modern facilities and excellent service.",
-                    },
-                    {
-                        type: "homestay",
-                        title: "Homestays",
-                        description: "Stay with local hosts for an authentic cultural experience.",
-                    },
-                    {
-                        type: "hostel",
-                        title: "Hostels",
-                        description: "Budget-friendly accommodation for backpackers and solo travellers.",
-                    },
-                    {
-                        type: "villa",
-                        title: "Private Villas",
-                        description: "Enjoy privacy with luxury villas, pools, and scenic surroundings.",
-                    },
-                    {
-                        type: "apartment",
-                        title: "Serviced Apartments",
-                        description: "Ideal for families and long stays with home-like comfort.",
-                    },
-                ]}
-            />
-
+            {/* 2. REPLACED THE OLD SECTIONS WITH YOUR NEW COMPONENT HERE */}
+            <DestDetSimilar locationName={locationName} />
         </>
     );
 };
