@@ -26,7 +26,9 @@ const {
     saveItinerary,
     deleteItinerary,
     verifyGoogleToken, // New Controller
-    googleSignup        // New Controller
+    googleSignup,        // New Controller
+    getNotifications, // New Controller
+    clearNotifications, // New Controller
 } = require("../controllers/authController");
 
 router.post("/login", login);
@@ -62,5 +64,7 @@ router.post("/toggle-favorite", toggleFavorite);
 router.post("/save-itinerary", saveItinerary);
 
 router.delete("/delete-itinerary/:id", deleteItinerary);
+
+
 
 module.exports = router;

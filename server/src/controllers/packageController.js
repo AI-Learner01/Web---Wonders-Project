@@ -94,7 +94,45 @@ const getPackageAttractions = async (req, res) => {
     }
 };
 
+
+// --- ADD THIS TO packageController.js ---
+
+// POST /api/packages/:id/reviews
+const addPackageReview = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const reviewData = req.body;
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: "Invalid Package ID" });
+        }
+
+        // Add a unique ID and timestamp to the review
+        const newReview = {
+            ...reviewData,
+            id: Date.now(),
+            date: Date.now()
+        };
+
+        // Push the new review into the package's 'reviews' array in MongoDB
+        const result = await collectionPackages.updateOne(
+            { _id: new ObjectId(id) },
+            { $push: { reviews: { $each: [newReview], $position: 0 } } } // Adds to the top of the list
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: "Package not found" });
+        }
+
+        res.status(201).json({ success: true, message: "Review added successfully", review: newReview });
+    } catch (error) {
+        console.error("Error adding review:", error);
+        res.status(500).json({ success: false, message: "Failed to add review" });
+    }
+};
+
 module.exports = {
     getAllPackages,
-    getPackageAttractions
+    getPackageAttractions,
+    addPackageReview
 };

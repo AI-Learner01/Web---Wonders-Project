@@ -6,6 +6,7 @@ const ProfileSidebar = ({ activeTab, setActiveTab, userData }) => {
     { id: 'bookings', label: 'My Bookings', icon: '✈️' },
     { id: 'itineraries', label: 'Saved Itineraries', icon: '🗺️' },
     { id: 'favorites', label: 'Favorite Packages', icon: '❤️' },
+    { id: 'notifications', label: 'Notifications', icon: '🔔' }, // 👈 ADDED HERE
     { id: 'edit', label: 'Edit Profile', icon: '✏️' },
     { id: 'security', label: 'Security & Password', icon: '🔒' },
   ];

@@ -6,9 +6,25 @@ import ChangePassword from "./ChangePassword";
 import MyBookings from "./MyBookings.jsx";
 import SavedItineraries from "./SavedItineraries.jsx";
 import FavoritePackages from "./FavoritePackages.jsx";
+import ProfileNotifications from "./ProfileNotifications.jsx";
 import ErrorModal from "../ReusableCards/ErrorModal.jsx";
 import SuccessModal from "../ReusableCards/SuccessModal.jsx";
 import ScrollToTop from "../components/DestinationDetailPageComponents/ScrollToTop.jsx";
+
+// =======================================================
+// BACKEND CONFIGURATION / ENDPOINTS
+// =======================================================
+const API_BASE_URL = "http://localhost:5000";
+
+const API_ROUTES = {
+  VERIFY_TOKEN: `${API_BASE_URL}/auth/verify-token`,
+  GET_USER_DATA: `${API_BASE_URL}/auth/get-user-data`,
+  UPDATE_PROFILE: `${API_BASE_URL}/auth/update-profile`,
+  CHANGE_PASSWORD: `${API_BASE_URL}/auth/change-password`,
+  // Simplified Notifications Endpoints
+  GET_NOTIFICATIONS: `${API_BASE_URL}/notifications/get-all`,
+  MARK_READ: `${API_BASE_URL}/notifications/mark-read`,
+};
 
 // =======================================================
 // MAIN PROFILE LAYOUT COMPONENT
@@ -19,7 +35,11 @@ const ProfileLayout = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔴 🟢 Modals State
+  // Notification State
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+
+  // Modals State
   const [errorMsg, setErrorMsg] = useState("");
   const [isErrorOpen, setIsErrorOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -35,14 +55,11 @@ const ProfileLayout = () => {
     setIsSuccessOpen(true);
   };
 
-  // Main Loader & Fetcher (real backend calls)
-  // Step 1: verify-token -> get logged-in user's email
-  // Step 2: get-user-data -> fetch full profile using that email
+  // Main Loader & Fetcher for User Profile
   async function fetchUserProfile() {
     setLoading(true);
     try {
-      // Step 1: Verify Session / Token
-      const authResponse = await fetch("http://localhost:5000/auth/verify-token", {
+      const authResponse = await fetch(API_ROUTES.VERIFY_TOKEN, {
         method: "POST",
         credentials: "include",
       });
@@ -54,8 +71,7 @@ const ProfileLayout = () => {
         return;
       }
 
-      // Step 2: Fetch Full Profile Data using email
-      const userResponse = await fetch("http://localhost:5000/auth/get-user-data", {
+      const userResponse = await fetch(API_ROUTES.GET_USER_DATA, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -65,6 +81,8 @@ const ProfileLayout = () => {
 
       if (userResult.success) {
         setUserData(userResult.user ?? null);
+        // Automatically fetch notifications
+        fetchAllNotifications();
       } else {
         triggerError(userResult.message || "Failed to fetch user data.");
         setUserData(null);
@@ -78,6 +96,47 @@ const ProfileLayout = () => {
     }
   }
 
+  // =======================================================
+  // NOTIFICATION HANDLERS (Fetch All & Mark Read Only)
+  // =======================================================
+
+  // 1. Fetch All Notifications
+  async function fetchAllNotifications() {
+    setNotificationsLoading(true);
+    try {
+      const response = await fetch(API_ROUTES.GET_NOTIFICATIONS, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setNotifications(data.notifications || []);
+      }
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  }
+
+  // 2. Mark Notification as Read
+  // 2. Mark Notification as Read
+  const handleMarkAsRead = async () => {
+  if (!userData?.email) return;
+  try {
+    await fetch("http://localhost:5000/notifications/mark-read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email: userData.email }),
+    });
+  } catch (err) {
+    console.error("Error marking unread notifications as read:", err);
+  }
+};
+
   useEffect(() => {
     fetchUserProfile();
   }, []);
@@ -85,7 +144,7 @@ const ProfileLayout = () => {
   // Handler for Updating Profile Details
   async function handleUpdateProfile(updatedFormData) {
     try {
-      const response = await fetch("http://localhost:5000/auth/update-profile", {
+      const response = await fetch(API_ROUTES.UPDATE_PROFILE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -99,7 +158,7 @@ const ProfileLayout = () => {
 
       if (data.success) {
         triggerSuccess(data.message || "Profile updated successfully!");
-        await fetchUserProfile(); // Refresh local state
+        await fetchUserProfile();
         setActiveTab("overview");
       } else {
         triggerError(data.message || "Failed to update profile.");
@@ -113,7 +172,7 @@ const ProfileLayout = () => {
   // Handler for Changing Password
   async function handleChangePassword(passwordData) {
     try {
-      const response = await fetch("http://localhost:5000/auth/change-password", {
+      const response = await fetch(API_ROUTES.CHANGE_PASSWORD, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -158,12 +217,20 @@ const ProfileLayout = () => {
       case "overview":
         return <ProfileOverview userData={userData} setActiveTab={setActiveTab} />;
       case "bookings":
-            return <MyBookings userData={userData} />;
-      // Find renderTabContent and update these two cases:
-case "itineraries":
-    return <SavedItineraries userData={userData} refreshProfile={fetchUserProfile} />;
-case "favorites":
-    return <FavoritePackages userData={userData} refreshProfile={fetchUserProfile} />;
+        return <MyBookings userData={userData} />;
+      case "itineraries":
+        return <SavedItineraries userData={userData} refreshProfile={fetchUserProfile} />;
+      case "favorites":
+        return <FavoritePackages userData={userData} refreshProfile={fetchUserProfile} />;
+      case "notifications":
+        return (
+          <ProfileNotifications
+            notifications={notifications}
+            loading={notificationsLoading}
+            onMarkAsRead={handleMarkAsRead}
+            refreshNotifications={fetchAllNotifications}
+          />
+        );
       case "edit":
         return (
           <EditProfile
@@ -174,7 +241,6 @@ case "favorites":
             setActiveTab={setActiveTab}
           />
         );
-
       case "security":
         return (
           <ChangePassword
@@ -185,7 +251,6 @@ case "favorites":
             setActiveTab={setActiveTab}
           />
         );
-
       default:
         return <ProfileOverview userData={userData} setActiveTab={setActiveTab} />;
     }
@@ -193,20 +258,20 @@ case "favorites":
 
   return (
     <div className="flex flex-col md:flex-row bg-gray-100 min-h-[calc(100vh-64px)] w-full">
-    <ScrollToTop/>
+      <ScrollToTop />
       <ProfileSidebar activeTab={activeTab} setActiveTab={setActiveTab} userData={userData} />
       <main className="flex-1 p-4 md:p-8 w-full overflow-y-auto">
         {renderTabContent()}
       </main>
 
-      {/* 🔴 ERROR MODAL CARD */}
+      {/* ERROR MODAL CARD */}
       <ErrorModal
         isOpen={isErrorOpen}
         message={errorMsg}
         onClose={() => setIsErrorOpen(false)}
       />
 
-      {/* 🟢 SUCCESS MODAL CARD */}
+      {/* SUCCESS MODAL CARD */}
       <SuccessModal
         isOpen={isSuccessOpen}
         message={successMsg}
