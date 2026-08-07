@@ -417,6 +417,96 @@ const getRecommendedDestinations = async (req, res) => {
     }
 };
 
+// Dedicated API for Destination Details "Similar Places"
+const getSimilarDestinations = async (req, res) => {
+    try {
+        const { name, page = 1, limit = 4 } = req.query;
+        
+        if (!name) {
+            return res.status(400).json({ success: false, message: "Location name is required" });
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const safeName = name.trim();
+
+        // 1. Find the current destination
+        const currentDest = await collectionDestinations.findOne({
+            city: { $regex: `^${safeName}$`, $options: "i" }
+        });
+
+        // 2. Build the filter
+        let filter = { city: { $not: new RegExp(`^${safeName}$`, "i") } };
+
+        if (currentDest && (currentDest.country || currentDest.continent)) {
+            filter.$or = [];
+            if (currentDest.country && currentDest.country !== "Unknown") {
+                filter.$or.push({ country: { $regex: currentDest.country, $options: "i" } });
+            }
+            if (currentDest.continent) {
+                filter.$or.push({ continent: { $regex: currentDest.continent, $options: "i" } });
+            }
+        }
+
+        // 3. Try to fetch matching destinations
+        let similar = await collectionDestinations.find(filter)
+            .limit(parseInt(limit))
+            .skip(skip)
+            .toArray();
+
+        let totalItems = await collectionDestinations.countDocuments(filter);
+
+        // 4. THE FIX: Removed 'featured: true' because it doesn't exist in MongoDB!
+        // Fallback to top continents to guarantee we always return beautiful cards.
+        if (similar.length === 0) {
+            console.log(`[Similar Destinations] No exact matches for ${safeName}. Using global fallback.`);
+            
+            filter = { 
+                city: { $not: new RegExp(`^${safeName}$`, "i") },
+                continent: { $in: ["Europe", "Asia", "North America"] }
+            };
+            
+            similar = await collectionDestinations.find(filter)
+                .limit(parseInt(limit))
+                .skip(skip)
+                .toArray();
+                
+            totalItems = await collectionDestinations.countDocuments(filter);
+        }
+
+        // 5. Enforce Max 20 Pagination Rule
+        totalItems = Math.min(totalItems, 20); 
+        const totalPages = Math.ceil(totalItems / limit);
+
+        if (skip >= 20) {
+            return res.status(200).json({ success: true, data: [], pagination: { currentPage: parseInt(page), totalPages, totalItems } });
+        }
+
+        // 6. Format for the frontend DestinationCard
+        const formattedItems = similar.map((item) => {
+            const cleanCityName = item.city ? item.city.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "Unknown";
+            return {
+                id: item._id,
+                name: cleanCityName,
+                slug: cleanCityName.toLowerCase().replace(/\s+/g, '-'),
+                country: item.country || "Global",
+                rating: item.rating || "4.8",
+                description: item.description || `Explore scenic spots, cultural heritage, and local experiences in ${cleanCityName}.`,
+                image: item.imageUrl || item.wikiThumbnail || "needs-fetch"
+            };
+        });
+
+        res.status(200).json({
+            success: true,
+            data: formattedItems,
+            pagination: { currentPage: parseInt(page), totalPages, totalItems }
+        });
+
+    } catch (error) {
+        console.error("Similar Destinations API Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     getDestinationInfo,
     getAutocompleteSuggestions,
@@ -424,5 +514,6 @@ module.exports = {
     getDestinationCardInfo,
     getPaginatedDestinations,
     getDestinationAttractions,
-    getRecommendedDestinations
+    getRecommendedDestinations,
+    getSimilarDestinations
 };
