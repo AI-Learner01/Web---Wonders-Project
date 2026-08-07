@@ -253,6 +253,44 @@ function getInitialSaved() {
 
 
 function DestinationCard({ dest, weatherEntry, isSaved, onToggleSave, compact = false }) {
+    // 1. Add state to allow the image to change after the initial load
+    const [cardImage, setCardImage] = useState(dest.image);
+
+    // 2. Make the card "smart" by fetching real images on the fly
+    useEffect(() => {
+        // Check if the provided image is missing or is our generic Pexels fallback
+        const isPlaceholder = !dest.image || dest.image === "needs-fetch" || (typeof dest.image === 'string' && dest.image.includes('pexels-photo-3225517'));
+
+        if (isPlaceholder) {
+            const fetchRealImage = async () => {
+                try {
+                    const res = await fetch(`http://localhost:5000/api/destinations/card-info?name=${encodeURIComponent(dest.name)}`);
+                    const apiData = await res.json();
+
+                    if (apiData.success && apiData.image) {
+                        let finalImageUrl = apiData.image;
+                        
+                        // Compress Unsplash URLs on the fly
+                        if (finalImageUrl.includes('unsplash.com')) {
+                            const baseUrl = finalImageUrl.split('?')[0].split('&')[0];
+                            finalImageUrl = `${baseUrl}?w=600&h=400&fit=crop&q=70&auto=format`;
+                        } 
+                        // Compress Pexels URLs (excluding the fallback itself)
+                        else if (finalImageUrl.includes('pexels.com') && !finalImageUrl.includes('3225517')) {
+                            const baseUrl = finalImageUrl.split('?')[0];
+                            finalImageUrl = `${baseUrl}?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop`;
+                        }
+                        
+                        setCardImage(finalImageUrl);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch real image for:", dest.name);
+                }
+            };
+            fetchRealImage();
+        }
+    }, [dest.name, dest.image]); // Note: Depends on props to prevent infinite loops
+
     return (
         <div
             className={`group relative overflow-hidden rounded-2xl border border-[#E5E7E0] bg-white transition-shadow hover:shadow-lg ${compact ? "w-72 flex-shrink-0 snap-start" : "w-full"
@@ -261,7 +299,7 @@ function DestinationCard({ dest, weatherEntry, isSaved, onToggleSave, compact = 
             <Link to={`/destinations/${dest.slug}`} className="block">
                 <div className="relative h-44 w-full overflow-hidden">
                     <SmartImage
-                        src={dest.image}
+                        src={cardImage} /* <-- UPDATED to use our new state variable */
                         alt={`${dest.name}, ${dest.country}`}
                         fallbackLabel={dest.name}
                         className="h-full w-full object-cover transition-transform duration-500 motion-reduce:transition-none group-hover:scale-105"
@@ -291,7 +329,6 @@ function DestinationCard({ dest, weatherEntry, isSaved, onToggleSave, compact = 
                     </div>
                 </div>
             </Link>
-
             <button
                 type="button"
                 onClick={() => onToggleSave(dest.slug)}
@@ -677,18 +714,38 @@ export default function Home() {
             try {
                 // Read what the user has viewed most from Local Storage
                 const viewHistory = JSON.parse(window.localStorage.getItem("auraavenue:viewHistory")) || [];
-
+                
                 // Send history to backend smart engine
                 const res = await fetch("http://localhost:5000/api/destinations/recommended", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ viewHistory })
                 });
-
                 const data = await res.json();
+                
                 if (data.success) {
                     const formattedItems = data.data.map(item => {
                         const cleanCityName = item.city || "Destination";
+                        
+                        // 1. Get raw image URL from backend
+                        let rawImage = item.imageUrl || item.wikiThumbnail;
+                        
+                        // 2. Set our fast Pexels landscape fallback
+                        let optimizedImage = "https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"; 
+                        
+                        // 3. Bulletproof Compression: Shrink Unsplash and Pexels URLs on the fly
+                        if (rawImage && rawImage !== "needs-fetch") {
+                            if (rawImage.includes('unsplash.com')) {
+                                const baseUrl = rawImage.split('?')[0].split('&')[0];
+                                optimizedImage = `${baseUrl}?w=600&h=400&fit=crop&q=70&auto=format`;
+                            } else if (rawImage.includes('pexels.com')) {
+                                const baseUrl = rawImage.split('?')[0];
+                                optimizedImage = `${baseUrl}?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop`;
+                            } else {
+                                optimizedImage = rawImage; // Keep Wiki thumbnails as-is
+                            }
+                        }
+
                         return {
                             slug: cleanCityName.toLowerCase().replace(/\s+/g, '-'),
                             latitude: 0,
@@ -697,11 +754,11 @@ export default function Home() {
                             country: item.country || "Global",
                             rating: item.rating || "4.8",
                             price: 650,
-                            bestTime: "Apr – Oct",
-                            image: item.imageUrl || item.wikiThumbnail || "needs-fetch"
+                            bestTime: "Apr - Oct",
+                            image: optimizedImage // Pass the blazing fast image!
                         };
                     });
-
+                    
                     setRecommendedDestinations({
                         basedOn: data.basedOn,
                         items: formattedItems
@@ -713,9 +770,9 @@ export default function Home() {
                 setIsRecLoading(false);
             }
         };
-
         fetchRecommendations();
     }, []);
+    
     const scrollRecommended = (direction) => {
         const el = recommendedScrollerRef.current;
         if (!el) return;
