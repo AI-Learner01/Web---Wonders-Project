@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-route
 import DestApp from './pages/Destination-pages/DestApp';
 import Home from './homepage/Home';
 import Login from './authentication/Login';
-import Signup from './authentication/Signup';
+import Signup from './authentication/SignUp';
 import Contact from './authentication/Contact';
 import About from './authentication/About';
 import Navbar from './homepage/Navbar';
