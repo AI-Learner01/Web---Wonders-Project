@@ -4,10 +4,7 @@ import { Link } from 'react-router-dom';
 
 // Base API URL configuration with fallback
 // Base API URL configuration with safe fallback
-const API_BASE_URL = 
-  import.meta.env?.VITE_API_URL || 
-  (typeof process !== 'undefined' ? process.env.REACT_APP_API_URL : undefined) || 
-  'http://localhost:5000';
+const API_BASE_URL = `${import.meta.env.VITE_SERVER_URL }`;
 
 const SavedItineraries = ({ userData, refreshProfile }) => {
   const itineraries = userData?.itineraries || [];

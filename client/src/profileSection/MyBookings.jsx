@@ -14,7 +14,7 @@ const MyBookings = ({ userData }) => {
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const res = await fetch("http://localhost:5000/api/bookings");
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/bookings`);
                 const data = await res.json();
                 if (data.success) {
                     // Filter bookings matching the logged-in user's email

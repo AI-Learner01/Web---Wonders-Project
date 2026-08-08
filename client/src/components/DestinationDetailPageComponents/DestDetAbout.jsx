@@ -13,7 +13,7 @@ const DestDetAbout = ({aboutText, locationName}) => {
         const fetchAttractions = async () => {
             setLoadingAttractions(true);
             try {
-                const response = await fetch(`http://localhost:5000/api/destinations/attractions?name=${encodeURIComponent(locationName)}`);
+                const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/attractions?name=${encodeURIComponent(locationName)}`);
                 const result = await response.json();
                 if (result.success) {
                     setAttractions(result.data);

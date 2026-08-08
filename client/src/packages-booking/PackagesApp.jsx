@@ -24,7 +24,7 @@ function PackagesWrapper() {
         setError("");
 
         try {
-            const response = await fetch("http://localhost:5000/api/packages");
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/packages`);
 
             if (!response.ok) {
                 throw new Error("Server Error");
@@ -53,7 +53,7 @@ function PackagesWrapper() {
     useEffect(() => {
         const checkUser = async () => {
             try {
-                const res = await fetch("http://localhost:5000/auth/verify-token", {
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-token`, {
                     method: "POST",
                     credentials: "include",
                 });

@@ -277,7 +277,7 @@ function DestinationCard({ dest, weatherEntry, isSaved, onToggleSave, compact = 
         if (isPlaceholder) {
             const fetchRealImage = async () => {
                 try {
-                    const res = await fetch(`http://localhost:5000/api/destinations/card-info?name=${encodeURIComponent(dest.name)}`);
+                    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/card-info?name=${encodeURIComponent(dest.name)}`);
                     const apiData = await res.json();
 
                     if (apiData.success && apiData.image) {
@@ -856,7 +856,7 @@ export default function Home() {
                 const viewHistory = JSON.parse(window.localStorage.getItem("auraavenue:viewHistory")) || [];
                 
                 // Send history to backend smart engine
-                const res = await fetch("http://localhost:5000/api/destinations/recommended", {
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/recommended`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ viewHistory })

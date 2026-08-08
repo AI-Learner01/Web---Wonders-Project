@@ -18,7 +18,7 @@ function PackageCard({ packageData, onBookNow, isSlider }) {
     useEffect(() => {
         const checkLikedStatus = async () => {
             try {
-                const res = await fetch("http://localhost:5000/api/auth/get-user-data", {
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/get-user-data`, {
                     method: "POST",
                     credentials: "include", // Sends the JWT cookie
                     headers: { "Content-Type": "application/json" }
@@ -67,7 +67,7 @@ function PackageCard({ packageData, onBookNow, isSlider }) {
                             e.stopPropagation();
                             try {
                                 // Update MongoDB
-                                const res = await fetch("http://localhost:5000/api/auth/toggle-favorite", {
+                                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/toggle-favorite`, {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },
                                     credentials: "include",

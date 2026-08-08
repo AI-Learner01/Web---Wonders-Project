@@ -48,7 +48,7 @@ const EditProfile = ({ userData, refreshProfile, triggerSuccess, triggerError, s
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/auth/update-profile", {
+      const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/update-profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -14,7 +14,7 @@ import ScrollToTop from "../components/DestinationDetailPageComponents/ScrollToT
 // =======================================================
 // BACKEND CONFIGURATION / ENDPOINTS
 // =======================================================
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = `${import.meta.env.VITE_SERVER_URL}`;
 
 const API_ROUTES = {
   VERIFY_TOKEN: `${API_BASE_URL}/auth/verify-token`,

@@ -42,7 +42,7 @@ export default function SendNotification({ triggerSuccess, triggerError }) {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/notifications/create", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/notifications/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

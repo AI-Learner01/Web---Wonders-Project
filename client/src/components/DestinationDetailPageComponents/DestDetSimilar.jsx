@@ -14,7 +14,7 @@ const DestDetSimilar = ({ locationName }) => {
             setLoading(true);
             try {
                 // Fetch exactly 4 items per page
-                const res = await fetch(`http://localhost:5000/api/destinations/similar?name=${encodeURIComponent(locationName)}&page=${page}&limit=4`);
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/similar?name=${encodeURIComponent(locationName)}&page=${page}&limit=4`);
                 const data = await res.json();
                 
                 if (data.success) {

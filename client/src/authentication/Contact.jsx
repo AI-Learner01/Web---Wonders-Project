@@ -92,7 +92,7 @@ export default function Contact() {
         // 3. API Dispatch
         try {
             setLoading(true);
-            const response = await fetch("http://localhost:5000/auth/contact-us", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/contact-us`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',

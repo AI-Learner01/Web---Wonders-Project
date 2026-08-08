@@ -84,8 +84,8 @@ export default function ManagePackages({ packages = [], onRefresh, triggerSucces
 
     const isEditing = Boolean(editingPackageId);
     const url = isEditing
-      ? `http://localhost:5000/admin/update-package/${editingPackageId}`
-      : "http://localhost:5000/admin/add-package";
+      ? `${import.meta.env.VITE_SERVER_URL}/admin/update-package/${editingPackageId}`
+      : `${import.meta.env.VITE_SERVER_URL}/admin/add-package`;
 
     const method = isEditing ? "PATCH" : "POST";
 
@@ -128,7 +128,7 @@ export default function ManagePackages({ packages = [], onRefresh, triggerSucces
     if (!deletePackageId) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/admin/delete-package/${deletePackageId}`, {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/delete-package/${deletePackageId}`, {
         method: "DELETE",
         credentials: "include",
       });

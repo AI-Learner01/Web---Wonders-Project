@@ -38,7 +38,7 @@ const Destinations = () => {
             try {
                 // Calls the optimized backend endpoint
                 const res = await fetch(
-                    `http://localhost:5000/api/destinations/all?page=${currentPage}&limit=${itemsPerPage}&continent=${encodeURIComponent(selectedContinent)}`
+                    `${import.meta.env.VITE_SERVER_URL}/api/destinations/all?page=${currentPage}&limit=${itemsPerPage}&continent=${encodeURIComponent(selectedContinent)}`
                 );
                 const data = await res.json();
                 if (data.success) {
@@ -64,7 +64,7 @@ const Destinations = () => {
                 return;
             }
             try {
-                const res = await fetch(`http://localhost:5000/api/destinations/autocomplete?q=${term}`);
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/autocomplete?q=${term}`);
                 if (!res.ok) throw new Error("API network error");
                 const data = await res.json();
                 setSuggestions(data);

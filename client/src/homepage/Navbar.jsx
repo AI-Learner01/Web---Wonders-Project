@@ -26,7 +26,7 @@ export default function Navbar() {
   const fetchNotifications = async (email) => {
     if (!email) return;
     try {
-      const response = await fetch("http://localhost:5000/notifications/unread", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/notifications/unread`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -45,7 +45,7 @@ export default function Navbar() {
     if (!currentUser?.email || notifications.length === 0) return;
     setNotifications([]);
     try {
-      await fetch("http://localhost:5000/notifications/mark-read", {
+      await fetch(`${import.meta.env.VITE_SERVER_URL}/notifications/mark-read`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -79,7 +79,7 @@ export default function Navbar() {
 
   const checkCurrentUser = async () => {
     try {
-      const response = await fetch("http://localhost:5000/auth/verify-token", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -140,7 +140,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:5000/auth/logout", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/logout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

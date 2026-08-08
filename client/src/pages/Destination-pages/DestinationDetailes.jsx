@@ -39,7 +39,7 @@ const DestinationDetailes = () => {
 
             try {
                 // 2. Fetch live data from your Wikipedia API backend
-                const res = await fetch(`http://localhost:5000/api/destinations/info?name=${wikiSearchTerm}`);
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/info?name=${wikiSearchTerm}`);
                 const apiData = await res.json();
 
                 if (apiData.success) {
