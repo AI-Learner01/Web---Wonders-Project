@@ -31,6 +31,7 @@ function SummaryCard({ selectedPackage, bookingData }) {
             const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/bookings/send-email`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include", // Ensure cookies are sent with the request
                 body: JSON.stringify({
                     email: bookingData.email,
                     bookingDetails: {

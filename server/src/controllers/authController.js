@@ -20,13 +20,13 @@ const determineRole = (email) => {
 };
 
 const sendAuthCookie = (res, userPayload) => {
-    const token = jwt.sign(userPayload, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(userPayload, process.env.JWT_SECRET, { expiresIn: "7d" }); // 1h se badha kar 7d ya 1d kar sakte hain
     
     res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 3600000 // 1 hour
+        secure: true,      // Vercel & Render dono HTTPS par hain, toh true zaroori hai
+        sameSite: "none",  // Cross-site requests ke liye must hai!
+        maxAge: 7 * 24 * 60 * 60 * 1000 
     });
     return token;
 };

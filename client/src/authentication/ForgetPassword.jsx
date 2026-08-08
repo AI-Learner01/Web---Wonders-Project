@@ -91,6 +91,7 @@ export default function ForgotPassword() {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/send-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ email })
             });
             const data = await response.json();
@@ -136,6 +137,7 @@ export default function ForgotPassword() {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/reset-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ email, otp, newPassword })
             });
             const data = await response.json();

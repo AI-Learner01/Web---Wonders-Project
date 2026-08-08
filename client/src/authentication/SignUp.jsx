@@ -74,6 +74,7 @@ function SignUp() {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-google-token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ token: credentialResponse.credential })
             });
 
@@ -219,6 +220,7 @@ function SignUp() {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/send-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ email: email.trim() })
             });
 
@@ -255,6 +257,7 @@ function SignUp() {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ email: email.trim(), otp1: otp1.trim() })
             });
 

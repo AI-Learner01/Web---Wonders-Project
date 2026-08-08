@@ -859,6 +859,7 @@ export default function Home() {
                 const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/recommended`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
+                    credentials: "include",
                     body: JSON.stringify({ viewHistory })
                 });
                 const data = await res.json();
