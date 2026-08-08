@@ -463,7 +463,7 @@ const contactUs = async (req, res) => {
         if (cleanContact.includes("@")) {
             try {
                 await transporter.sendMail({
-                    from: `"AuraAvenue Support" <${process.env.BREVO_SMTP_EMAIL}>`,
+                    from: `"AuraAvenue Support" <${process.env.EMAIL_USER}>`,
                     to: cleanContact,
                     subject: `Query Received - Receipt #${receiptNo.slice(-6).toUpperCase()}`,
                     html: `
