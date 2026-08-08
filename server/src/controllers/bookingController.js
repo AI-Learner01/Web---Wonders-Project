@@ -24,7 +24,7 @@ const sendBookingEmail = async (req, res) => {
         }
 
         const mailOptions = {
-            from: `"AuraAvenue Travel" <${process.env.EMAIL_USER}>`,
+            from: `"AuraAvenue Travel" <${process.env.BREVO_SMTP_EMAIL}>`,
             to: email,
             subject: `Booking Confirmation - Receipt #${bookingDetails.bookingId}`,
             html: `

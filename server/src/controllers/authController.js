@@ -20,12 +20,12 @@ const determineRole = (email) => {
 };
 
 const sendAuthCookie = (res, userPayload) => {
-    const token = jwt.sign(userPayload, process.env.JWT_SECRET, { expiresIn: "7d" }); // 1h se badha kar 7d ya 1d kar sakte hain
+    const token = jwt.sign(userPayload, process.env.JWT_SECRET, { expiresIn: "7d" }); 
     
     res.cookie("token", token, {
         httpOnly: true,
-        secure: true,      // Vercel & Render dono HTTPS par hain, toh true zaroori hai
-        sameSite: "none",  // Cross-site requests ke liye must hai!
+        secure: true,      
+        sameSite: "none",  
         maxAge: 7 * 24 * 60 * 60 * 1000 
     });
     return token;
@@ -463,7 +463,7 @@ const contactUs = async (req, res) => {
         if (cleanContact.includes("@")) {
             try {
                 await transporter.sendMail({
-                    from: `"AuraAvenue Support" <${process.env.EMAIL_USER}>`,
+                    from: `"AuraAvenue Support" <${process.env.BREVO_SMTP_EMAIL}>`,
                     to: cleanContact,
                     subject: `Query Received - Receipt #${receiptNo.slice(-6).toUpperCase()}`,
                     html: `
@@ -541,8 +541,9 @@ const verifyToken = async (req, res) => {
 const logout = (req, res) => {
     res.clearCookie("token", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax"
+        secure: true,       // Production/HTTPS ke liye true zaroori hai
+        sameSite: "none",   // Cross-site (Vercel & Render) ke liye 'none' chahiye
+        path: "/"         // Cookie clear karte waqt path match karna mandatory hai
     });
     return res.status(200).json({ success: true, message: "Logout successful" });
 };

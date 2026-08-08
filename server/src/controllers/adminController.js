@@ -85,7 +85,7 @@ const updateQueryStatus = async (req, res) => {
       console.log(`Sending query resolution email to: ${query.contact}...`);
 
       const mailOptions = {
-        from: `"AuraAvenue Support" <${process.env.EMAIL_USER}>`,
+        from: `"AuraAvenue Support" <${process.env.BREVO_SMTP_EMAIL}>`,
         to: query.contact,
         subject: `Query Resolved - [${query.topic}]`,
         html: `
