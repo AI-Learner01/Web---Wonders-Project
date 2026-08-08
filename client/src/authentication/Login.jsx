@@ -1,22 +1,39 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
+
+/**
+ * Login Component
+ * 
+ * Description:
+ * Primary authentication interface for AuraAvenue. Supports standard email/password
+ * login with dynamic progress indicators as well as Google One-Tap/OAuth login.
+ * 
+ * @returns {React.ReactNode}
+ */
+
+// 📥 Reusable Cards Imports
 import ErrorModal from '../ReusableCards/ErrorModal.jsx';
 
+// ==========================================
+// ⚙️ CONFIGURATION
+// ==========================================
 const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,w_1920/v1784311631/login-bg_our3np.jpg";
 
 function Login() {
     const inputClass =
-        "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 placeholder:text-[#9a9a9a] focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
+        "w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-sm placeholder-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed";
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPass, setShowPass] = useState(false);
 
+    // Submission & Button States
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingPercent, setLoadingPercent] = useState(0); 
     const [btnMessage, setBtnMessage] = useState('');
-    const [btnStatus, setBtnStatus] = useState('idle');
+    const [btnStatus, setBtnStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
 
+    // 🔴 Modal State
     const [errorMsg, setErrorMsg] = useState('');
     const [isErrorOpen, setIsErrorOpen] = useState(false);
 
@@ -25,6 +42,7 @@ function Login() {
         setIsErrorOpen(true);
     };
 
+    // Calculate Form Completion Fill Percentage
     const totalFields = 2;
     const filledFields = [email, password].filter((val) => val.trim() !== "").length;
     const inputFillPercent = (filledFields / totalFields) * 100;
@@ -88,7 +106,7 @@ function Login() {
         }
     };
 
-    // Google Login Response Handler
+    // Google OAuth Response Handler
     const handleGoogleSuccess = async (credentialResponse) => {
         setIsSubmitting(true);
         try {
@@ -116,92 +134,117 @@ function Login() {
 
     return (
         <div
-            className="min-h-screen flex justify-center items-center bg-cover bg-center bg-no-repeat p-6 font-sans"
+            className="min-h-screen bg-cover bg-center bg-no-repeat py-8 px-4 flex items-center justify-center relative font-sans antialiased"
             style={{ backgroundImage: `url(${loginBg})` }}
         >
+            {/* Dark Blur Overlay */}
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+
+            {/* Main Login Card */}
             <form
                 onSubmit={handleLogin}
-                className="w-full max-w-[430px] bg-white p-10 rounded-[18px] shadow-[0_15px_40px_rgba(0,0,0,0.08)] flex flex-col max-[480px]:p-7 max-[480px]:rounded-2xl"
+                className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-5"
             >
-                {/* Header */}
-                <div className="flex justify-between items-center mb-7">
-                    <p className="text-[2rem] font-bold text-[#222]">Login</p>
+                {/* Header Row */}
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                            Welcome Back
+                        </h1>
+                        <p className="text-xs text-slate-500 mt-0.5">Sign in to access your account</p>
+                    </div>
+
                     <a
                         href="/contact"
-                        className="no-underline text-[#2f6b1f] bg-[#eef8eb] border border-[#d8ead2] rounded-full px-[18px] py-2 text-[0.9rem] font-semibold transition duration-300 hover:bg-[#14c38e] hover:text-white hover:border-[#14c38e] hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(20,195,142,0.25)]"
+                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition hover:bg-emerald-600 hover:text-white hover:border-emerald-600"
                     >
-                        Contact Us
+                        Contact Us ↗
                     </a>
                 </div>
 
                 {/* Email Input */}
-                <p className="text-[0.9rem] font-semibold text-[#444] mt-[18px] mb-2">Email Address</p>
-                <input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    disabled={isSubmitting}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={inputClass}
-                />
-
-                {/* Password Label */}
-                <div className="flex items-center mt-[18px] mb-2">
-                    <p className="text-[0.9rem] font-semibold text-[#444]">Password</p>
-                    <p className="ml-auto mr-[10px] text-[#666] text-[0.85rem]">View Password</p>
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Email Address
+                    </label>
                     <input
-                        type="checkbox"
-                        checked={showPass}
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
                         disabled={isSubmitting}
-                        onChange={() => setShowPass(!showPass)}
-                        className="w-[17px] h-[17px] accent-[#16c784] cursor-pointer"
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={inputClass}
                     />
                 </div>
 
-                <input
-                    type={showPass ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    disabled={isSubmitting}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={inputClass}
-                />
+                {/* Password Input & Toggle */}
+                <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-semibold text-slate-700">
+                            Password
+                        </label>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 select-none">
+                            <span>Show password</span>
+                            <input
+                                type="checkbox"
+                                checked={showPass}
+                                disabled={isSubmitting}
+                                onChange={() => setShowPass(!showPass)}
+                                className="w-3.5 h-3.5 rounded text-emerald-600 accent-emerald-600 cursor-pointer"
+                            />
+                        </div>
+                    </div>
 
-                {/* Submit Button */}
+                    <input
+                        type={showPass ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={password}
+                        disabled={isSubmitting}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={inputClass}
+                    />
+                </div>
+
+                {/* Submit Button with Dynamic Input Fill & API Progress overlays */}
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`relative isolate overflow-hidden mt-[30px] border-none rounded-[10px] p-[15px] text-base font-semibold text-white transition-all duration-300
-                        ${btnStatus === 'error' ? 'bg-[#d9534f]' : 'bg-[#0b6e46]'}
-                        ${isSubmitting ? "cursor-not-allowed" : "cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(20,195,142,0.28)]"}
-                    `}
+                    className={`relative overflow-hidden isolate w-full rounded-xl py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.99] mt-2 ${
+                        btnStatus === 'error'
+                            ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20'
+                            : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md shadow-emerald-600/20'
+                    } ${isSubmitting ? "cursor-not-allowed opacity-95" : "cursor-pointer"}`}
                 >
+                    {/* Layer 1: Form Fill Progress Indicator */}
                     <span
-                        className="absolute top-0 left-0 h-full bg-[#1fd694] transition-[width] duration-300 ease-out -z-20"
+                        className="absolute left-0 top-0 bottom-0 bg-emerald-500/25 transition-[width] duration-300 ease-out -z-20"
                         style={{ width: `${inputFillPercent}%` }}
                     />
+
+                    {/* Layer 2: API Submission Progress Indicator */}
                     <span
-                        className={`absolute top-0 left-0 h-full transition-[width] duration-500 ease-in-out -z-10
-                            ${btnStatus === 'error' ? 'bg-[#ff4d4d]' : ''}
-                            ${btnStatus === 'loading' ? 'bg-[#12a16d]' : ''}
-                            ${btnStatus === 'success' ? 'bg-[#00e676]' : ''}
-                        `}
+                        className={`absolute left-0 top-0 bottom-0 transition-[width] duration-500 ease-in-out -z-10 ${
+                            btnStatus === 'error' ? 'bg-rose-500' : ''
+                        } ${btnStatus === 'loading' ? 'bg-emerald-500' : ''} ${
+                            btnStatus === 'success' ? 'bg-emerald-400' : ''
+                        }`}
                         style={{ width: `${loadingPercent}%` }}
                     />
-                    <span className="relative z-10 drop-shadow-sm flex items-center justify-center gap-2">
+
+                    <span className="relative z-10 flex items-center justify-center gap-2">
                         {btnStatus === 'idle' && "Login"}
                         {btnStatus !== 'idle' && btnMessage}
                     </span>
                 </button>
 
                 {/* OR Divider */}
-                <div className="flex items-center my-5">
-                    <div className="flex-1 border-t border-[#ececec]"></div>
-                    <span className="px-3 text-sm text-[#888]">OR</span>
-                    <div className="flex-1 border-t border-[#ececec]"></div>
+                <div className="flex items-center my-3">
+                    <div className="flex-1 border-t border-slate-200" />
+                    <span className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">OR</span>
+                    <div className="flex-1 border-t border-slate-200" />
                 </div>
 
-                {/* Google Login Wrapper */}
+                {/* Google Login Container */}
                 <div className="flex justify-center w-full min-h-[44px]">
                     <GoogleLogin
                         onSuccess={handleGoogleSuccess}
@@ -213,23 +256,25 @@ function Login() {
                     />
                 </div>
 
-                {/* Forgot Password */}
-                <a
-                    href="/forgotpassword"
-                    className="mt-[18px] text-right text-[#14c38e] text-[0.9rem] font-medium hover:text-[#0ea875] hover:underline"
-                >
-                    Forgot Password?
-                </a>
+                {/* Utility Links Footer */}
+                <div className="flex flex-col space-y-3 pt-2">
+                    <a
+                        href="/forgotpassword"
+                        className="text-right text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline transition"
+                    >
+                        Forgot Password?
+                    </a>
 
-                {/* Signup Link */}
-                <a
-                    href="/signup"
-                    className="mt-7 pt-[18px] border-t border-[#ececec] text-center text-[#666] text-[0.92rem] no-underline transition duration-300 hover:text-[#14c38e]"
-                >
-                    Don't have an account? Sign Up
-                </a>
+                    <a
+                        href="/signup"
+                        className="pt-3 border-t border-slate-100 text-center text-xs font-medium text-slate-500 hover:text-emerald-600 transition"
+                    >
+                        Don't have an account? <span className="font-semibold text-emerald-600">Sign Up</span>
+                    </a>
+                </div>
             </form>
 
+            {/* 🔴 ERROR MODAL */}
             <ErrorModal
                 isOpen={isErrorOpen}
                 message={errorMsg}
