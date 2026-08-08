@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckIcon, AlertIcon, InstagramIcon, FacebookIcon, XLogoIcon } from "./icons";
+import { CheckIcon, AlertIcon, InstagramIcon, FacebookIcon, XLogoIcon } from "./Icons";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
