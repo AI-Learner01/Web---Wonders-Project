@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 
+/**
+ * SignUp Component
+ * 
+ * Description:
+ * Registration interface for AuraAvenue supporting standard multi-field registration
+ * with email OTP verification, alongside Google One-Tap/OAuth registration.
+ * 
+ * @returns {React.ReactNode}
+ */
+
 // Reusable Cards
 import SuccessModal from '../ReusableCards/SuccessModal';
 import ErrorModal from '../ReusableCards/ErrorModal';
@@ -12,8 +22,9 @@ const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,
 
 function SignUp() {
     const inputClass =
-        "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 placeholder:text-[#9a9a9a] focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
+        "w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-sm placeholder-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed";
 
+    // Form Inputs State
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -21,27 +32,30 @@ function SignUp() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
+    // OTP Modal & State
     const [otp1, setOtp1] = useState('');
     const [isOtpPopupOpen, setIsOtpPopupOpen] = useState(false);
-    const [otpStatus, setOtpStatus] = useState('idle');
+    const [otpStatus, setOtpStatus] = useState('idle'); // 'idle' | 'verifying' | 'verified'
+    const [otpProgress, setOtpProgress] = useState(0);
+    const [cooldown, setCooldown] = useState(0);
 
+    // Google Multi-step Auth State
     const [googleUserData, setGoogleUserData] = useState(null);
     const [isSetPasswordOpen, setIsSetPasswordOpen] = useState(false);
 
-    const totalFields = 5;
-    const filledFields = [fullName, email, phone, password, confirmPassword].filter((val) => val.trim() !== "").length;
-    const fillPercent = (filledFields / totalFields) * 100;
-    const [cooldown, setCooldown] = useState(0);
-
-    const [otpProgress, setOtpProgress] = useState(0);
-
+    // Modals State
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     
-    // Actions on modal close
+    // Modal Actions
     const [onSuccessCloseAction, setOnSuccessCloseAction] = useState(() => () => {});
     const [onErrorCloseAction, setOnErrorCloseAction] = useState(() => () => {});
+
+    // Calculate Form Field Completion Fill Percentage
+    const totalFields = 5;
+    const filledFields = [fullName, email, phone, password, confirmPassword].filter((val) => val.trim() !== "").length;
+    const fillPercent = (filledFields / totalFields) * 100;
 
     const showSuccess = (msg, callback) => {
         setModalMessage(msg);
@@ -67,7 +81,6 @@ function SignUp() {
 
             if (data.success) {
                 if (data.isExistingUser) {
-                    // Existing User error flow & Redirect to /login
                     showError("You already have an account, please try to login.", () => {
                         window.location.href = "/login";
                     });
@@ -167,12 +180,12 @@ function SignUp() {
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
+        if (!emailRegex.test(email.trim())) {
             showError("Enter a valid email address");
             return;
         }
 
-        if (!/^\d{10}$/.test(phone)) {
+        if (!/^\d{10}$/.test(phone.trim())) {
             showError("Phone number must contain exactly 10 digits");
             return;
         }
@@ -206,7 +219,7 @@ function SignUp() {
             const response = await fetch("http://localhost:5000/auth/send-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email: email.trim() })
             });
 
             const data = await response.json();
@@ -226,7 +239,7 @@ function SignUp() {
     const handleOtpVerification = async (e) => {
         if (e) e.preventDefault();
 
-        if (!otp1) {
+        if (!otp1.trim()) {
             showError("Please enter the OTP");
             return;
         }
@@ -242,7 +255,7 @@ function SignUp() {
             const response = await fetch("http://localhost:5000/auth/verify-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, otp1 })
+                body: JSON.stringify({ email: email.trim(), otp1: otp1.trim() })
             });
 
             const data = await response.json();
@@ -267,104 +280,129 @@ function SignUp() {
 
     return (
         <div
-            className="flex justify-center items-center min-h-screen bg-[#f4f7f6] font-sans p-6 bg-cover bg-center bg-no-repeat"
+            className="min-h-screen bg-cover bg-center bg-no-repeat py-8 px-4 flex items-center justify-center relative font-sans antialiased"
             style={{ backgroundImage: `url(${loginBg})` }}
         >
+            {/* Dark Blur Overlay */}
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+
+            {/* Main SignUp Card */}
             <form
                 onSubmit={openOtpWindow}
-                className="w-full max-w-[430px] bg-white p-10 rounded-[18px] shadow-[0_15px_40px_rgba(0,0,0,0.08)] flex flex-col max-[480px]:p-7 max-[480px]:rounded-2xl"
+                className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-4"
             >
-                <div className="flex justify-between items-center mb-7">
-                    <p className="text-[2rem] font-bold text-[#222] max-[480px]:text-[1.7rem]">
-                        Sign Up
-                    </p>
+                {/* Header Row */}
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                            Sign Up
+                        </h1>
+                        <p className="text-xs text-slate-500 mt-0.5">Create your AuraAvenue account</p>
+                    </div>
 
                     <a
                         href="/contact"
-                        className="no-underline text-[#2f6b1f] bg-[#eef8eb] border border-[#d8ead2] rounded-full px-[18px] py-2 text-[0.9rem] font-semibold transition duration-300 hover:bg-[#14c38e] hover:text-white hover:border-[#14c38e] hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(20,195,142,0.25)] max-[480px]:px-[15px] max-[480px]:py-[7px] max-[480px]:text-[0.82rem]"
+                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition hover:bg-emerald-600 hover:text-white hover:border-emerald-600"
                     >
-                        Contact Us
+                        Contact Us ↗
                     </a>
                 </div>
 
-                <p className="text-[0.9rem] font-semibold text-[#444] mt-[18px] mb-2">
-                    Full Name
-                </p>
-                <input
-                    type="text"
-                    placeholder="Enter your First name and last name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className={inputClass}
-                />
-
-                <p className="text-[0.9rem] font-semibold text-[#444] mt-[18px] mb-2">
-                    Email
-                </p>
-                <input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={inputClass}
-                />
-
-                <p className="text-[0.9rem] font-semibold text-[#444] mt-[18px] mb-2">
-                    Phone
-                </p>
-                <input
-                    type="text"
-                    placeholder="Enter your phone number"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className={inputClass}
-                />
-
-                <div className="flex items-center mt-[18px] mb-2">
-                    <p className="text-[0.9rem] font-semibold text-[#444] m-0">
-                        Password
-                    </p>
-                    <p className="ml-auto mr-[10px] text-[#666] text-[0.85rem]">
-                        View Passwords
-                    </p>
+                {/* Full Name Input */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Full Name
+                    </label>
                     <input
-                        type="checkbox"
-                        checked={showPassword}
-                        onChange={() => setShowPassword(!showPassword)}
-                        className="w-[17px] h-[17px] cursor-pointer accent-[#16c784]"
+                        type="text"
+                        placeholder="First and last name"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className={inputClass}
                     />
                 </div>
 
-                <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={inputClass}
-                />
+                {/* Email Input */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Email Address
+                    </label>
+                    <input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={inputClass}
+                    />
+                </div>
 
-                <p className="text-[0.9rem] font-semibold text-[#444] mt-[18px] mb-2">
-                    Confirm Password
-                </p>
-                <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={inputClass}
-                />
+                {/* Phone Input */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Phone Number
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="10-digit mobile number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className={inputClass}
+                    />
+                </div>
 
+                {/* Password Input & Toggle */}
+                <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-semibold text-slate-700">
+                            Password
+                        </label>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 select-none">
+                            <span>Show passwords</span>
+                            <input
+                                type="checkbox"
+                                checked={showPassword}
+                                onChange={() => setShowPassword(!showPassword)}
+                                className="w-3.5 h-3.5 rounded text-emerald-600 accent-emerald-600 cursor-pointer"
+                            />
+                        </div>
+                    </div>
+
+                    <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Create a password (min. 8 chars)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={inputClass}
+                    />
+                </div>
+
+                {/* Confirm Password Input */}
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Confirm Password
+                    </label>
+                    <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Re-enter your password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className={inputClass}
+                    />
+                </div>
+
+                {/* Submit Button with Live Input Fill */}
                 <button
                     type="submit"
                     disabled={cooldown > 0}
-                    className={`relative isolate overflow-hidden mt-[30px] border-none rounded-[10px] p-[15px] text-base font-semibold transition duration-300 ${
+                    className={`relative overflow-hidden isolate w-full rounded-xl py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.99] mt-2 ${
                         cooldown > 0
-                            ? "bg-gray-400 cursor-not-allowed text-white"
-                            : "bg-[#0b6e46] text-white cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(20,195,142,0.28)]"
+                            ? "bg-slate-400 text-white cursor-not-allowed"
+                            : "bg-emerald-700 hover:bg-emerald-800 text-white shadow-md shadow-emerald-600/20 cursor-pointer"
                     }`}
                 >
+                    {/* Input Fill Progress Bar */}
                     <span
-                        className="absolute top-0 left-0 h-full bg-[#1fd694] transition-[width] duration-[400ms] ease-in-out -z-10"
+                        className="absolute left-0 top-0 bottom-0 bg-emerald-500/25 transition-[width] duration-300 ease-out -z-10"
                         style={{ width: `${fillPercent}%` }}
                     />
 
@@ -373,66 +411,70 @@ function SignUp() {
                     </span>
                 </button>
 
-                <div className="flex flex-col items-center mt-4">
-                    <div className="w-full flex items-center my-3">
-                        <div className="flex-1 border-t border-[#e0e0e0]"></div>
-                        <span className="px-3 text-[0.85rem] text-[#888]">OR</span>
-                        <div className="flex-1 border-t border-[#e0e0e0]"></div>
-                    </div>
-                    
-                    <div className="w-full flex justify-center">
-                        <GoogleLogin
-                            onSuccess={handleGoogleSuccess}
-                            onError={() => showError("Google authentication failed")}
-                            shape="rectangular"
-                            width="100%"
-                        />
-                    </div>
+                {/* OR Divider */}
+                <div className="flex items-center my-2">
+                    <div className="flex-1 border-t border-slate-200" />
+                    <span className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">OR</span>
+                    <div className="flex-1 border-t border-slate-200" />
                 </div>
 
+                {/* Google Sign-Up Container */}
+                <div className="flex justify-center w-full min-h-[44px]">
+                    <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={() => showError("Google authentication failed")}
+                        shape="rectangular"
+                        theme="outline"
+                        size="large"
+                    />
+                </div>
+
+                {/* Footer Link */}
                 <a
                     href="/login"
-                    className="mt-5 pt-[15px] border-t border-[#ececec] text-center no-underline text-[#666] text-[0.92rem] transition duration-300 hover:text-[#14c38e]"
+                    className="pt-3 border-t border-slate-100 text-center text-xs font-medium text-slate-500 hover:text-emerald-600 transition"
                 >
-                    Already have an account? Login
+                    Already have an account? <span className="font-semibold text-emerald-600">Login</span>
                 </a>
             </form>
 
-            {/* OTP Modal */}
+            {/* 🔐 OTP Verification Modal */}
             {isOtpPopupOpen && (
-                <div className="fixed top-0 left-0 w-full h-full bg-black/60 flex justify-center items-center z-[999]">
-                    <div className="w-full max-w-[430px] m-0 bg-white p-10 rounded-[18px] shadow-[0_15px_40px_rgba(0,0,0,0.15)] flex flex-col font-sans max-[480px]:p-7 max-[480px]:rounded-2xl max-[480px]:mx-5">
-                        <p className="text-[1.6rem] font-bold text-[#222] mb-1">
-                            OTP Verification
-                        </p>
-
-                        <p className="text-[0.88rem] text-[#666] font-normal mt-0 mb-5 leading-normal">
-                            OTP sent to this email: <span className="font-semibold text-[#222]">{email}</span>
-                        </p>
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 antialiased font-sans animate-in fade-in duration-200">
+                    <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-4">
+                        <div className="border-b border-slate-100 pb-2">
+                            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                                OTP Verification
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-1 leading-normal">
+                                We sent a verification code to <span className="font-semibold text-slate-900">{email}</span>
+                            </p>
+                        </div>
 
                         <input
                             type="text"
-                            placeholder="Enter OTP"
+                            placeholder="Enter 6-digit OTP"
                             value={otp1}
                             disabled={otpStatus === 'verified' || otpStatus === 'verifying'}
                             onChange={(e) => setOtp1(e.target.value)}
-                            className="w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] tracking-[2px] mb-[15px] transition duration-300 placeholder:tracking-normal placeholder:text-[#9a9a9a] focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className={`${inputClass} text-center tracking-[4px] font-mono text-base font-bold`}
                         />
 
+                        {/* Verify Button with Dynamic Loading Bar */}
                         <button
                             type="button"
                             onClick={handleOtpVerification}
                             disabled={otpStatus === 'verifying' || otpStatus === 'verified'}
-                            className="relative isolate overflow-hidden mt-[5px] bg-[#0b6e46] text-white border-none rounded-[10px] p-[15px] text-base font-semibold transition duration-300 cursor-pointer disabled:cursor-wait"
+                            className="relative overflow-hidden isolate w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl py-3.5 text-sm font-bold shadow-md shadow-emerald-600/20 transition-all duration-200 active:scale-[0.99] cursor-pointer disabled:cursor-wait"
                         >
                             <span
-                                className="absolute top-0 left-0 h-full bg-[#16c784] transition-[width] duration-500 ease-out -z-10"
+                                className="absolute left-0 top-0 bottom-0 bg-emerald-500 transition-[width] duration-500 ease-out -z-10"
                                 style={{ width: `${otpProgress}%` }}
                             />
 
-                            <span className="relative z-10 drop-shadow-sm">
+                            <span className="relative z-10">
                                 {otpStatus === 'verifying' && `Verifying... ${otpProgress}%`}
-                                {otpStatus === 'verified' && `Wait (otp verified) ${otpProgress}%`}
+                                {otpStatus === 'verified' && `OTP Verified! Redirecting...`}
                                 {otpStatus === 'idle' && "Verify OTP"}
                             </span>
                         </button>
@@ -445,7 +487,7 @@ function SignUp() {
                                 setOtpStatus('idle');
                             }}
                             disabled={otpStatus === 'verifying' || otpStatus === 'verified'}
-                            className="mt-[12px] bg-[#f4f4f4] text-[#555] border border-[#e0e0e0] rounded-[10px] p-3 text-[15px] font-semibold cursor-pointer transition duration-300 hover:bg-[#e8e8e8] hover:text-[#222] disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 rounded-xl py-3 text-xs font-semibold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Cancel
                         </button>

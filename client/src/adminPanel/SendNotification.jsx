@@ -3,9 +3,17 @@ import React, { useState } from "react";
 /**
  * Send Notification Component
  * 
- * Allows Admin to broadcast notifications & emails to all registered users.
+ * Description:
+ * Allows administrators to broadcast in-app notifications and email updates to all 
+ * registered platform users with configurable notification types and dynamic links.
+ * 
+ * @param {Object} props
+ * @param {Function} props.triggerSuccess - Callback to display success toasts/modals.
+ * @param {Function} props.triggerError - Callback to display error toasts/modals.
+ * 
+ * @returns {React.ReactNode}
  */
-function SendNotification({ triggerSuccess, triggerError }) {
+export default function SendNotification({ triggerSuccess, triggerError }) {
   const [formData, setFormData] = useState({
     title: "",
     message: "",
@@ -65,20 +73,29 @@ function SendNotification({ triggerSuccess, triggerError }) {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Broadcast Notification
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Send in-app notifications and emails to all registered users.
-        </p>
+    <div className="space-y-4 sm:space-y-6 antialiased pb-10 max-w-4xl">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div>
+          <h1 className="text-lg sm:text-xl font-bold text-slate-800 tracking-tight">
+            Broadcast Notification
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Dispatch in-app updates and emails directly to all registered users.
+          </p>
+        </div>
+        <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-xs font-semibold px-3 py-1 rounded-full shrink-0 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          Live Broadcast Center
+        </span>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">
+      {/* Main Form Card */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-6 shadow-sm">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Title Input */}
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wide">
               Notification Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -88,20 +105,22 @@ function SendNotification({ triggerSuccess, triggerError }) {
               value={formData.title}
               onChange={handleChange}
               placeholder="e.g. 🌴 New Kerala Backwaters Package Added!"
-              className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-200 rounded-xl p-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
             />
           </div>
 
+          {/* Type & Link Controls Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">
+            {/* Notification Type Select */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wide">
                 Notification Type
               </label>
               <select
                 name="type"
                 value={formData.type}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                className="w-full bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-200 rounded-xl p-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition font-medium text-slate-700"
               >
                 <option value="SYSTEM">⚡ SYSTEM (Notice / Update)</option>
                 <option value="PACKAGE_ADD">🏖️ PACKAGE_ADD (New Package)</option>
@@ -109,9 +128,10 @@ function SendNotification({ triggerSuccess, triggerError }) {
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">
-                Redirect Link (Optional)
+            {/* Redirect Link Input */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wide">
+                Redirect Link <span className="text-slate-400 font-normal lowercase">(optional)</span>
               </label>
               <input
                 type="text"
@@ -119,14 +139,15 @@ function SendNotification({ triggerSuccess, triggerError }) {
                 value={formData.link}
                 onChange={handleChange}
                 placeholder="e.g. /packages"
-                className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-200 rounded-xl p-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">
-              Message <span className="text-red-500">*</span>
+          {/* Message Textarea */}
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wide">
+              Message Payload <span className="text-red-500">*</span>
             </label>
             <textarea
               required
@@ -134,36 +155,65 @@ function SendNotification({ triggerSuccess, triggerError }) {
               name="message"
               value={formData.message}
               onChange={handleChange}
-              placeholder="Write detailed notification message for users..."
-              className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Write a clear, detailed message to send to your users..."
+              className="w-full bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-200 rounded-xl p-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition resize-y"
             />
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+          {/* Email Checkbox Toggle Card */}
+          <label
+            htmlFor="sendEmailFlag"
+            className={`flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition cursor-pointer ${
+              formData.sendEmailFlag
+                ? "bg-emerald-50/50 border-emerald-200"
+                : "bg-slate-50/70 border-slate-200 hover:bg-slate-100/60"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-base shrink-0">
+                📧
+              </div>
+              <div>
+                <span className="block text-xs sm:text-sm font-semibold text-slate-800">
+                  Send Email Notification
+                </span>
+                <span className="block text-[11px] text-slate-500">
+                  Deliver an email copy directly to registered users' inboxes.
+                </span>
+              </div>
+            </div>
+
             <input
               type="checkbox"
               id="sendEmailFlag"
               name="sendEmailFlag"
               checked={formData.sendEmailFlag}
               onChange={handleChange}
-              className="w-4 h-4 text-emerald-600 accent-emerald-600 rounded cursor-pointer"
+              className="w-4 h-4 text-emerald-600 accent-emerald-600 rounded cursor-pointer shrink-0"
             />
-            <label htmlFor="sendEmailFlag" className="text-sm font-medium text-gray-700 cursor-pointer">
-              📧 Send Email Notification to all active users
-            </label>
-          </div>
+          </label>
 
-          <div className="pt-2">
+          {/* Submit Action Button */}
+          <div className="pt-2 flex justify-end">
             <button
               type="submit"
               disabled={loading}
-              className={`w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all shadow-md ${
+              className={`w-full sm:w-auto px-6 py-3 rounded-xl text-xs sm:text-sm font-semibold text-white shadow-md transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98] ${
                 loading
-                  ? "bg-emerald-400 cursor-not-allowed"
-                  : "bg-emerald-600 hover:bg-emerald-700 active:scale-95"
+                  ? "bg-emerald-400 shadow-emerald-200 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
               }`}
             >
-              {loading ? "Broadcasting..." : "📢 Broadcast Notification Now"}
+              {loading ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Broadcasting Notification...</span>
+                </>
+              ) : (
+                <>
+                  <span>📢 Broadcast Notification Now</span>
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -171,5 +221,3 @@ function SendNotification({ triggerSuccess, triggerError }) {
     </div>
   );
 }
-
-export default SendNotification;

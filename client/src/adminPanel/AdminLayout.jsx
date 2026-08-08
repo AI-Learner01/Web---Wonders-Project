@@ -3,8 +3,12 @@ import { useState, useEffect } from "react";
 /**
  * Admin Layout Component
  * 
- * This component serves as the main layout for the admin panel, providing navigation and rendering different sections based on the active page.
- * @returns JSX Element representing the admin layout
+ * Description:
+ * Serves as the primary structural shell for the admin portal. Manages active view state,
+ * handles global admin data fetching (queries, OTP logs, packages, user verification),
+ * and provides global error and success modal notifications.
+ * 
+ * @returns {JSX.Element} Rendered admin portal layout with navigation and views.
  */
 
 import AdminSidebar from "./AdminSidebar";
@@ -13,36 +17,42 @@ import PendingQueries from "./PendingQueries";
 import ResolvedQueries from "./ResolvedQueries";
 import AdminOtpLogs from "./AdminOtpLogs";
 import ManagePackages from "./ManagePackages";
-import SendNotification from "./SendNotification"; // 🔹 Imported SendNotification
+import SendNotification from "./SendNotification";
 
-// 📥 Reusable Cards Import
+// 📥 Reusable Modal Cards Import
 import ErrorModal from "../ReusableCards/ErrorModal.jsx";
 import SuccessModal from "../ReusableCards/SuccessModal.jsx";
 
 function AdminLayout() {
+  // Navigation State
   const [activePage, setActivePage] = useState("dashboard");
+
+  // Admin Data States
   const [pendingQueries, setPendingQueries] = useState([]);
   const [resolvedQueries, setResolvedQueries] = useState([]);
   const [otpLogs, setOtpLogs] = useState([]);
   const [packages, setPackages] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // 🔴 🟢 Modals State
+  // 🔴 🟢 Global Modal States
   const [errorMsg, setErrorMsg] = useState("");
   const [isErrorOpen, setIsErrorOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
 
+  // Helper trigger to display error modal
   const triggerError = (msg) => {
     setErrorMsg(msg);
     setIsErrorOpen(true);
   };
 
+  // Helper trigger to display success modal
   const triggerSuccess = (msg) => {
     setSuccessMsg(msg);
     setIsSuccessOpen(true);
   };
 
+  // Initial Data Load on Mount
   useEffect(() => {
     fetchPendingQueries();
     fetchResolvedQueries();
@@ -51,6 +61,7 @@ function AdminLayout() {
     fetchPackages();
   }, []);
 
+  /** Verifies session token and retrieves current admin user information */
   async function checkCurrentUser() {
     try {
       const response = await fetch("http://localhost:5000/auth/verify-token", {
@@ -66,6 +77,7 @@ function AdminLayout() {
     }
   }
 
+  /** Fetches list of all pending customer inquiries */
   async function fetchPendingQueries() {
     try {
       const response = await fetch("http://localhost:5000/admin/pending-queries", {
@@ -83,6 +95,7 @@ function AdminLayout() {
     }
   }
 
+  /** Fetches list of all resolved customer inquiries */
   async function fetchResolvedQueries() {
     try {
       const response = await fetch("http://localhost:5000/admin/resolved-queries", {
@@ -100,6 +113,7 @@ function AdminLayout() {
     }
   }
 
+  /** Fetches system OTP audit logs */
   async function fetchAdminOtpLogs() {
     try {
       const response = await fetch("http://localhost:5000/admin/admin-otp", {
@@ -117,6 +131,7 @@ function AdminLayout() {
     }
   }
 
+  /** Fetches all available service/product packages */
   async function fetchPackages() {
     try {
       const response = await fetch("http://localhost:5000/admin/get-all-packages", {
@@ -134,6 +149,7 @@ function AdminLayout() {
     }
   }
 
+  /** Handles resolving a pending query and refreshes relevant data views */
   async function handleQueryResolved(queryId, message) {
     try {
       const response = await fetch("http://localhost:5000/admin/resolve-query", {
@@ -166,12 +182,15 @@ function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-gray-800">
-      {/* Main Content Layout */}
-      <div className="flex flex-1">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-gray-800 antialiased selection:bg-indigo-500 selection:text-white">
+      {/* Main Responsive Flex Layout Container */}
+      <div className="flex flex-col md:flex-row flex-1 w-full min-h-0 overflow-x-hidden">
+        
+        {/* Navigation Sidebar */}
         <AdminSidebar activePage={activePage} setActivePage={setActivePage} />
 
-        <main className="flex-1 p-8 max-w-7xl mx-auto w-full">
+        {/* Primary Content View Container */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full min-w-0 transition-all duration-200">
           {activePage === "dashboard" && (
             <AdminDashboard
               pendingCount={pendingQueries.length}
@@ -204,7 +223,7 @@ function AdminLayout() {
             />
           )}
 
-          {/* 🔹 Render Send Notification View */}
+          {/* Render Send Notification View */}
           {activePage === "notifications" && (
             <SendNotification
               triggerSuccess={triggerSuccess}

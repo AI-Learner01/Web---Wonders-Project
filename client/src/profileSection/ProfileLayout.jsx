@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ProfileSidebar from "./ProfileSidebar";
 import EditProfile from "./EditProfile";
 import ProfileOverview from "./ProfileOverview";
@@ -21,7 +21,6 @@ const API_ROUTES = {
   GET_USER_DATA: `${API_BASE_URL}/auth/get-user-data`,
   UPDATE_PROFILE: `${API_BASE_URL}/auth/update-profile`,
   CHANGE_PASSWORD: `${API_BASE_URL}/auth/change-password`,
-  // Simplified Notifications Endpoints
   GET_NOTIFICATIONS: `${API_BASE_URL}/notifications/get-all`,
   MARK_READ: `${API_BASE_URL}/notifications/mark-read`,
 };
@@ -29,7 +28,6 @@ const API_ROUTES = {
 // =======================================================
 // MAIN PROFILE LAYOUT COMPONENT
 // =======================================================
-
 const ProfileLayout = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [userData, setUserData] = useState(null);
@@ -45,6 +43,7 @@ const ProfileLayout = () => {
   const [successMsg, setSuccessMsg] = useState("");
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
 
+  // Helper Feedback Triggers
   const triggerError = (msg) => {
     setErrorMsg(msg);
     setIsErrorOpen(true);
@@ -55,8 +54,29 @@ const ProfileLayout = () => {
     setIsSuccessOpen(true);
   };
 
-  // Main Loader & Fetcher for User Profile
-  async function fetchUserProfile() {
+  // Fetch all user notifications
+  const fetchAllNotifications = useCallback(async () => {
+    setNotificationsLoading(true);
+    try {
+      const response = await fetch(API_ROUTES.GET_NOTIFICATIONS, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setNotifications(data.notifications || []);
+      }
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  }, []);
+
+  // Main fetch routine for User Profile
+  const fetchUserProfile = useCallback(async () => {
     setLoading(true);
     try {
       const authResponse = await fetch(API_ROUTES.VERIFY_TOKEN, {
@@ -81,7 +101,6 @@ const ProfileLayout = () => {
 
       if (userResult.success) {
         setUserData(userResult.user ?? null);
-        // Automatically fetch notifications
         fetchAllNotifications();
       } else {
         triggerError(userResult.message || "Failed to fetch user data.");
@@ -94,52 +113,33 @@ const ProfileLayout = () => {
     } finally {
       setLoading(false);
     }
-  }
-
-  // =======================================================
-  // NOTIFICATION HANDLERS (Fetch All & Mark Read Only)
-  // =======================================================
-
-  // 1. Fetch All Notifications
-  async function fetchAllNotifications() {
-    setNotificationsLoading(true);
-    try {
-      const response = await fetch(API_ROUTES.GET_NOTIFICATIONS, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        setNotifications(data.notifications || []);
-      }
-    } catch (err) {
-      console.error("Error fetching notifications:", err);
-    } finally {
-      setNotificationsLoading(false);
-    }
-  }
-
-  // 2. Mark Notification as Read
-  // 2. Mark Notification as Read
-  const handleMarkAsRead = async () => {
-  if (!userData?.email) return;
-  try {
-    await fetch("http://localhost:5000/notifications/mark-read", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ email: userData.email }),
-    });
-  } catch (err) {
-    console.error("Error marking unread notifications as read:", err);
-  }
-};
+  }, [fetchAllNotifications]);
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);
+  }, [fetchUserProfile]);
+
+  // Mark all unread notifications as read
+  const handleMarkAsRead = async () => {
+    if (!userData?.email) return;
+    try {
+      const res = await fetch(API_ROUTES.MARK_READ, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: userData.email }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Optimistically update local state to reflect read status
+        setNotifications((prev) =>
+          prev.map((notif) => ({ ...notif, isRead: true }))
+        );
+      }
+    } catch (err) {
+      console.error("Error marking notifications as read:", err);
+    }
+  };
 
   // Handler for Updating Profile Details
   async function handleUpdateProfile(updatedFormData) {
@@ -196,6 +196,7 @@ const ProfileLayout = () => {
     }
   }
 
+  // Render content dynamically based on active tab
   const renderTabContent = () => {
     if (loading) {
       return (
@@ -259,19 +260,23 @@ const ProfileLayout = () => {
   return (
     <div className="flex flex-col md:flex-row bg-gray-100 min-h-[calc(100vh-64px)] w-full">
       <ScrollToTop />
+      
+      {/* Sidebar Navigation */}
       <ProfileSidebar activeTab={activeTab} setActiveTab={setActiveTab} userData={userData} />
-      <main className="flex-1 p-4 md:p-8 w-full overflow-y-auto">
+      
+      {/* Dynamic Content Panel */}
+      <main className="flex-1 p-4 md:p-8 w-full min-w-0 overflow-y-auto">
         {renderTabContent()}
       </main>
 
-      {/* ERROR MODAL CARD */}
+      {/* ERROR MODAL */}
       <ErrorModal
         isOpen={isErrorOpen}
         message={errorMsg}
         onClose={() => setIsErrorOpen(false)}
       />
 
-      {/* SUCCESS MODAL CARD */}
+      {/* SUCCESS MODAL */}
       <SuccessModal
         isOpen={isSuccessOpen}
         message={successMsg}

@@ -63,7 +63,7 @@ export default function Navbar() {
     // Check if link exists and has a length greater than 0
     if (typeof link === "string" && link.trim().length > 0) {
       const targetLink = link.trim();
-      
+
       // If external URL (starts with http:// or https://)
       if (targetLink.startsWith("http://") || targetLink.startsWith("https://")) {
         window.location.href = targetLink;
@@ -185,7 +185,7 @@ export default function Navbar() {
 
             {/* Dropdown Menu */}
             {notifDropdownOpen && (
-              <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl border border-gray-100 bg-white p-3 shadow-xl z-50">
+              <div className="fixed left-4 right-4 top-[72px] sm:absolute sm:left-auto sm:top-auto sm:right-0 sm:mt-3 w-auto sm:w-96 rounded-2xl border border-gray-100 bg-white p-3 shadow-xl z-50">
                 {/* Header Section */}
                 <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                   <div className="flex items-center gap-2">
@@ -342,9 +342,8 @@ export default function Navbar() {
             <Link
               key={link.label}
               to={link.to}
-              className={`text-sm font-medium transition-colors hover:text-[#167A44] ${
-                pathname === link.to ? "text-[#167A44] font-bold" : "text-gray-600"
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-[#167A44] ${pathname === link.to ? "text-[#167A44] font-bold" : "text-gray-600"
+                }`}
             >
               {link.label}
             </Link>
