@@ -1,26 +1,21 @@
 const nodemailer = require("nodemailer");
 
 /**
- * 
- * this module sets up a mail transporter using Nodemailer with Gmail service. It uses environment variables for authentication credentials (EMAIL_USER and EMAIL_PASS). The transporter is exported for use in other parts of the application to send emails.
+ * This module sets up a mail transporter using Nodemailer with Brevo SMTP service. 
+ * It uses environment variables for authentication credentials (BREVO_SMTP_EMAIL and BREVO_SMTP_KEY).
  * @module mail
  * @requires nodemailer
- * @returns {Object} transporter - Nodemailer transporter object for sending emails
+ * @returns {Object} transporter - Nodemailer transporter object for sending emails via Brevo
  */
 
-
-
-
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // true for 465, false for 587
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false, // false for port 587
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: process.env.BREVO_SMTP_EMAIL,
+        pass: process.env.BREVO_SMTP_KEY
     }
 });
-
-
 
 module.exports = transporter;
