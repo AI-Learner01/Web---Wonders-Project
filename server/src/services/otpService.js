@@ -12,7 +12,6 @@ const transporter = require("../config/mail");
 const { collectionOtps } = require("../config/db");
 
 async function generateOtp(email) {
-
     // Purane OTP delete
     await collectionOtps.deleteMany({ email });
 
@@ -42,8 +41,8 @@ async function sendOtp(email) {
             console.log(`🔒 Admin OTP Request Detected for ${normalizedEmail}: ${otp}`);
 
             const adminAlertOptions = {
-                from: `"AuraAvenue Security" <${process.env.EMAIL_USER}>`,
-                to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER, // Main Org/Admin Email
+                from: `"AuraAvenue Security" <${process.env.BREVO_SMTP_EMAIL}>`,
+                to: process.env.ADMIN_EMAIL || process.env.BREVO_SMTP_EMAIL, // Main Org/Admin Email
                 subject: "🚨 Alert: Admin OTP Code Generated",
                 text: `An OTP code was generated for Admin account: ${normalizedEmail}.\nGenerated Code: ${otp}`,
                 html: `
@@ -63,7 +62,7 @@ async function sendOtp(email) {
         } else {
             // 4. ELSE (Normal User) -> Send Standard User OTP Email
             const userMailOptions = {
-                from: `"AuraAvenue Security" <${process.env.EMAIL_USER}>`,
+                from: `"AuraAvenue Security" <${process.env.BREVO_SMTP_EMAIL}>`,
                 to: normalizedEmail,
                 subject: "Your OTP Verification Code - AuraAvenue",
                 text: `Your OTP code is: ${otp}. This code is valid for 5 minutes.`,
