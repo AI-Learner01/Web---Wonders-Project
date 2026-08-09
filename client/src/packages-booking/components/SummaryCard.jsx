@@ -49,7 +49,7 @@ function SummaryCard({ selectedPackage, bookingData }) {
             const data = await res.json();
             
             if (data.success) {
-                alert(`Payment Gateway will be integrated in the backend phase.\n\nSuccess! Your booking details have been sent to ${bookingData.email}.`);
+                alert(`Payment Gateway reached and email sent successfully! Booking ID: ${generatedBookingId}`);
             } else {
                 alert(`Payment Gateway reached, but we failed to send the email: ${data.message}`);
             }

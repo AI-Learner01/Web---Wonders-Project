@@ -16,7 +16,7 @@ import AdminVerify from "./adminPanel/adminVeryfy";
 import ProfileLayout from "./profileSection/ProfileLayout";
 
 // 🍪 Import CookieConsent component
-import CookieConsent from './components/CookieConsent'; // Adjust path if saved elsewhere
+// import CookieConsent from './components/CookieConsent'; // Adjust path if saved elsewhere
 
 // Helper component that reads the current URL
 function ConditionalFooter() {
@@ -73,10 +73,7 @@ function App() {
       </main>
 
       {/* Conditional Footer */}
-      <ConditionalFooter />
-
-      {/* 🍪 Global Cookie Consent Banner */}
-      <CookieConsent />
+      
     </BrowserRouter>
   );
 }
