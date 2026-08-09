@@ -58,7 +58,7 @@ const EditProfile = ({ userData, refreshProfile, triggerSuccess, triggerError, s
       const result = await res.json();
 
       if (result.success) {
-        triggerSuccess(result.message || "Profile updated successfully!");
+        triggerSuccess(result.message || "Profile updated successfully Please re-login !");
         if (refreshProfile) refreshProfile();
         setActiveTab('overview');
       } else {

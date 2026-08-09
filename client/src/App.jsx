@@ -15,12 +15,15 @@ import AdminLayout from "./adminPanel/AdminLayout";
 import AdminVerify from "./adminPanel/adminVeryfy";
 import ProfileLayout from "./profileSection/ProfileLayout";
 
+// 🍪 Import CookieConsent component
+import CookieConsent from './components/CookieConsent'; // Adjust path if saved elsewhere
+
 // Helper component that reads the current URL
 function ConditionalFooter() {
   const location = useLocation();
   const path = location.pathname.toLowerCase();
 
-  // Hide footer on specific pages (added '/profile' here so footer doesn't mess up profile sidebar)
+  // Hide footer on specific pages
   const hiddenPaths = ['/login', '/signup', '/contact', '/reset-password', '/forgotpassword'];
 
   const hideFooter = hiddenPaths.some(p => path.startsWith(p)) || path.includes('/booking');
@@ -71,6 +74,9 @@ function App() {
 
       {/* Conditional Footer */}
       <ConditionalFooter />
+
+      {/* 🍪 Global Cookie Consent Banner */}
+      <CookieConsent />
     </BrowserRouter>
   );
 }

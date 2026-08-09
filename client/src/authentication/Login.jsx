@@ -7,6 +7,7 @@ import { GoogleLogin } from '@react-oauth/google';
  * Description:
  * Primary authentication interface for AuraAvenue. Supports standard email/password
  * login with dynamic progress indicators as well as Google One-Tap/OAuth login.
+ * Fully optimized for mobile responsiveness across all devices (including 320px width).
  * 
  * @returns {React.ReactNode}
  */
@@ -21,7 +22,7 @@ const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,
 
 function Login() {
     const inputClass =
-        "w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-sm placeholder-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed";
+        "w-full px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-xs sm:text-sm placeholder-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed";
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -134,7 +135,7 @@ function Login() {
 
     return (
         <div
-            className="min-h-screen bg-cover bg-center bg-no-repeat py-8 px-4 flex items-center justify-center relative font-sans antialiased"
+            className="min-h-screen w-full max-w-full overflow-x-clip bg-cover bg-center bg-no-repeat py-6 sm:py-12 px-3 sm:px-6 flex items-center justify-center relative font-sans antialiased box-border"
             style={{ backgroundImage: `url(${loginBg})` }}
         >
             {/* Dark Blur Overlay */}
@@ -143,20 +144,22 @@ function Login() {
             {/* Main Login Card */}
             <form
                 onSubmit={handleLogin}
-                className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-5"
+                className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md p-4 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-4 sm:space-y-5 box-border min-w-0"
             >
                 {/* Header Row */}
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 gap-2">
+                    <div className="min-w-0">
+                        <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight truncate">
                             Welcome Back
                         </h1>
-                        <p className="text-xs text-slate-500 mt-0.5">Sign in to access your account</p>
+                        <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 truncate">
+                            Sign in to access your account
+                        </p>
                     </div>
 
                     <a
                         href="/contact"
-                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition hover:bg-emerald-600 hover:text-white hover:border-emerald-600"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition hover:bg-emerald-600 hover:text-white shrink-0"
                     >
                         Contact Us ↗
                     </a>
@@ -179,11 +182,11 @@ function Login() {
 
                 {/* Password Input & Toggle */}
                 <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-semibold text-slate-700">
+                    <div className="flex items-center justify-between mb-1.5 gap-2">
+                        <label className="text-xs font-semibold text-slate-700 truncate">
                             Password
                         </label>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 select-none">
+                        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-500 select-none shrink-0">
                             <span>Show password</span>
                             <input
                                 type="checkbox"
@@ -209,7 +212,7 @@ function Login() {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`relative overflow-hidden isolate w-full rounded-xl py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.99] mt-2 ${
+                    className={`relative overflow-hidden isolate w-full rounded-xl py-3 sm:py-3.5 text-xs sm:text-sm font-bold transition-all duration-200 active:scale-[0.99] mt-1 sm:mt-2 ${
                         btnStatus === 'error'
                             ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20'
                             : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-md shadow-emerald-600/20'
@@ -238,14 +241,14 @@ function Login() {
                 </button>
 
                 {/* OR Divider */}
-                <div className="flex items-center my-3">
+                <div className="flex items-center my-2 sm:my-3">
                     <div className="flex-1 border-t border-slate-200" />
-                    <span className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">OR</span>
+                    <span className="px-3 text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">OR</span>
                     <div className="flex-1 border-t border-slate-200" />
                 </div>
 
                 {/* Google Login Container */}
-                <div className="flex justify-center w-full min-h-[44px]">
+                <div className="flex justify-center w-full min-h-[44px] overflow-hidden">
                     <GoogleLogin
                         onSuccess={handleGoogleSuccess}
                         onError={() => triggerError("Google Login Failed!")}
@@ -257,17 +260,17 @@ function Login() {
                 </div>
 
                 {/* Utility Links Footer */}
-                <div className="flex flex-col space-y-3 pt-2">
+                <div className="flex flex-col space-y-2.5 sm:space-y-3 pt-1">
                     <a
                         href="/forgotpassword"
-                        className="text-right text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline transition"
+                        className="text-right text-[11px] sm:text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline transition"
                     >
                         Forgot Password?
                     </a>
 
                     <a
                         href="/signup"
-                        className="pt-3 border-t border-slate-100 text-center text-xs font-medium text-slate-500 hover:text-emerald-600 transition"
+                        className="pt-2.5 sm:pt-3 border-t border-slate-100 text-center text-[11px] sm:text-xs font-medium text-slate-500 hover:text-emerald-600 transition"
                     >
                         Don't have an account? <span className="font-semibold text-emerald-600">Sign Up</span>
                     </a>

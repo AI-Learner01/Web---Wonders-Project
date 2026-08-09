@@ -7,6 +7,7 @@ import { GoogleLogin } from '@react-oauth/google';
  * Description:
  * Registration interface for AuraAvenue supporting standard multi-field registration
  * with email OTP verification, alongside Google One-Tap/OAuth registration.
+ * Fully optimized for mobile responsiveness and viewports.
  * 
  * @returns {React.ReactNode}
  */
@@ -22,7 +23,7 @@ const loginBg = "https://res.cloudinary.com/xzjjff1k/image/upload/f_auto,q_auto,
 
 function SignUp() {
     const inputClass =
-        "w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-sm placeholder-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed";
+        "w-full px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-xs sm:text-sm placeholder-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed";
 
     // Form Inputs State
     const [fullName, setFullName] = useState('');
@@ -283,7 +284,7 @@ function SignUp() {
 
     return (
         <div
-            className="min-h-screen bg-cover bg-center bg-no-repeat py-8 px-4 flex items-center justify-center relative font-sans antialiased"
+            className="min-h-screen bg-cover bg-center bg-no-repeat py-6 sm:py-10 px-3 sm:px-4 flex items-center justify-center relative font-sans antialiased overflow-y-auto"
             style={{ backgroundImage: `url(${loginBg})` }}
         >
             {/* Dark Blur Overlay */}
@@ -292,20 +293,22 @@ function SignUp() {
             {/* Main SignUp Card */}
             <form
                 onSubmit={openOtpWindow}
-                className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-4"
+                className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-3.5 sm:space-y-4 my-auto min-w-0 box-border"
             >
                 {/* Header Row */}
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 gap-2">
+                    <div className="min-w-0">
+                        <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight truncate">
                             Sign Up
                         </h1>
-                        <p className="text-xs text-slate-500 mt-0.5">Create your AuraAvenue account</p>
+                        <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 truncate">
+                            Create your AuraAvenue account
+                        </p>
                     </div>
 
                     <a
                         href="/contact"
-                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition hover:bg-emerald-600 hover:text-white hover:border-emerald-600"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shrink-0"
                     >
                         Contact Us ↗
                     </a>
@@ -313,7 +316,7 @@ function SignUp() {
 
                 {/* Full Name Input */}
                 <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1 sm:mb-1.5 truncate">
                         Full Name
                     </label>
                     <input
@@ -327,7 +330,7 @@ function SignUp() {
 
                 {/* Email Input */}
                 <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1 sm:mb-1.5 truncate">
                         Email Address
                     </label>
                     <input
@@ -341,7 +344,7 @@ function SignUp() {
 
                 {/* Phone Input */}
                 <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1 sm:mb-1.5 truncate">
                         Phone Number
                     </label>
                     <input
@@ -355,11 +358,11 @@ function SignUp() {
 
                 {/* Password Input & Toggle */}
                 <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-semibold text-slate-700">
+                    <div className="flex items-center justify-between mb-1 sm:mb-1.5 gap-2">
+                        <label className="text-xs font-semibold text-slate-700 truncate">
                             Password
                         </label>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 select-none">
+                        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-500 select-none shrink-0">
                             <span>Show passwords</span>
                             <input
                                 type="checkbox"
@@ -381,7 +384,7 @@ function SignUp() {
 
                 {/* Confirm Password Input */}
                 <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1 sm:mb-1.5 truncate">
                         Confirm Password
                     </label>
                     <input
@@ -397,7 +400,7 @@ function SignUp() {
                 <button
                     type="submit"
                     disabled={cooldown > 0}
-                    className={`relative overflow-hidden isolate w-full rounded-xl py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.99] mt-2 ${
+                    className={`relative overflow-hidden isolate w-full rounded-xl py-3 sm:py-3.5 text-xs sm:text-sm font-bold transition-all duration-200 active:scale-[0.99] mt-1 sm:mt-2 ${
                         cooldown > 0
                             ? "bg-slate-400 text-white cursor-not-allowed"
                             : "bg-emerald-700 hover:bg-emerald-800 text-white shadow-md shadow-emerald-600/20 cursor-pointer"
@@ -415,14 +418,14 @@ function SignUp() {
                 </button>
 
                 {/* OR Divider */}
-                <div className="flex items-center my-2">
+                <div className="flex items-center my-1.5 sm:my-2">
                     <div className="flex-1 border-t border-slate-200" />
                     <span className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">OR</span>
                     <div className="flex-1 border-t border-slate-200" />
                 </div>
 
                 {/* Google Sign-Up Container */}
-                <div className="flex justify-center w-full min-h-[44px]">
+                <div className="flex justify-center w-full min-h-[44px] overflow-hidden">
                     <GoogleLogin
                         onSuccess={handleGoogleSuccess}
                         onError={() => showError("Google authentication failed")}
@@ -435,7 +438,7 @@ function SignUp() {
                 {/* Footer Link */}
                 <a
                     href="/login"
-                    className="pt-3 border-t border-slate-100 text-center text-xs font-medium text-slate-500 hover:text-emerald-600 transition"
+                    className="pt-2.5 sm:pt-3 border-t border-slate-100 text-center text-xs font-medium text-slate-500 hover:text-emerald-600 transition"
                 >
                     Already have an account? <span className="font-semibold text-emerald-600">Login</span>
                 </a>
@@ -443,13 +446,13 @@ function SignUp() {
 
             {/* 🔐 OTP Verification Modal */}
             {isOtpPopupOpen && (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 antialiased font-sans animate-in fade-in duration-200">
-                    <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-4">
-                        <div className="border-b border-slate-100 pb-2">
-                            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 antialiased font-sans animate-in fade-in duration-200 overflow-y-auto">
+                    <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-3.5 sm:space-y-4 my-auto max-h-[90vh] overflow-y-auto box-border min-w-0">
+                        <div className="border-b border-slate-100 pb-2 min-w-0">
+                            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate">
                                 OTP Verification
                             </h2>
-                            <p className="text-xs text-slate-500 mt-1 leading-normal">
+                            <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-normal break-all">
                                 We sent a verification code to <span className="font-semibold text-slate-900">{email}</span>
                             </p>
                         </div>
@@ -460,7 +463,7 @@ function SignUp() {
                             value={otp1}
                             disabled={otpStatus === 'verified' || otpStatus === 'verifying'}
                             onChange={(e) => setOtp1(e.target.value)}
-                            className={`${inputClass} text-center tracking-[4px] font-mono text-base font-bold`}
+                            className={`${inputClass} text-center tracking-[4px] font-mono text-sm sm:text-base font-bold`}
                         />
 
                         {/* Verify Button with Dynamic Loading Bar */}
@@ -468,14 +471,14 @@ function SignUp() {
                             type="button"
                             onClick={handleOtpVerification}
                             disabled={otpStatus === 'verifying' || otpStatus === 'verified'}
-                            className="relative overflow-hidden isolate w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl py-3.5 text-sm font-bold shadow-md shadow-emerald-600/20 transition-all duration-200 active:scale-[0.99] cursor-pointer disabled:cursor-wait"
+                            className="relative overflow-hidden isolate w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl py-3 sm:py-3.5 text-xs sm:text-sm font-bold shadow-md shadow-emerald-600/20 transition-all duration-200 active:scale-[0.99] cursor-pointer disabled:cursor-wait"
                         >
                             <span
                                 className="absolute left-0 top-0 bottom-0 bg-emerald-500 transition-[width] duration-500 ease-out -z-10"
                                 style={{ width: `${otpProgress}%` }}
                             />
 
-                            <span className="relative z-10">
+                            <span className="relative z-10 truncate block px-2">
                                 {otpStatus === 'verifying' && `Verifying... ${otpProgress}%`}
                                 {otpStatus === 'verified' && `OTP Verified! Redirecting...`}
                                 {otpStatus === 'idle' && "Verify OTP"}
@@ -490,7 +493,7 @@ function SignUp() {
                                 setOtpStatus('idle');
                             }}
                             disabled={otpStatus === 'verifying' || otpStatus === 'verified'}
-                            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 rounded-xl py-3 text-xs font-semibold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 rounded-xl py-2.5 sm:py-3 text-xs font-semibold transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
                         >
                             Cancel
                         </button>

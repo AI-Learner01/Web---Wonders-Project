@@ -35,7 +35,7 @@ export default function Contact() {
     const [isErrorOpen, setIsErrorOpen] = useState(false);
 
     const inputClass =
-        "w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-sm placeholder-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20";
+        "w-full px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-xs sm:text-sm placeholder-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20";
 
     const triggerError = (msg) => {
         setErrorMsg(msg);
@@ -124,7 +124,7 @@ export default function Contact() {
     return (
         <div
             id="contactContainer"
-            className="min-h-screen bg-cover bg-center bg-no-repeat py-8 px-4 flex items-center justify-center relative font-sans antialiased"
+            className="min-h-screen w-full max-w-full overflow-x-clip bg-cover bg-center bg-no-repeat py-6 sm:py-12 px-3 sm:px-6 flex items-center justify-center relative font-sans antialiased box-border"
             style={{ backgroundImage: `url(${loginBg})` }}
         >
             {/* Dark Overlay for Depth */}
@@ -134,42 +134,44 @@ export default function Contact() {
             <form
                 id="contactForm"
                 onSubmit={handleSendMessage}
-                className="relative z-10 w-full max-w-lg bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-5"
+                className="relative z-10 w-full max-w-lg bg-white/95 backdrop-blur-md p-4 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl border border-white/40 flex flex-col space-y-4 sm:space-y-5 box-border min-w-0"
             >
                 {/* Header Row */}
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 gap-2">
+                    <div className="min-w-0">
+                        <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight truncate">
                             Contact Us
                         </h1>
-                        <p className="text-xs text-slate-500 mt-0.5">We're here to answer any questions</p>
+                        <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 truncate">
+                            We're here to answer any questions
+                        </p>
                     </div>
 
                     <a
                         href="/about"
-                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition hover:bg-emerald-600 hover:text-white hover:border-emerald-600"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition hover:bg-emerald-600 hover:text-white shrink-0"
                     >
                         About Us ↗
                     </a>
                 </div>
 
                 {/* Direct Support Card */}
-                <div className="flex items-center gap-4 bg-slate-50/80 p-4 rounded-2xl border border-slate-200/60">
+                <div className="flex items-center gap-3 sm:gap-4 bg-slate-50/80 p-3 sm:p-4 rounded-2xl border border-slate-200/60 min-w-0">
                     <img
                         src={helperIcon}
                         alt="Support Assistant"
-                        className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500 shadow-sm shrink-0"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-emerald-500 shadow-sm shrink-0"
                     />
 
                     <div className="flex flex-col flex-1 min-w-0">
-                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
                             Direct Support Email
                         </span>
 
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <div className="flex items-center justify-between gap-1.5 mt-1 min-w-0">
                             <a
                                 href="mailto:auraavenue.travel@gmail.com"
-                                className="text-xs sm:text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline truncate"
+                                className="text-xs sm:text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline truncate min-w-0"
                             >
                                 auraavenue.travel@gmail.com
                             </a>
@@ -177,7 +179,7 @@ export default function Contact() {
                             <button
                                 type="button"
                                 onClick={handleCopyEmail}
-                                className="ml-auto bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold transition active:scale-95 shadow-sm"
+                                className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg px-2 py-1 text-[11px] sm:text-xs font-semibold transition active:scale-95 shadow-sm shrink-0"
                             >
                                 {copied ? "Copied! ✓" : "Copy"}
                             </button>
@@ -190,16 +192,16 @@ export default function Contact() {
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-slate-200" />
                     </div>
-                    <span className="relative px-3 bg-white text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                    <span className="relative px-3 bg-white text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-widest">
                         Or Send Message
                     </span>
                 </div>
 
                 {/* Form Inputs Group */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                     {/* Input 1: Topic Dropdown */}
                     <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
                             Inquiry Category
                         </label>
                         <select
@@ -217,7 +219,7 @@ export default function Contact() {
 
                     {/* Input 2: Email or Phone */}
                     <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
                             Email or Phone Number
                         </label>
                         <input
@@ -232,7 +234,7 @@ export default function Contact() {
 
                     {/* Input 3: Message Textarea */}
                     <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
                             Your Message
                         </label>
                         <textarea
@@ -240,7 +242,7 @@ export default function Contact() {
                             placeholder="Describe your inquiry or request in detail..."
                             value={formData.message}
                             onChange={handleChange}
-                            className={`${inputClass} h-28 resize-none`}
+                            className={`${inputClass} h-24 sm:h-28 resize-none`}
                         ></textarea>
                     </div>
                 </div>
@@ -249,7 +251,7 @@ export default function Contact() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3.5 text-sm font-bold shadow-md shadow-emerald-500/20 transition-all duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full mt-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3 sm:py-3.5 text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 transition-all duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {loading ? (
                         <>
@@ -262,29 +264,29 @@ export default function Contact() {
                 </button>
             </form>
 
-            {/* Success Popup Modal with Receipt Number */}
+            {/* Success Popup Modal */}
             {popupOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-                    <div className="w-full max-w-sm bg-white p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-100 text-center space-y-4">
-                        <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold shadow-sm">
+                    <div className="w-full max-w-sm bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-100 text-center space-y-4">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-xl sm:text-2xl font-bold shadow-sm">
                             ✓
                         </div>
 
                         <div>
-                            <h3 className="text-xl font-extrabold text-slate-900">
+                            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
                                 Query Received!
                             </h3>
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-slate-500 mt-0.5">
                                 Your ticket has been generated successfully.
                             </p>
                         </div>
 
                         {/* Receipt Box */}
-                        <div className="bg-slate-50 border border-dashed border-slate-300 p-3.5 rounded-xl text-left">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                        <div className="bg-slate-50 border border-dashed border-slate-300 p-3 rounded-xl text-left">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
                                 Receipt / Reference No.
                             </span>
-                            <span className="text-sm font-mono font-bold text-emerald-600 break-all select-all block">
+                            <span className="text-xs sm:text-sm font-mono font-bold text-emerald-600 break-all select-all block">
                                 {receiptNo}
                             </span>
                         </div>
@@ -296,7 +298,7 @@ export default function Contact() {
                         <button
                             type="button"
                             onClick={() => setPopupOpen(false)}
-                            className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-xl py-3 text-sm font-semibold transition active:scale-95"
+                            className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-xl py-2.5 sm:py-3 text-xs sm:text-sm font-semibold transition active:scale-95"
                         >
                             Close & Continue
                         </button>

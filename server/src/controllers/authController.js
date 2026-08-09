@@ -1349,7 +1349,7 @@ const updateProfile = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Profile updated successfully!"
+            message: "Profile updated successfully Please re-login !"
         });
 
     } catch (err) {
