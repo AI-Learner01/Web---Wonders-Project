@@ -76,9 +76,14 @@ export default function Navbar() {
 
   const checkCurrentUser = async () => {
     try {
+      const token = localStorage.getItem("token");
+
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-token`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -92,6 +97,7 @@ export default function Navbar() {
         });
         fetchNotifications(data.email);
       } else {
+        localStorage.removeItem("token");
         setCurrentUser(null);
         setNotifications([]);
       }
@@ -151,20 +157,17 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/logout`, {
+      await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/logout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
-      const data = await response.json();
-      if (data.success) {
-        setCurrentUser(null);
-        setProfileDropdownOpen(false);
-        setNotifDropdownOpen(false);
-        setMenuOpen(false);
-        setNotifications([]);
-        navigate("/login");
-      }
+
+      localStorage.removeItem("token");
+      setCurrentUser(null);
+      setNotifications([]);
+
+      window.location.href = "/login";
     } catch (error) {
       console.error("Error logging out:", error);
     }
@@ -381,16 +384,15 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Right Side Actions (Desktop) */}
-        <div className="hidden lg:flex items-center gap-3 shrink-0">{navRight()}</div>
+        {/* Right Side Actions & Mobile Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {navRight()}
 
-        {/* Mobile / Tablet Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 lg:hidden shrink-0">
-          {currentUser?.email && navRight()}
+          {/* Mobile Menu Toggle Button */}
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#167A44] text-white cursor-pointer hover:bg-[#125E36]"
+            className="inline-flex lg:hidden h-8 w-8 items-center justify-center rounded-full bg-[#167A44] text-white cursor-pointer hover:bg-[#125E36]"
             aria-label="Toggle Menu"
           >
             {menuOpen ? (
@@ -406,7 +408,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Navigation */}
       {menuOpen && (
         <nav className="flex flex-col gap-1 border-t border-gray-100 bg-gray-50 px-6 py-3 lg:hidden">
           {NAV_LINKS.map((link) => (
@@ -419,10 +421,6 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-
-          {!currentUser?.email && (
-            <div className="mt-2 pt-2 border-t border-gray-200">{navRight()}</div>
-          )}
         </nav>
       )}
     </header>
