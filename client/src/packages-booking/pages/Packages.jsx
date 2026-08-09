@@ -72,7 +72,7 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
     // B. When the Search Bar is submitted
     const handleSearchClick = () => {
         if (!searchInput.trim()) return;
-        
+
         // Apply the search term and clear dropdowns/categories
         setAppliedSearch(searchInput);
         setSelectedCategory(null);
@@ -83,7 +83,7 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
     // C. When a Dropdown Filter is changed
     const handleFilterChange = (filterName, value) => {
         setFilters((prev) => ({ ...prev, [filterName]: value }));
-        
+
         // Reset Category Buttons and Text Search
         setSelectedCategory(null);
         setAppliedSearch("");
@@ -211,7 +211,8 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
             </section>
 
             {/* Sticky Trip Finder Widget (Overlaps Hero) */}
-            <div className="sticky top-20 z-40 max-w-6xl mx-auto px-6 -mt-12 md:-mt-16">
+            {/* Trip Finder Widget (overlaps hero on desktop; static + no overlap on mobile) */}
+            <div className="relative md:sticky md:top-20 z-40 max-w-6xl mx-auto px-6 -mt-6 md:-mt-16">
                 <PackageFilter
                     searchInput={searchInput}
                     setSearchInput={setSearchInput}
@@ -231,11 +232,10 @@ function Packages({ packages, loading, error, onRetry, onBookNow }) {
                             whileTap={{ scale: 0.95 }}
                             key={item}
                             onClick={() => handleCategoryClick(item)}
-                            className={`cursor-pointer rounded-full px-6 py-2.5 font-medium shadow-sm transition-all duration-300 ${
-                                selectedCategory === item
+                            className={`cursor-pointer rounded-full px-6 py-2.5 font-medium shadow-sm transition-all duration-300 ${selectedCategory === item
                                     ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md border-transparent"
                                     : "bg-white border border-gray-200 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
-                            }`}
+                                }`}
                         >
                             {item}
                         </motion.button>
