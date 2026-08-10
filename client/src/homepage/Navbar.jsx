@@ -22,11 +22,12 @@ export default function Navbar() {
 
   const profileDropdownRef = useRef(null);
   const notifDropdownRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   const fetchNotifications = async (email) => {
     if (!email) return;
     try {
-      const response = await fetch("http://localhost:5000/notifications/unread", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/notifications/unread`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -45,7 +46,7 @@ export default function Navbar() {
     if (!currentUser?.email || notifications.length === 0) return;
     setNotifications([]);
     try {
-      await fetch("http://localhost:5000/notifications/mark-read", {
+      await fetch(`${import.meta.env.VITE_SERVER_URL}/notifications/mark-read`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -58,8 +59,16 @@ export default function Navbar() {
 
   const handleNotificationClick = (link) => {
     setNotifDropdownOpen(false);
-    if (link && link.trim() !== "") {
-      navigate(link);
+    setMenuOpen(false);
+
+    if (typeof link === "string" && link.trim().length > 0) {
+      const targetLink = link.trim();
+
+      if (targetLink.startsWith("http://") || targetLink.startsWith("https://")) {
+        window.location.href = targetLink;
+      } else {
+        navigate(targetLink);
+      }
     } else {
       navigate("/profile");
     }
@@ -67,9 +76,14 @@ export default function Navbar() {
 
   const checkCurrentUser = async () => {
     try {
-      const response = await fetch("http://localhost:5000/auth/verify-token", {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-token`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -83,6 +97,7 @@ export default function Navbar() {
         });
         fetchNotifications(data.email);
       } else {
+        localStorage.removeItem("token");
         setCurrentUser(null);
         setNotifications([]);
       }
@@ -95,6 +110,9 @@ export default function Navbar() {
 
   useEffect(() => {
     checkCurrentUser();
+    setMenuOpen(false);
+    setProfileDropdownOpen(false);
+    setNotifDropdownOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -111,9 +129,20 @@ export default function Navbar() {
       ) {
         setNotifDropdownOpen(false);
       }
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target)
+      ) {
+        setMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
   }, []);
 
   const getInitial = () => {
@@ -128,19 +157,17 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:5000/auth/logout", {
+      await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/logout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
-      const data = await response.json();
-      if (data.success) {
-        setCurrentUser(null);
-        setProfileDropdownOpen(false);
-        setNotifDropdownOpen(false);
-        setNotifications([]);
-        navigate("/login");
-      }
+
+      localStorage.removeItem("token");
+      setCurrentUser(null);
+      setNotifications([]);
+
+      window.location.href = "/login";
     } catch (error) {
       console.error("Error logging out:", error);
     }
@@ -149,7 +176,7 @@ export default function Navbar() {
   const navRight = () => {
     if (currentUser?.email) {
       return (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* NOTIFICATION BELL */}
           <div className="relative" ref={notifDropdownRef}>
             <button
@@ -157,24 +184,23 @@ export default function Navbar() {
                 setNotifDropdownOpen((prev) => !prev);
                 setProfileDropdownOpen(false);
               }}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-xs transition hover:border-emerald-500 hover:text-[#167A44] focus:outline-none"
+              className="relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-xs transition hover:border-emerald-500 hover:text-[#167A44] focus:outline-none cursor-pointer"
               aria-label="Notifications"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
 
               {notifications.length > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs ring-2 ring-white">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-rose-500 text-[9px] sm:text-[10px] font-bold text-white shadow-xs ring-2 ring-white">
                   {notifications.length}
                 </span>
               )}
             </button>
 
-            {/* Dropdown Menu */}
+            {/* Notification Dropdown */}
             {notifDropdownOpen && (
-              <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl border border-gray-100 bg-white p-3 shadow-xl z-50">
-                {/* Header Section */}
+              <div className="fixed left-3 right-3 top-[60px] sm:absolute sm:left-auto sm:top-auto sm:right-0 sm:mt-3 w-auto sm:w-96 rounded-2xl border border-gray-100 bg-white p-3 shadow-xl z-50">
                 <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-bold text-gray-800">Notifications</h3>
@@ -188,15 +214,15 @@ export default function Navbar() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => fetchNotifications(currentUser?.email)}
-                      className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg hover:bg-gray-100 transition"
+                      className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg hover:bg-gray-100 transition cursor-pointer"
                     >
-                      🔄 Refresh
+                      🔄
                     </button>
 
                     {notifications.length > 0 && (
                       <button
                         onClick={handleMarkAllAsRead}
-                        className="text-xs font-bold text-[#167A44] bg-emerald-50 px-2.5 py-1 rounded-lg hover:bg-emerald-100 transition"
+                        className="text-xs font-bold text-[#167A44] bg-emerald-50 px-2.5 py-1 rounded-lg hover:bg-emerald-100 transition cursor-pointer"
                       >
                         Clear
                       </button>
@@ -204,14 +230,13 @@ export default function Navbar() {
 
                     <button
                       onClick={() => setNotifDropdownOpen(false)}
-                      className="text-gray-400 hover:text-gray-600 text-sm font-bold p-1 rounded-md"
+                      className="text-gray-400 hover:text-gray-600 text-sm font-bold p-1 rounded-md cursor-pointer"
                     >
                       ✕
                     </button>
                   </div>
                 </div>
 
-                {/* Notification List */}
                 <div className="max-h-64 overflow-y-auto divide-y divide-gray-50 py-1">
                   {notifications.length === 0 ? (
                     <div className="py-8 text-center text-xs text-gray-400">
@@ -234,14 +259,14 @@ export default function Navbar() {
                   )}
                 </div>
 
-                {/* Footer Action */}
                 <div className="border-t border-gray-100 pt-2 text-center">
                   <button
                     onClick={() => {
                       setNotifDropdownOpen(false);
+                      setMenuOpen(false);
                       navigate("/profile");
                     }}
-                    className="w-full text-center py-1.5 text-xs font-bold text-[#167A44] hover:bg-emerald-50 rounded-lg transition"
+                    className="w-full text-center py-1.5 text-xs font-bold text-[#167A44] hover:bg-emerald-50 rounded-lg transition cursor-pointer"
                   >
                     View All Notifications →
                   </button>
@@ -257,26 +282,38 @@ export default function Navbar() {
                 setProfileDropdownOpen((prev) => !prev);
                 setNotifDropdownOpen(false);
               }}
-              className="flex items-center gap-2 rounded-full border border-gray-200 bg-white p-1 pr-3 shadow-2xs hover:border-gray-300 focus:outline-none"
+              className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white p-0.5 pr-1.5 sm:p-1 sm:pr-3 shadow-2xs hover:border-gray-300 focus:outline-none cursor-pointer"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#167A44] text-xs font-bold text-white">
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-[#167A44] text-xs font-bold text-white">
                 {getInitial()}
               </div>
-              <span className="hidden max-w-[100px] truncate text-xs font-bold text-gray-700 sm:block">
+              <span className="hidden max-w-[90px] truncate text-xs font-bold text-gray-700 lg:block">
                 {currentUser.name ? currentUser.name.split(" ")[0] : "User"}
               </span>
             </button>
 
+            {/* Profile Dropdown */}
             {profileDropdownOpen && (
-              <div className="absolute right-0 mt-3 w-52 rounded-2xl border border-gray-100 bg-white p-2 shadow-xl z-50">
-                <div className="border-b border-gray-100 px-3 py-2">
-                  <p className="text-xs font-bold text-gray-900 truncate">{currentUser.name || "User"}</p>
-                  <p className="text-[11px] text-gray-400 truncate">{currentUser.email}</p>
+              <div className="fixed left-3 right-3 top-[60px] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-3 w-auto sm:w-60 rounded-2xl border border-gray-100 bg-white p-2 shadow-xl z-50">
+                <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
+                  <div className="truncate">
+                    <p className="text-xs font-bold text-gray-900 truncate">{currentUser.name || "User"}</p>
+                    <p className="text-[11px] text-gray-400 truncate">{currentUser.email}</p>
+                  </div>
+                  <button
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="sm:hidden text-gray-400 hover:text-gray-600 text-xs font-bold p-1 cursor-pointer"
+                  >
+                    ✕
+                  </button>
                 </div>
                 <div className="py-1">
                   <Link
                     to="/profile"
-                    onClick={() => setProfileDropdownOpen(false)}
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      setMenuOpen(false);
+                    }}
                     className="block px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-[#167A44] rounded-xl"
                   >
                     👤 My Profile
@@ -284,7 +321,10 @@ export default function Navbar() {
                   {currentUser.role === "admin" && (
                     <Link
                       to="/admin"
-                      onClick={() => setProfileDropdownOpen(false)}
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        setMenuOpen(false);
+                      }}
                       className="block px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-[#167A44] rounded-xl"
                     >
                       ⚙️ Admin Panel
@@ -293,8 +333,11 @@ export default function Navbar() {
                 </div>
                 <div className="border-t border-gray-100 pt-1">
                   <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl"
+                    onClick={() => {
+                      handleLogout();
+                      setMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl cursor-pointer"
                   >
                     🚪 Logout
                   </button>
@@ -307,11 +350,11 @@ export default function Navbar() {
     }
 
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <Link to="/login" className="text-xs font-semibold text-gray-700 hover:text-[#167A44]">
           Log in
         </Link>
-        <Link to="/signup" className="rounded-full bg-[#167A44] px-5 py-2 text-xs font-bold text-white hover:bg-[#125E36]">
+        <Link to="/signup" className="rounded-full bg-[#167A44] px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-white hover:bg-[#125E36]">
           Sign up
         </Link>
       </div>
@@ -319,18 +362,20 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link to="/" className="text-xl font-extrabold text-[#14201A]">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white w-full max-w-full overflow-x-clip" ref={mobileMenuRef}>
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-6 py-3">
+        {/* Logo */}
+        <Link to="/" className="text-base sm:text-xl font-extrabold text-[#14201A] shrink-0">
           AuraAvenue
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        {/* Desktop Links */}
+        <nav className="hidden items-center gap-4 lg:gap-8 lg:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
               to={link.to}
-              className={`text-sm font-medium transition-colors hover:text-[#167A44] ${
+              className={`text-sm font-medium transition-colors hover:text-[#167A44] whitespace-nowrap ${
                 pathname === link.to ? "text-[#167A44] font-bold" : "text-gray-600"
               }`}
             >
@@ -339,28 +384,33 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">{navRight()}</div>
+        {/* Right Side Actions & Mobile Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {navRight()}
 
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          className="inline-flex items-center gap-2 rounded-full bg-[#167A44] px-4 py-2 text-sm font-semibold text-white md:hidden"
-        >
-          {menuOpen ? (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          )}
-          Menu
-        </button>
+          {/* Mobile Menu Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            className="inline-flex lg:hidden h-8 w-8 items-center justify-center rounded-full bg-[#167A44] text-white cursor-pointer hover:bg-[#125E36]"
+            aria-label="Toggle Menu"
+          >
+            {menuOpen ? (
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
+      {/* Mobile Drawer Navigation */}
       {menuOpen && (
-        <nav className="flex flex-col gap-1 border-t border-gray-100 bg-gray-50 px-6 py-3 md:hidden">
+        <nav className="flex flex-col gap-1 border-t border-gray-100 bg-gray-50 px-6 py-3 lg:hidden">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
@@ -371,7 +421,6 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="mt-2 pt-2 border-t border-gray-200">{navRight()}</div>
         </nav>
       )}
     </header>

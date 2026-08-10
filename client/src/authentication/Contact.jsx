@@ -6,7 +6,6 @@ import React, { useState } from 'react';
  * @returns JSX Element representing the contact form and its functionalities
  */
 
-
 // 📥 Reusable Error Modal Import
 import ErrorModal from '../ReusableCards/ErrorModal';
 
@@ -29,6 +28,9 @@ function Contact() {
     const [errorMsg, setErrorMsg] = useState('');
     const [isErrorOpen, setIsErrorOpen] = useState(false);
 
+    // 📋 Copy Button State
+    const [copied, setCopied] = useState(false);
+
     const inputClass =
         "w-full px-4 py-3.5 rounded-[10px] border border-[#d9d9d9] bg-[#fafafa] text-[15px] transition duration-300 focus:outline-none focus:border-[#16c784] focus:bg-white focus:shadow-[0_0_0_4px_rgba(22,199,132,0.12)]";
 
@@ -49,6 +51,24 @@ function Contact() {
             emailOrPhone: '',
             message: ''
         });
+    };
+
+    // Copy Handler Function
+    const handleCopyEmail = () => {
+        const email = "auraavenue.travel@gmail.com";
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(email);
+        } else {
+            // Fallback for non-HTTPS / unsupported environments
+            const textArea = document.createElement("textarea");
+            textArea.value = email;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+        }
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     // 2. Submit Handler
@@ -150,7 +170,7 @@ function Contact() {
 
                         <div className="flex items-center gap-[10px] flex-wrap max-[480px]:flex-col max-[480px]:w-full">
                             <a
-                                href="mailto:travelmate.supports@gmail.com"
+                                href="mailto:auraavenue.travel@gmail.com"
                                 className="text-[#007bff] no-underline font-medium break-words hover:underline max-[480px]:text-sm max-[480px]:text-center"
                             >
                                 auraavenue.travel@gmail.com
@@ -158,13 +178,14 @@ function Contact() {
 
                             <button
                                 type="button"
-                                onClick={() => {
-                                    navigator.clipboard.writeText("auraavenue.travel@gmail.com");
-                                    // Error card / simple message trigger kar sakte hain agar chahein
-                                }}
-                                className="bg-[#f3f4f6] text-[#333] border border-[#d1d5db] rounded-lg px-[14px] py-[7px] cursor-pointer text-sm font-semibold transition duration-[250ms] hover:bg-[#e5e7eb] hover:border-[#14c38e] hover:text-[#14c38e] max-[480px]:w-full max-[480px]:max-w-[180px]"
+                                onClick={handleCopyEmail}
+                                className={`border rounded-lg px-[14px] py-[7px] cursor-pointer text-sm font-semibold transition duration-[250ms] max-[480px]:w-full max-[480px]:max-w-[180px] ${
+                                    copied
+                                        ? "bg-[#eef8eb] text-[#14c38e] border-[#14c38e]"
+                                        : "bg-[#f3f4f6] text-[#333] border-[#d1d5db] hover:bg-[#e5e7eb] hover:border-[#14c38e] hover:text-[#14c38e]"
+                                }`}
                             >
-                                Copy
+                                {copied ? "Copied! ✓" : "Copy"}
                             </button>
                         </div>
                     </div>

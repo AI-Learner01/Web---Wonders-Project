@@ -83,17 +83,15 @@ export default function ItineraryBuilder() {
   return (
     <div className="min-h-screen bg-[#F5F4EF] print:bg-white text-[#14201A] pb-20 print:pb-0">
 
-      {/* 🌟 HERO SECTION 🌟 */}
+      {/* HERO SECTION */}
       <section
         className="relative pt-24 pb-20 px-6 lg:px-10 print:pt-4 print:bg-white bg-cover bg-center overflow-hidden"
         style={{ backgroundImage: `url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80')` }}
       >
-        {/* Replaced green tint with a clean, neutral dark overlay for text readability */}
         <div className="absolute inset-0 bg-black/40 print:hidden"></div>
 
         <div className="relative max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
 
-          {/* Title Area with darker glassmorphism for better contrast */}
           <div className="flex-1 bg-black/20 backdrop-blur-md border border-white/20 p-6 sm:p-8 rounded-[2rem] shadow-xl print:shadow-none print:bg-transparent print:border-none print:p-0">
             <span className="inline-flex items-center gap-2 rounded-full bg-[#3DD68C] px-4 py-2 text-xs font-bold uppercase tracking-[0.15em] text-[#0F1D16] mb-4 print:hidden shadow-sm">
               Custom Itinerary Builder
@@ -110,7 +108,6 @@ export default function ItineraryBuilder() {
             </p>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-wrap gap-4 print:hidden">
             <button
               onClick={handleDownloadPDF}
@@ -162,12 +159,12 @@ export default function ItineraryBuilder() {
               {/* Activities List */}
               <div className="space-y-4 pl-2 sm:pl-6 border-l-[3px] border-[#E5E7E0] ml-4 sm:ml-6 print:border-gray-300">
                 {day.activities.map((activity) => (
-                  <div key={activity.id} className="relative bg-[#F5F4EF] rounded-2xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center group border border-transparent hover:border-[#3DD68C]/30 transition-all print:bg-white print:border-none print:p-2">
+                  <div key={activity.id} className="relative bg-[#F5F4EF] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4 group border border-transparent hover:border-[#3DD68C]/30 transition-all print:bg-white print:border-none print:p-2">
 
                     {/* Timeline Dot */}
                     <div className="absolute -left-[27px] sm:-left-[43.5px] top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-[3px] border-[#167A44] rounded-full print:border-gray-400"></div>
 
-                    {/* Activity Time & Type */}
+                    {/* Type & Time */}
                     <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 print:w-auto">
                       <select
                         value={activity.type}
@@ -189,9 +186,11 @@ export default function ItineraryBuilder() {
                       </div>
                     </div>
 
-                    {/* Activity Title */}
-                    <div className="flex-1 flex items-center gap-3">
-                      <div className="bg-white p-2.5 rounded-full shadow-sm border border-[#E5E7E0] print:hidden">
+                    {/* Activity Title + Delete (always in one row, so the delete
+                        button is vertically centered against the title text on
+                        every breakpoint, instead of against the whole stacked card) */}
+                    <div className="flex-1 flex items-center gap-3 w-full">
+                      <div className="bg-white p-2.5 rounded-full shadow-sm border border-[#E5E7E0] shrink-0 print:hidden">
                         {getActivityIcon(activity.type)}
                       </div>
                       <input
@@ -201,15 +200,15 @@ export default function ItineraryBuilder() {
                         className="w-full bg-transparent font-bold text-[#14201A] outline-none border-b border-transparent focus:border-[#3DD68C] print:border-none"
                         placeholder="What are you doing?"
                       />
+                      <button
+                        onClick={() => deleteActivity(day.id, activity.id)}
+                        className="text-red-400 hover:text-red-600 shrink-0 p-1 sm:p-2 transition-colors print:hidden"
+                        title="Delete Activity"
+                      >
+                        <FaTrash />
+                      </button>
                     </div>
 
-                    {/* Delete Activity */}
-                    <button
-                      onClick={() => deleteActivity(day.id, activity.id)}
-                      className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity absolute right-4 top-4 sm:relative sm:top-0 sm:right-0 print:hidden"
-                    >
-                      <FaTrash />
-                    </button>
                   </div>
                 ))}
 

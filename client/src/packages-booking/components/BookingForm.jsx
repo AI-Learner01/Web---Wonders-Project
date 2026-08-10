@@ -404,95 +404,57 @@ placeholder:text-gray-500
             </div>
 
             <div className="bg-white/50 backdrop-blur-xl border border-white/30 rounded-[28px] shadow-xl p-8 mt-8">
-
                 <h2 className="text-2xl font-semibold text-emerald-700 mb-6">
-
                     Additional Services
-
                 </h2>
-
                 <div className="space-y-4">
 
+                    {/* Airport Pickup */}
                     <div
-
                         onClick={() => toggleService("Airport Pickup")}
-
-                        className={`bg-white/40 backdrop-blur-md border border-white/30 rounded-2xl shadow-sm p-4 flex justify-between items-center cursor-pointer transition
-
-${bookingData.services.includes("Airport Pickup")
-
-                                ? "border-emerald-500 bg-emerald-50 shadow-lg"
-
-                                : "hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
+                        className={`backdrop-blur-md border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition ${bookingData.services.includes("Airport Pickup")
+                                ? "border-emerald-500 bg-emerald-50 shadow-md"
+                                : "bg-white/40 border-white/30 shadow-sm hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
                             }`}
-
                     >
                         <div className="flex items-center gap-3">
-
                             <FaPlaneArrival className="text-emerald-600" />
-
                             Airport Pickup
-
                         </div>
-
                         <span>Included</span>
-
                     </div>
 
+                    {/* Travel Insurance */}
                     <div
-
                         onClick={() => toggleService("Travel Insurance")}
-
-                        className={`bg-white/40 backdrop-blur-md border border-white/30 rounded-2xl shadow-sm p-4 flex justify-between items-center cursor-pointer transition
-
-${bookingData.services.includes("Travel Insurance")
-
-                                ? "border-emerald-500 bg-emerald-50 shadow-lg"
-
-                                : "hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
+                        className={`backdrop-blur-md border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition ${bookingData.services.includes("Travel Insurance")
+                                ? "border-emerald-500 bg-emerald-50 shadow-md"
+                                : "bg-white/40 border-white/30 shadow-sm hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
                             }`}
-
                     >
                         <div className="flex items-center gap-3">
-
                             <FaShieldAlt className="text-emerald-600" />
-
                             Travel Insurance
-
                         </div>
-
                         <span>₹999</span>
-
                     </div>
 
+                    {/* Guided City Tour */}
                     <div
-
                         onClick={() => toggleService("Guided City Tour")}
-
-                        className={`bg-white/40 backdrop-blur-md border border-white/30 rounded-2xl shadow-sm p-4 flex justify-between items-center cursor-pointer transition
-
-${bookingData.services.includes("Guided City Tour")
-
-                                ? "border-emerald-500 bg-emerald-50 shadow-lg"
-
-                                : "hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
+                        className={`backdrop-blur-md border rounded-2xl p-4 flex justify-between items-center cursor-pointer transition ${bookingData.services.includes("Guided City Tour")
+                                ? "border-emerald-500 bg-emerald-50 shadow-md"
+                                : "bg-white/40 border-white/30 shadow-sm hover:border-emerald-400 hover:bg-white/70 hover:shadow-lg"
                             }`}
-
                     >
                         <div className="flex items-center gap-3">
-
                             <FaMapMarkedAlt className="text-emerald-600" />
-
                             Guided City Tour
-
                         </div>
-
                         <span>₹1499</span>
-
                     </div>
 
                 </div>
-
             </div>
 
             <div className="bg-white/50 backdrop-blur-xl border border-white/30 rounded-[28px] shadow-xl p-8 mt-8">

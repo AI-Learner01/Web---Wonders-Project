@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 import PackageSection from "../components/PackageSection";
 import PackageMap from "../components/PackageMap";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const createSlug = (title) => {
     if (!title) return "";
@@ -48,6 +48,16 @@ const ReviewSection = ({ userData, packageId, initialReviews = [] }) => {
     const [newReviewText, setNewReviewText] = useState("");
     const [selectedTags, setSelectedTags] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // --- RESET / SYNC REVIEWS WHEN PACKAGE CHANGES ---
+    useEffect(() => {
+        setReviews(initialReviews.length > 0 ? initialReviews : fallbackReviews);
+        setShowForm(false);
+        setNewReviewText("");
+        setSelectedTags([]);
+        setActiveTag("All");
+        setActiveSort("Most relevant");
+    }, [packageId, initialReviews]);
 
     // --- USER SETUP ---
     const userName = userData?.name || userData?.fullName || "User";
@@ -100,7 +110,6 @@ const ReviewSection = ({ userData, packageId, initialReviews = [] }) => {
     const handleWriteReviewClick = () => {
         if (!userData) {
             alert("Please sign in to your account first to write a review.");
-            // Optional: navigate('/login') here if you have a routing setup for it
             return;
         }
         setShowForm(!showForm);
@@ -123,7 +132,7 @@ const ReviewSection = ({ userData, packageId, initialReviews = [] }) => {
 
         try {
             // Send to backend
-            const res = await fetch(`http://localhost:5000/api/packages/${packageId}/reviews`, {
+            const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/packages/${packageId}/reviews`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newRev)
@@ -362,7 +371,6 @@ const ReviewSection = ({ userData, packageId, initialReviews = [] }) => {
 };
 
 // --- MAIN COMPONENT ---
-// NOTE: Make sure to pass `userData` to PackageDetails in your Router/App setup!
 function PackageDetails({ packages, onBookNow, onViewDetails, userData }) {
     const { packageId } = useParams();
     const navigate = useNavigate();
@@ -518,6 +526,7 @@ function PackageDetails({ packages, onBookNow, onViewDetails, userData }) {
 
                 {/* ROW 3: REVIEWS SECTION */}
                 <ReviewSection 
+                     key={selectedPackage._id}
                      userData={userData} 
                      packageId={selectedPackage._id} 
                      initialReviews={selectedPackage.reviews || []} 
