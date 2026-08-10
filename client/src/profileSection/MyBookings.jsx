@@ -9,7 +9,9 @@ const MyBookings = ({ userData }) => {
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/bookings`);
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/bookings`,{
+                    headers: { "ngrok-skip-browser-warning": "true" }
+                });
                 const data = await res.json();
                 if (data.success) {
                     // Filter bookings for the currently logged-in user

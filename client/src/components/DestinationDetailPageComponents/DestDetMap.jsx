@@ -32,7 +32,7 @@ const DestDetMap = ({ locationName, caption }) => {
 
             try {
                 // Using Photon by Komoot (Free, No API Key)
-                const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(locationName)}&limit=1`)
+                const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(locationName)}&limit=1`,{ headers: { "ngrok-skip-browser-warning": "true" } });
                 const data = await res.json();
 
 

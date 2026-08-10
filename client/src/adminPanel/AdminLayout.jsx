@@ -56,6 +56,7 @@ function AdminLayout() {
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-token`, {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
       });
       const data = await response.json();
       if (data.success) {
@@ -70,6 +71,7 @@ function AdminLayout() {
     try {
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/pending-queries`, {
         credentials: "include",
+        headers: { "ngrok-skip-browser-warning": "true" },
       });
       const data = await response.json();
       if (data.success) {
@@ -87,6 +89,7 @@ function AdminLayout() {
     try {
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/resolved-queries`, {
         credentials: "include",
+        headers: { "ngrok-skip-browser-warning": "true" }
       });
       const data = await response.json();
       if (data.success) {
@@ -104,6 +107,7 @@ function AdminLayout() {
     try {
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/admin-otp`, {
         credentials: "include",
+        headers: { "ngrok-skip-browser-warning": "true" }
       });
       const data = await response.json();
       if (data.success) {
@@ -121,6 +125,7 @@ function AdminLayout() {
     try {
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/get-all-packages`, {
         credentials: "include",
+        headers: { "ngrok-skip-browser-warning": "true" }
       });
       const data = await response.json();
       if (data.success) {

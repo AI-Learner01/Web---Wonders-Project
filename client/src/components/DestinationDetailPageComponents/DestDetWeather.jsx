@@ -29,7 +29,8 @@ const DestDetWeather = ({ locationName }) => {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/weather?name=${encodeURIComponent(locationName)}`);
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/weather?name=${encodeURIComponent(locationName)}`
+                , { headers: { "ngrok-skip-browser-warning": "true" } });
                 const result = await res.json();
 
                 if (result.success) {
@@ -87,7 +88,7 @@ const DestDetWeather = ({ locationName }) => {
     return (
         // 1. OUTER CANVAS: Very light slate background, padded to show orbs outside the card
         <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-400/60 shadow-xl my-10 p-6 sm:p-12 lg:p-16 isolate">
-            
+
             {/* 2. THE ORBS: Darker colors (Indigo, Emerald, Purple) blurred softly into the light background */}
             <div className="absolute top-0 left-0 w-72 h-72 bg-indigo-800 rounded-full mix-blend-multiply filter blur-[50px] opacity-90 -translate-x-10 -translate-y-10"></div>
             <div className="absolute bottom-0 right-0 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-[50px] opacity-70 translate-x-10 translate-y-10"></div>
@@ -95,10 +96,10 @@ const DestDetWeather = ({ locationName }) => {
 
             {/* 3. THE TRUE LIGHT GLASS CARD: Translucent white, strong backdrop blur, crisp dark text */}
             <section className="relative z-10 p-6 sm:p-10 bg-white/60 backdrop-blur-2xl border border-white/70 rounded-3xl text-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                
+
                 {/* Header Section */}
                 <div className="flex flex-col lg:flex-row items-center justify-between gap-8 pb-8 border-b border-slate-200/50">
-                    
+
                     {/* Left: Location & Pill */}
                     <div className="text-center lg:text-left">
                         <span className="inline-block uppercase text-[10px] sm:text-xs tracking-widest font-bold bg-white/60 backdrop-blur-md border border-white px-4 py-1.5 rounded-full text-slate-600 shadow-sm">
@@ -149,11 +150,10 @@ const DestDetWeather = ({ locationName }) => {
                                 <button
                                     key={idx}
                                     onClick={() => setSelectedDayIndex(idx)}
-                                    className={`flex flex-col items-center p-4 rounded-2xl transition-all duration-300 cursor-pointer text-center backdrop-blur-md focus:outline-none border ${
-                                        isSelected
+                                    className={`flex flex-col items-center p-4 rounded-2xl transition-all duration-300 cursor-pointer text-center backdrop-blur-md focus:outline-none border ${isSelected
                                             ? "bg-white/80 border-white scale-105 shadow-md"
                                             : "bg-white/30 border-white/50 hover:bg-white/50 hover:border-white/80 hover:-translate-y-1 hover:shadow-sm"
-                                    }`}
+                                        }`}
                                 >
                                     <span className={`text-xs font-bold uppercase tracking-wider ${isSelected ? "text-slate-800" : "text-slate-500"}`}>
                                         {idx === 0 ? "Today" : dayName}

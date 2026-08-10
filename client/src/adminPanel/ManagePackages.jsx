@@ -118,6 +118,7 @@ const ManagePackages = ({ packages, onRefresh, triggerSuccess, triggerError }) =
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/delete-package/${deletePackageId}`, {
         method: "DELETE",
         credentials: "include",
+        headers: { "ngrok-skip-browser-warning": "true" }
       });
 
       const data = await response.json();

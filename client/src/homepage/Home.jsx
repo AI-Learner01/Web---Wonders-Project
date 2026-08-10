@@ -277,7 +277,8 @@ function DestinationCard({ dest, weatherEntry, isSaved, onToggleSave, compact = 
         if (isPlaceholder) {
             const fetchRealImage = async () => {
                 try {
-                    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/card-info?name=${encodeURIComponent(dest.name)}`);
+                    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/card-info?name=${encodeURIComponent(dest.name)}`
+                    , { headers: { "ngrok-skip-browser-warning": "true" } });
                     const apiData = await res.json();
 
                     if (apiData.success && apiData.image) {

@@ -30,7 +30,9 @@ const DestinationCard = ({
                     const fetchWikiImage = async () => {
                         try {
                             // Hit the CARD-ONLY endpoint (No Unsplash rate limits!)
-                            const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/card-info?name=${name}`);
+                            const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/card-info?name=${name}`
+                            , { headers: { "ngrok-skip-browser-warning": "true" } });
+                            
                             const apiData = await res.json();
                             
                             if (apiData.success && apiData.image) {

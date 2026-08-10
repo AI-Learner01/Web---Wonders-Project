@@ -62,6 +62,7 @@ const ProfileLayout = () => {
       const authResponse = await fetch(API_ROUTES.VERIFY_TOKEN, {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
       });
       const authData = await authResponse.json();
 

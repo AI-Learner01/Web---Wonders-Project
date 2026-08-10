@@ -12,7 +12,8 @@ const SavedItineraries = ({ userData, refreshProfile }) => {
         try {
             const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/delete-itinerary/${id}`, {
                 method: "DELETE",
-                credentials: "include"
+                credentials: "include",
+                headers: { "ngrok-skip-browser-warning": "true" }
             });
             const data = await res.json();
             if (data.success) {

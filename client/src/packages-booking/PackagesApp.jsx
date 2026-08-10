@@ -58,6 +58,7 @@ function PackagesWrapper() {
                 const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-token`, {
                     method: "POST",
                     credentials: "include",
+                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 });
                 const data = await res.json();
                 if (data.success) {
