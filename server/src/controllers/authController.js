@@ -535,34 +535,22 @@ const verifyToken = async (req, res) => {
     });
 };
 
+
 /**
  * 11. Logout Controller
  */
 const logout = (req, res) => {
-    try {
-        // Token cookie ko empty string aur duration = 0 karke expire kar rahe hain
-        res.cookie("token", "", {
-            httpOnly: true,
-            secure: true,          // Cross-origin / Vercel deployment ke liye
-            sameSite: "none",      // Cross-site cookie
-            path: "/",
-            maxAge: 0,             // 👈 Duration 0 ms (Browser instantly cookie delete kar dega)
-            expires: new Date(0)   // 👈 Past date: 1 Jan 1970
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: "Session expired and logged out successfully"
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Logout failed",
-            error: error.message
-        });
-    }
+    // The options here MUST match the options in sendAuthCookie
+    res.cookie("token", "", {
+        httpOnly: true,
+        secure: true,       // Matches how it was set
+        sameSite: "none",   // Matches how it was set
+        maxAge: 0,          // Kills the cookie instantly
+        expires: new Date(0) // Sets expiration to the past (Jan 1, 1970)
+    });
+    
+    return res.status(200).json({ success: true, message: "Logout successful" });
 };
-
 
 /**
  * 12. Update Profile Controller
