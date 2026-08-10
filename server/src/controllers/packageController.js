@@ -1,5 +1,5 @@
 const { collectionPackages } = require("../config/db");
-const { fetchImageFromPexels } = require("../services/pexelsService");
+const { fetchImageFromPexels } = require("../services/PexelsService");
 const { fetchAttractionsFromGeoapify } = require("../services/geoapifyService");
 const { ObjectId } = require("mongodb");
 

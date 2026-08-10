@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { connectDB, collectionPackages } = require("../config/db");
-const { fetchImageFromPexels } = require("../services/pexelsService");
+const { fetchImageFromPexels } = require("../services/PexelsService");
 
 async function updateAllPackageImages() {
     try {
