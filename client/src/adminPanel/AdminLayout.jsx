@@ -53,7 +53,7 @@ function AdminLayout() {
 
   async function checkCurrentUser() {
     try {
-      const response = await fetch("http://localhost:5000/auth/verify-token", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-token`, {
         method: "POST",
         credentials: "include",
       });
@@ -68,7 +68,7 @@ function AdminLayout() {
 
   async function fetchPendingQueries() {
     try {
-      const response = await fetch("http://localhost:5000/admin/pending-queries", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/pending-queries`, {
         credentials: "include",
       });
       const data = await response.json();
@@ -85,7 +85,7 @@ function AdminLayout() {
 
   async function fetchResolvedQueries() {
     try {
-      const response = await fetch("http://localhost:5000/admin/resolved-queries", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/resolved-queries`, {
         credentials: "include",
       });
       const data = await response.json();
@@ -102,7 +102,7 @@ function AdminLayout() {
 
   async function fetchAdminOtpLogs() {
     try {
-      const response = await fetch("http://localhost:5000/admin/admin-otp", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/admin-otp`, {
         credentials: "include",
       });
       const data = await response.json();
@@ -119,7 +119,7 @@ function AdminLayout() {
 
   async function fetchPackages() {
     try {
-      const response = await fetch("http://localhost:5000/admin/get-all-packages", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/get-all-packages`, {
         credentials: "include",
       });
       const data = await response.json();
@@ -136,7 +136,7 @@ function AdminLayout() {
 
   async function handleQueryResolved(queryId, message) {
     try {
-      const response = await fetch("http://localhost:5000/admin/resolve-query", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/resolve-query`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

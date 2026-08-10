@@ -35,8 +35,8 @@ function SummaryCard({ selectedPackage, bookingData }) {
             // Generate a random booking ID for the receipt
             const generatedBookingId = `WW-${Math.floor(100000 + Math.random() * 900000)}`;
 
-            const res = await fetch("http://localhost:5000/api/bookings/send-email", {
-                method: "POST",
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/bookings/send-email`, {
+                    method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     email: bookingData.email,

@@ -10,7 +10,7 @@ const SavedItineraries = ({ userData, refreshProfile }) => {
 
     const handleDelete = async (id) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/auth/delete-itinerary/${id}`, {
+            const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/delete-itinerary/${id}`, {
                 method: "DELETE",
                 credentials: "include"
             });

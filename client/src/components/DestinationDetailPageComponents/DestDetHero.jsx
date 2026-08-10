@@ -26,7 +26,7 @@ const DestDetHero = ({
     // Fetch live weather widget data for Hero
     useEffect(() => {
         if (!name) return;
-        fetch(`http://localhost:5000/api/destinations/weather?name=${encodeURIComponent(name)}`)
+        fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/weather?name=${encodeURIComponent(name)}`)
             .then((res) => res.json())
             .then((data) => {
                 if (data.success) setWeather(data.data.current);

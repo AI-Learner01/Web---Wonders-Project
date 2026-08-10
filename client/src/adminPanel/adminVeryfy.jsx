@@ -19,7 +19,7 @@ export default function AdminRoute({ children }) {
 
     async function checkAdmin() {
         try {
-            const response = await fetch("http://localhost:5000/auth/verify-token", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-token`, {
                 method: "POST",
                 credentials: "include",
             });

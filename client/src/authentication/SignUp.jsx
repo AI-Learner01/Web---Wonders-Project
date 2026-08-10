@@ -57,7 +57,7 @@ function SignUp() {
 
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
-            const response = await fetch("http://localhost:5000/auth/verify-google-token", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-google-token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token: credentialResponse.credential })
@@ -90,7 +90,7 @@ function SignUp() {
 
     const handleFinalGoogleSignup = async (fullUserData) => {
         try {
-            const response = await fetch("http://localhost:5000/auth/googleSignup", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/googleSignup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -116,7 +116,7 @@ function SignUp() {
     const handleSignup = async () => {
         const userData = { fullName, email, phone, password };
         try {
-            const response = await fetch("http://localhost:5000/auth/signup", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -203,7 +203,7 @@ function SignUp() {
                 });
             }, 1000);
 
-            const response = await fetch("http://localhost:5000/auth/send-otp", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/send-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email })
@@ -239,7 +239,7 @@ function SignUp() {
         }, 300);
 
         try {
-            const response = await fetch("http://localhost:5000/auth/verify-otp", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, otp1 })

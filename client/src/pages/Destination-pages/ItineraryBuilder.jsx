@@ -59,7 +59,7 @@ export default function ItineraryBuilder() {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/save-itinerary", {
+      const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/save-itinerary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // Vital: Tells backend WHO is saving it via cookie

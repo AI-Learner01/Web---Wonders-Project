@@ -63,7 +63,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
         setIsSaving(true);
         try {
             // Call existing Auth route to generate and send OTP
-            const response = await fetch("http://localhost:5000/api/auth/send-otp", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/send-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: bookingData.email.trim().toLowerCase() })
@@ -100,7 +100,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
         setOtpStatus("verifying");
         try {
             // Verify OTP via existing Auth route
-            const verifyRes = await fetch("http://localhost:5000/api/auth/verify-otp", {
+            const verifyRes = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/verify-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: bookingData.email.trim().toLowerCase(), otp1: otp })
@@ -129,7 +129,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
                 totalAmount: total
             };
 
-            const response = await fetch("http://localhost:5000/api/bookings", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/bookings`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(booking)

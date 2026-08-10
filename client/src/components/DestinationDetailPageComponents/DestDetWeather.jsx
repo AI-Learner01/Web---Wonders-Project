@@ -29,7 +29,7 @@ const DestDetWeather = ({ locationName }) => {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch(`http://localhost:5000/api/destinations/weather?name=${encodeURIComponent(locationName)}`);
+                const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/weather?name=${encodeURIComponent(locationName)}`);
                 const result = await res.json();
 
                 if (result.success) {

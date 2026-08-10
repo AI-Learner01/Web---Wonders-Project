@@ -13,7 +13,7 @@ const FavoritePackages = ({ userData, refreshProfile }) => {
 
     const removeFavorite = async (pkg) => {
         try {
-            const res = await fetch("http://localhost:5000/api/auth/toggle-favorite", {
+            const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/toggle-favorite`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
