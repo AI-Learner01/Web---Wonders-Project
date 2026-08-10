@@ -20,6 +20,8 @@ const allowedOrigins = [
   process.env.CLIENT_URL, // Your new deployment URL from .env
 ].filter(Boolean); // Removes undefined values
 
+app.set("trust proxy", 1);
+
 app.use(
   cors({
     origin: function (origin, callback) {
