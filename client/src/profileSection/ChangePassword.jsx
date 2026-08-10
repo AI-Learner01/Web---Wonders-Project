@@ -22,7 +22,7 @@ const ChangePassword = ({ userData, triggerSuccess, triggerError, setActiveTab }
     try {
       const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/change-password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" }, 
         credentials: "include",
         body: JSON.stringify({
           email: userData?.email,

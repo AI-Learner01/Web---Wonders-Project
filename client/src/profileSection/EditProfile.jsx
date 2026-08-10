@@ -44,7 +44,7 @@ const EditProfile = ({ userData, refreshProfile, triggerSuccess, triggerError, s
       // Endpoint to update user details
       const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/update-profile`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,"ngrok-skip-browser-warning": "true"},
         credentials: "include",
         body: JSON.stringify(formData),
       });

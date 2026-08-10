@@ -29,7 +29,7 @@ export default function Navbar() {
     try {
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/notifications/unread`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
         credentials: "include",
         body: JSON.stringify({ email }),
       });
@@ -48,7 +48,7 @@ export default function Navbar() {
     try {
       await fetch(`${import.meta.env.VITE_SERVER_URL}/notifications/mark-read`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","ngrok-skip-browser-warning": "true" },
         credentials: "include",
         body: JSON.stringify({ email: currentUser.email, notificationIds: [] }),
       });
@@ -82,6 +82,7 @@ export default function Navbar() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
           Authorization: `Bearer ${token}`,
         },
         credentials: "include",
@@ -159,7 +160,7 @@ export default function Navbar() {
     try {
       await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/logout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
         credentials: "include",
       });
 

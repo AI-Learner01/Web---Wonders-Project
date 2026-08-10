@@ -139,7 +139,7 @@ function AdminLayout() {
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/admin/resolve-query`, {
         method: "PATCH",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,"ngrok-skip-browser-warning": "true"},
         body: JSON.stringify({
           id: queryId,
           message: message,

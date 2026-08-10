@@ -21,7 +21,7 @@ function PackageCard({ packageData, onBookNow, isSlider }) {
                 const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/get-user-data`, {
                     method: "POST",
                     credentials: "include", // Sends the JWT cookie
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" }
                 });
                 const data = await res.json();
                 if (data.success && data.user.favorites) {
@@ -69,7 +69,7 @@ function PackageCard({ packageData, onBookNow, isSlider }) {
                                 // Update MongoDB
                                 const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/toggle-favorite`, {
                                     method: "POST",
-                                    headers: { "Content-Type": "application/json" },
+                                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                                     credentials: "include",
                                     body: JSON.stringify({ packageData })
                                 });

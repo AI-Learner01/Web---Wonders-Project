@@ -37,7 +37,7 @@ function SummaryCard({ selectedPackage, bookingData }) {
 
                 const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/bookings/send-email`, {
                     method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json","ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({
                     email: bookingData.email,
                     bookingDetails: {

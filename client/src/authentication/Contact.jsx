@@ -102,7 +102,7 @@ function Contact() {
             setLoading(true);
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/contact-us`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' ,"ngrok-skip-browser-warning": "true"},
                 credentials: 'include',
                 body: JSON.stringify({ 
                     topic, 

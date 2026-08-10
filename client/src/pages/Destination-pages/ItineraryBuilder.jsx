@@ -61,7 +61,7 @@ export default function ItineraryBuilder() {
     try {
       const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/save-itinerary`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","ngrok-skip-browser-warning": "true" },
         credentials: "include", // Vital: Tells backend WHO is saving it via cookie
         body: JSON.stringify({ itinerary: newItinerary })
       });

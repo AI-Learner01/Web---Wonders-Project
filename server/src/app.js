@@ -32,6 +32,7 @@ app.use(
       const isAllowed =
         allowedOrigins.includes(origin) ||
         origin.endsWith(".vercel.app") ||
+        origin.endsWith(".ngrok-free.app")||
         origin.startsWith("http://localhost:");
 
       if (isAllowed) {
@@ -43,7 +44,7 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Explicitly allow PATCH
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization","ngrok-skip-browser-warning"],
   })
 );
 

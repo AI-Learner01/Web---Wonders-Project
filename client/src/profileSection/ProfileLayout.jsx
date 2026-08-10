@@ -74,7 +74,7 @@ const ProfileLayout = () => {
       const userResponse = await fetch(API_ROUTES.GET_USER_DATA, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" , "ngrok-skip-browser-warning": "true"},
         body: JSON.stringify({ email: authData.email }),
       });
       const userResult = await userResponse.json();
@@ -106,7 +106,7 @@ const ProfileLayout = () => {
     try {
       const response = await fetch(API_ROUTES.GET_NOTIFICATIONS, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
         credentials: "include",
       });
       const data = await response.json();
@@ -128,7 +128,7 @@ const ProfileLayout = () => {
   try {
     await fetch(`${import.meta.env.VITE_SERVER_URL}/notifications/mark-read`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
       credentials: "include",
       body: JSON.stringify({ email: userData.email }),
     });
@@ -146,7 +146,7 @@ const ProfileLayout = () => {
     try {
       const response = await fetch(API_ROUTES.UPDATE_PROFILE, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
         credentials: "include",
         body: JSON.stringify({
           email: userData?.email,
@@ -174,7 +174,7 @@ const ProfileLayout = () => {
     try {
       const response = await fetch(API_ROUTES.CHANGE_PASSWORD, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",  "ngrok-skip-browser-warning": "true" },
         credentials: "include",
         body: JSON.stringify({
           email: userData?.email,

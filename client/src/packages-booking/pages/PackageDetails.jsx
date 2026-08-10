@@ -134,7 +134,7 @@ const ReviewSection = ({ userData, packageId, initialReviews = [] }) => {
             // Send to backend
             const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/packages/${packageId}/reviews`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify(newRev)
             });
 

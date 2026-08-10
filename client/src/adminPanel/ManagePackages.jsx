@@ -85,7 +85,7 @@ const ManagePackages = ({ packages, onRefresh, triggerSuccess, triggerError }) =
     try {
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,"ngrok-skip-browser-warning": "true"},
         credentials: "include",
         body: JSON.stringify(payload),
       });

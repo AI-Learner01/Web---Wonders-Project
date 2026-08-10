@@ -36,7 +36,7 @@ function SendNotification({ triggerSuccess, triggerError }) {
     try {
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/notifications/create`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,"ngrok-skip-browser-warning": "true"},
         credentials: "include",
         body: JSON.stringify(formData),
       });

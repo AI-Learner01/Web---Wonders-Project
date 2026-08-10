@@ -15,7 +15,7 @@ const FavoritePackages = ({ userData, refreshProfile }) => {
         try {
             const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/toggle-favorite`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 credentials: "include",
                 body: JSON.stringify({ packageData: pkg })
             });

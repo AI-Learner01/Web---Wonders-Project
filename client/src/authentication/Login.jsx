@@ -65,7 +65,7 @@ function Login() {
             
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/login`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 credentials: "include",
                 body: JSON.stringify({ email: email.trim(), password })
             });
@@ -95,7 +95,7 @@ function Login() {
         try {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/google`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 credentials: "include",
                 body: JSON.stringify({ token: credentialResponse.credential })
             });

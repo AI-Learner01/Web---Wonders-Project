@@ -858,7 +858,7 @@ export default function Home() {
                 // Send history to backend smart engine
                 const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/destinations/recommended`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json" ,"ngrok-skip-browser-warning": "true"},
                     credentials: "include",
                     body: JSON.stringify({ viewHistory })
                 });

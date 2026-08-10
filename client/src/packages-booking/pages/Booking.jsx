@@ -65,7 +65,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
             // Call existing Auth route to generate and send OTP
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/send-otp`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json" ,"ngrok-skip-browser-warning": "true"},
                 body: JSON.stringify({ email: bookingData.email.trim().toLowerCase() })
             });
             const result = await response.json();
@@ -102,7 +102,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
             // Verify OTP via existing Auth route
             const verifyRes = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/verify-otp`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json" ,"ngrok-skip-browser-warning": "true"},
                 body: JSON.stringify({ email: bookingData.email.trim().toLowerCase(), otp1: otp })
             });
             const verifyData = await verifyRes.json();
@@ -131,7 +131,7 @@ function Booking({ selectedPackage, onBack, onContinue }) {
 
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/bookings`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json" ,"ngrok-skip-browser-warning": "true"},
                 body: JSON.stringify(booking)
             });
             const result = await response.json();

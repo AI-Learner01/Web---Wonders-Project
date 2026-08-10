@@ -59,7 +59,7 @@ function SignUp() {
         try {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-google-token`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json" ,"ngrok-skip-browser-warning": "true"},
                 body: JSON.stringify({ token: credentialResponse.credential })
             });
 
@@ -92,7 +92,7 @@ function SignUp() {
         try {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/googleSignup`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 credentials: "include",
                 body: JSON.stringify(fullUserData)
             });
@@ -118,7 +118,7 @@ function SignUp() {
         try {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/signup`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 credentials: "include",
                 body: JSON.stringify(userData)
             });
@@ -205,7 +205,7 @@ function SignUp() {
 
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/send-otp`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({ email })
             });
 
@@ -241,7 +241,7 @@ function SignUp() {
         try {
             const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-otp`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({ email, otp1 })
             });
 
