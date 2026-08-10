@@ -24,7 +24,9 @@ function PackagesWrapper() {
         setError("");
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/packages`);
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/packages`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
 
             if (!response.ok) {
                 throw new Error("Server Error");
@@ -87,7 +89,7 @@ function PackagesRoute({ packages, loading, error, onRetry }) {
     );
 }
 
-function PackageDetailsRoute({ packages,userData }) {
+function PackageDetailsRoute({ packages, userData }) {
     const navigate = useNavigate();
     return (
         <PackageDetails
@@ -156,7 +158,7 @@ function BookingSummaryRoute({ packages }) {
     );
 }
 
-function PackagesRoutes({ packages, loading, error, onRetry ,userData}) {
+function PackagesRoutes({ packages, loading, error, onRetry, userData }) {
     return (
         <>
             <ScrollToTop />
@@ -167,7 +169,7 @@ function PackagesRoutes({ packages, loading, error, onRetry ,userData}) {
                     onRetry={onRetry} />} />
 
                 {/*  Relative child routes */}
-                <Route path="details/:packageId" element={<PackageDetailsRoute packages={packages} userData={userData}/>} />
+                <Route path="details/:packageId" element={<PackageDetailsRoute packages={packages} userData={userData} />} />
                 <Route path="booking/:packageId" element={<BookingRoute packages={packages} />} />
                 <Route path="booking/:packageId/summary" element={<BookingSummaryRoute packages={packages} />} />
 

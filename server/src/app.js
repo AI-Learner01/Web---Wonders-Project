@@ -32,7 +32,7 @@ app.use(
       const isAllowed =
         allowedOrigins.includes(origin) ||
         origin.endsWith(".vercel.app") ||
-        origin.endsWith(".ngrok-free.app")||
+        origin.endsWith(".ngrok-free.dev")||
         origin.startsWith("http://localhost:");
 
       if (isAllowed) {
