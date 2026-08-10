@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SearchIcon, AlertIcon, PinIcon } from "./icons";
+import { SearchIcon, AlertIcon, PinIcon } from "./Icons";
 
 // Handbook requirement: "Search and Filter — search by city or country,
 // and filter by type (beach, mountains, heritage, adventure) or budget range."
